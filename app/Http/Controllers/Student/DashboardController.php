@@ -66,7 +66,7 @@ class DashboardController extends Controller
             ->get()
             ->groupBy('course.subject.name');
 
-        return view('student.dashboard', compact(
+        return view('student.dashboard.index', compact(
             'user',
             'enrollments',
             'lastProgress',
