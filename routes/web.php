@@ -10,6 +10,11 @@ use App\Http\Controllers\Student\LeaderboardController;
 use App\Http\Controllers\Student\LiveClassController;
 use App\Http\Controllers\Student\StudyHistoryController;
 use App\Http\Controllers\Student\TryoutController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
+use App\Http\Controllers\Admin\UserController as AdminUser;
+use App\Http\Controllers\Admin\CourseController as AdminCourse;
+use App\Http\Controllers\Admin\TryoutController as AdminTryout;
+use App\Http\Controllers\Admin\SubscriptionController as AdminSubscription;
 use Illuminate\Support\Facades\Route;
 
 // ============================================================================
@@ -57,6 +62,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Kelas Saya
     Route::prefix('kelas')->name('student.course.')->group(function () {
         Route::get('/', [CourseController::class, 'index'])->name('index');
         Route::get('/{slug}', [CourseController::class, 'show'])->name('show');
@@ -64,11 +70,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('material.complete');
     });
 
+    // Live Class
     Route::prefix('live-class')->name('student.live.')->group(function () {
         Route::get('/', [LiveClassController::class, 'index'])->name('index');
         Route::get('/{id}', [LiveClassController::class, 'show'])->name('show');
     });
 
+    // Tryout
     Route::prefix('tryout')->name('student.tryout.')->group(function () {
         Route::get('/', [TryoutController::class, 'index'])->name('index');
         Route::get('/{id}/mulai', [TryoutController::class, 'start'])->name('start');
@@ -76,40 +84,106 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/attempt/{attemptId}/hasil', [TryoutController::class, 'result'])->name('result');
     });
 
+    // Leaderboard & Riwayat
     Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('student.leaderboard.index');
     Route::get('/riwayat', [StudyHistoryController::class, 'index'])->name('student.history.index');
 
+    // Upgrade Premium
     Route::prefix('upgrade')->name('upgrade.')->group(function () {
         Route::get('/', [SubscriptionController::class, 'index'])->name('index');
         Route::post('/checkout/{slug}', [SubscriptionController::class, 'checkout'])->name('checkout');
-        Route::get('/snap', [SubscriptionController::class, 'snap'])->name('snap');
         Route::get('/sukses', [SubscriptionController::class, 'success'])->name('success');
     });
+
+    // Payment check status (AJAX polling)
+    Route::get('/payment/check-status/{id}', [SubscriptionController::class, 'checkStatus'])
+        ->name('payment.check-status');
 });
 
 // ============================================================================
-// MIDTRANS WEBHOOK
+// PAYMENT CALLBACK / WEBHOOK (tanpa auth & tanpa CSRF)
 // ============================================================================
 
 Route::post('/payment/callback', [SubscriptionController::class, 'callback'])
     ->name('payment.callback')
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
-Route::get('/payment/check-status/{id}', [SubscriptionController::class, 'checkStatus'])
-    ->name('payment.check-status');
-
 // ============================================================================
-// ADMIN & MENTOR
+// ADMIN ROUTES
 // ============================================================================
 
 Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
-    ->prefix('admin')->name('admin.')
+    ->prefix('admin')
+    ->name('admin.')
     ->group(function () {
-        Route::get('/dashboard', fn() => view('admin.dashboard'))->name('dashboard');
+
+        // Dashboard
+        Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
+
+        // Users
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('/', [AdminUser::class, 'index'])->name('index');
+            Route::get('/{user}', [AdminUser::class, 'show'])->name('show');
+            Route::get('/{user}/edit', [AdminUser::class, 'edit'])->name('edit');
+            Route::put('/{user}', [AdminUser::class, 'update'])->name('update');
+            Route::delete('/{user}', [AdminUser::class, 'destroy'])->name('destroy');
+            Route::patch('/{user}/toggle-active', [AdminUser::class, 'toggleActive'])->name('toggle-active');
+            Route::post('/{user}/grant-premium', [AdminUser::class, 'grantPremium'])->name('grant-premium');
+        });
+
+        // Courses
+        Route::prefix('courses')->name('courses.')->group(function () {
+            Route::get('/', [AdminCourse::class, 'index'])->name('index');
+            Route::get('/create', [AdminCourse::class, 'create'])->name('create');
+            Route::post('/', [AdminCourse::class, 'store'])->name('store');
+            Route::get('/{course}', [AdminCourse::class, 'show'])->name('show');
+            Route::get('/{course}/edit', [AdminCourse::class, 'edit'])->name('edit');
+            Route::put('/{course}', [AdminCourse::class, 'update'])->name('update');
+            Route::delete('/{course}', [AdminCourse::class, 'destroy'])->name('destroy');
+            Route::patch('/{course}/toggle-publish', [AdminCourse::class, 'togglePublish'])->name('toggle-publish');
+
+            // Modules
+            Route::post('/{course}/modules', [AdminCourse::class, 'storeModule'])->name('modules.store');
+            Route::delete('/modules/{module}', [AdminCourse::class, 'destroyModule'])->name('modules.destroy');
+
+            // Materials
+            Route::post('/modules/{module}/materials', [AdminCourse::class, 'storeMaterial'])->name('materials.store');
+            Route::delete('/materials/{material}', [AdminCourse::class, 'destroyMaterial'])->name('materials.destroy');
+        });
+
+        // Tryouts
+        Route::prefix('tryouts')->name('tryouts.')->group(function () {
+            Route::get('/', [AdminTryout::class, 'index'])->name('index');
+            Route::get('/create', [AdminTryout::class, 'create'])->name('create');
+            Route::post('/', [AdminTryout::class, 'store'])->name('store');
+            Route::get('/{tryout}', [AdminTryout::class, 'show'])->name('show');
+            Route::get('/{tryout}/edit', [AdminTryout::class, 'edit'])->name('edit');
+            Route::put('/{tryout}', [AdminTryout::class, 'update'])->name('update');
+            Route::delete('/{tryout}', [AdminTryout::class, 'destroy'])->name('destroy');
+            Route::patch('/{tryout}/toggle-publish', [AdminTryout::class, 'togglePublish'])->name('toggle-publish');
+
+            // Questions
+            Route::post('/{tryout}/questions', [AdminTryout::class, 'storeQuestion'])->name('questions.store');
+            Route::delete('/questions/{question}', [AdminTryout::class, 'destroyQuestion'])->name('questions.destroy');
+        });
+
+        // Subscriptions
+        Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+            Route::get('/', [AdminSubscription::class, 'index'])->name('index');
+            Route::patch('/{subscription}/activate', [AdminSubscription::class, 'activate'])->name('activate');
+            Route::patch('/{subscription}/cancel', [AdminSubscription::class, 'cancel'])->name('cancel');
+            Route::patch('/{subscription}/extend', [AdminSubscription::class, 'extend'])->name('extend');
+        });
+
     });
 
+// ============================================================================
+// MENTOR ROUTES
+// ============================================================================
+
 Route::middleware(['auth', 'verified', 'role:mentor,admin,superadmin'])
-    ->prefix('mentor')->name('mentor.')
+    ->prefix('mentor')
+    ->name('mentor.')
     ->group(function () {
         Route::get('/dashboard', fn() => view('mentor.dashboard'))->name('dashboard');
     });

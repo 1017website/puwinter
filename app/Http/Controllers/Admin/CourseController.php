@@ -1,0 +1,183 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Course;
+use App\Models\CourseModule;
+use App\Models\CourseMaterial;
+use App\Models\Subject;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
+
+class CourseController extends Controller
+{
+    public function index(Request $request): View
+    {
+        $query = Course::with(['subject', 'mentor'])
+            ->withCount(['enrollments', 'modules']);
+
+        if ($request->filled('subject_id')) {
+            $query->where('subject_id', $request->subject_id);
+        }
+
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('status')) {
+            $query->where('is_published', $request->status === 'published');
+        }
+
+        $courses  = $query->latest()->paginate(15)->withQueryString();
+        $subjects = Subject::active()->get();
+
+        return view('admin.courses.index', compact('courses', 'subjects'));
+    }
+
+    public function create(): View
+    {
+        $subjects = Subject::active()->get();
+        $mentors  = User::where('role', 'mentor')->get();
+        return view('admin.courses.create', compact('subjects', 'mentors'));
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'title'      => 'required|string|max:255',
+            'subject_id' => 'required|exists:subjects,id',
+            'mentor_id'  => 'required|exists:users,id',
+            'description'=> 'nullable|string',
+            'is_premium' => 'boolean',
+            'thumbnail'  => 'nullable|image|max:2048',
+        ]);
+
+        $data = $request->except('thumbnail');
+        $data['slug']       = Str::slug($request->title) . '-' . time();
+        $data['is_premium'] = $request->boolean('is_premium');
+
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
+        }
+
+        $course = Course::create($data);
+
+        return redirect()->route('admin.courses.show', $course)
+            ->with('success', 'Kelas berhasil dibuat.');
+    }
+
+    public function show(Course $course): View
+    {
+        $course->load(['subject', 'mentor', 'modules.materials', 'enrollments']);
+        return view('admin.courses.show', compact('course'));
+    }
+
+    public function edit(Course $course): View
+    {
+        $subjects = Subject::active()->get();
+        $mentors  = User::where('role', 'mentor')->get();
+        return view('admin.courses.edit', compact('course', 'subjects', 'mentors'));
+    }
+
+    public function update(Request $request, Course $course): RedirectResponse
+    {
+        $request->validate([
+            'title'        => 'required|string|max:255',
+            'subject_id'   => 'required|exists:subjects,id',
+            'mentor_id'    => 'required|exists:users,id',
+            'description'  => 'nullable|string',
+            'is_premium'   => 'boolean',
+            'is_published' => 'boolean',
+            'thumbnail'    => 'nullable|image|max:2048',
+        ]);
+
+        $data = $request->except('thumbnail');
+        $data['is_premium']   = $request->boolean('is_premium');
+        $data['is_published'] = $request->boolean('is_published');
+
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
+        }
+
+        $course->update($data);
+
+        return back()->with('success', 'Kelas berhasil diperbarui.');
+    }
+
+    public function destroy(Course $course): RedirectResponse
+    {
+        $course->delete();
+        return redirect()->route('admin.courses.index')
+            ->with('success', 'Kelas berhasil dihapus.');
+    }
+
+    // Toggle publish
+    public function togglePublish(Course $course): RedirectResponse
+    {
+        $course->update(['is_published' => !$course->is_published]);
+        $status = $course->is_published ? 'dipublikasikan' : 'disembunyikan';
+        return back()->with('success', "Kelas berhasil $status.");
+    }
+
+    // =========================================================================
+    // MODULES
+    // =========================================================================
+
+    public function storeModule(Request $request, Course $course): RedirectResponse
+    {
+        $request->validate(['title' => 'required|string|max:255']);
+
+        $course->modules()->create([
+            'title' => $request->title,
+            'order' => $course->modules()->max('order') + 1,
+        ]);
+
+        return back()->with('success', 'Modul berhasil ditambahkan.');
+    }
+
+    public function destroyModule(CourseModule $module): RedirectResponse
+    {
+        $courseId = $module->course_id;
+        $module->delete();
+        return redirect()->route('admin.courses.show', $courseId)
+            ->with('success', 'Modul berhasil dihapus.');
+    }
+
+    // =========================================================================
+    // MATERIALS
+    // =========================================================================
+
+    public function storeMaterial(Request $request, CourseModule $module): RedirectResponse
+    {
+        $request->validate([
+            'title'            => 'required|string|max:255',
+            'type'             => 'required|in:video,pdf,quiz,live_class',
+            'content_url'      => 'nullable|url',
+            'duration_minutes' => 'nullable|integer',
+            'is_premium'       => 'boolean',
+        ]);
+
+        $module->materials()->create([
+            'title'            => $request->title,
+            'type'             => $request->type,
+            'content_url'      => $request->content_url,
+            'duration_minutes' => $request->duration_minutes,
+            'is_premium'       => $request->boolean('is_premium'),
+            'order'            => $module->materials()->max('order') + 1,
+        ]);
+
+        return back()->with('success', 'Materi berhasil ditambahkan.');
+    }
+
+    public function destroyMaterial(CourseMaterial $material): RedirectResponse
+    {
+        $courseId = $material->module->course_id;
+        $material->delete();
+        return redirect()->route('admin.courses.show', $courseId)
+            ->with('success', 'Materi berhasil dihapus.');
+    }
+}
