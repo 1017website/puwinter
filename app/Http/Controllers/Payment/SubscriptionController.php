@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PaymentLog;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
+use App\Services\BayarGgService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -13,21 +14,30 @@ use Illuminate\View\View;
 
 class SubscriptionController extends Controller
 {
-    // Halaman pricing / upgrade
+    public function __construct(private BayarGgService $bayarGg) {}
+
+    // =========================================================================
+    // INDEX — Halaman Pricing / Upgrade
+    // =========================================================================
+
     public function index(Request $request): View
     {
-        $plans = SubscriptionPlan::active()->get();
-        $user  = $request->user();
-
-        $activeSubscription = $user->activeSubscription();
+        $plans              = SubscriptionPlan::active()->get();
+        $activeSubscription = $request->user()->activeSubscription();
 
         return view('payment.upgrade', compact('plans', 'activeSubscription'));
     }
 
-    // Buat order dan redirect ke Midtrans Snap
+    // =========================================================================
+    // CHECKOUT — Buat order & redirect ke bayar.gg
+    // =========================================================================
+
     public function checkout(Request $request, string $slug): RedirectResponse
     {
-        $plan = SubscriptionPlan::where('slug', $slug)->where('is_active', true)->firstOrFail();
+        $plan = SubscriptionPlan::where('slug', $slug)
+            ->where('is_active', true)
+            ->firstOrFail();
+
         $user = $request->user();
 
         // Batalkan subscription pending sebelumnya
@@ -35,104 +45,193 @@ class SubscriptionController extends Controller
             ->where('status', 'pending')
             ->update(['status' => 'cancelled']);
 
+        // Buat order ID internal
         $orderId = 'PWR-' . $user->id . '-' . time();
 
+        // Buat subscription record dulu (pending)
         $subscription = Subscription::create([
-            'user_id'           => $user->id,
-            'plan_id'           => $plan->id,
-            'status'            => 'pending',
-            'payment_method'    => null,
-            'midtrans_order_id' => $orderId,
-            'amount_paid'       => $plan->price,
+            'user_id'  => $user->id,
+            'plan_id'  => $plan->id,
+            'status'   => 'pending',
+            'amount_paid' => $plan->price,
         ]);
 
-        // Midtrans Snap
-        \Midtrans\Config::$serverKey    = config('midtrans.server_key');
-        \Midtrans\Config::$isProduction = config('midtrans.is_production');
-        \Midtrans\Config::$isSanitized  = true;
-        \Midtrans\Config::$is3ds        = true;
+        // Simpan order ID di subscription (pakai midtrans_order_id field yang ada)
+        $subscription->update(['midtrans_order_id' => $orderId]);
 
-        $params = [
-            'transaction_details' => [
-                'order_id'     => $orderId,
-                'gross_amount' => $plan->price,
+        // Buat payment di bayar.gg
+        $payment = $this->bayarGg->createPayment(
+            amount: $plan->price,
+            description: $plan->name . ' - Puwinter',
+            customer: [
+                'name'  => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
             ],
-            'customer_details' => [
-                'first_name' => $user->name,
-                'email'      => $user->email,
-                'phone'      => $user->phone,
-            ],
-            'item_details' => [[
-                'id'       => $plan->slug,
-                'price'    => $plan->price,
-                'quantity' => 1,
-                'name'     => $plan->name . ' - Puwinter',
-            ]],
-        ];
+            orderId: $orderId
+        );
 
-        $snapToken = \Midtrans\Snap::getSnapToken($params);
+        if (!$payment) {
+            $subscription->update(['status' => 'cancelled']);
+            return back()->with('error', 'Gagal membuat pembayaran. Coba lagi.');
+        }
 
-        $subscription->update(['midtrans_snap_token' => $snapToken]);
+        // Simpan invoice ID dari bayar.gg
+        $invoiceId = $payment['payment']['invoice_id'];
+        $paymentUrl = $payment['payment_url'];
 
-        return redirect()->route('payment.snap', ['token' => $snapToken, 'orderId' => $orderId]);
+        $subscription->update([
+            'midtrans_snap_token' => $invoiceId, // kita pakai field ini untuk invoice_id bayar.gg
+        ]);
+
+        // Log
+        PaymentLog::create([
+            'subscription_id' => $subscription->id,
+            'user_id'         => $user->id,
+            'event_type'      => 'payment.created',
+            'payload'         => $payment,
+            'status'          => 'pending',
+        ]);
+
+        // Redirect ke halaman bayar.gg
+        return redirect($paymentUrl);
     }
 
-    // Halaman Snap (redirect ke Midtrans popup)
-    public function snap(Request $request): View
-    {
-        $token   = $request->get('token');
-        $orderId = $request->get('orderId');
+    // =========================================================================
+    // CALLBACK / WEBHOOK dari bayar.gg
+    // =========================================================================
 
-        return view('payment.snap', compact('token', 'orderId'));
-    }
-
-    // Webhook dari Midtrans
     public function callback(Request $request): Response
     {
-        \Midtrans\Config::$serverKey    = config('midtrans.server_key');
-        \Midtrans\Config::$isProduction = config('midtrans.is_production');
+        $payload = $request->all();
 
-        $notification = new \Midtrans\Notification();
+        \Log::info('BayarGg Callback received', $payload);
 
-        $orderId           = $notification->order_id;
-        $transactionStatus = $notification->transaction_status;
-        $fraudStatus       = $notification->fraud_status;
-        $paymentType       = $notification->payment_type;
+        $invoiceId = $payload['invoice_id'] ?? null;
 
-        $subscription = Subscription::where('midtrans_order_id', $orderId)->firstOrFail();
+        if (!$invoiceId) {
+            return response('Missing invoice_id', 400);
+        }
 
-        // Log payload
+        // Verifikasi dengan double-check ke API
+        if (!$this->bayarGg->verifyCallback($payload)) {
+            \Log::warning('BayarGg callback verification failed', $payload);
+            return response('Verification failed', 400);
+        }
+
+        // Cari subscription berdasarkan invoice ID yang kita simpan di midtrans_snap_token
+        $subscription = Subscription::where('midtrans_snap_token', $invoiceId)->first();
+
+        if (!$subscription) {
+            \Log::warning('BayarGg callback: subscription not found for invoice ' . $invoiceId);
+            return response('Subscription not found', 404);
+        }
+
+        // Hindari proses duplikat
+        if ($subscription->status === 'active') {
+            return response('Already processed', 200);
+        }
+
+        $status      = $payload['status'] ?? 'pending';
+        $paymentMethod = $payload['payment_method'] ?? 'qris';
+
+        // Log
         PaymentLog::create([
             'subscription_id' => $subscription->id,
             'user_id'         => $subscription->user_id,
-            'event_type'      => $transactionStatus,
-            'payload'         => $request->all(),
-            'status'          => $transactionStatus,
+            'event_type'      => 'callback.' . $status,
+            'payload'         => $payload,
+            'status'          => $status,
         ]);
 
-        // Proses status
-        if ($transactionStatus === 'capture' && $fraudStatus === 'accept') {
-            $this->activateSubscription($subscription, $paymentType);
-        } elseif ($transactionStatus === 'settlement') {
-            $this->activateSubscription($subscription, $paymentType);
-        } elseif (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
+        if ($status === 'paid') {
+            $this->activateSubscription($subscription, $paymentMethod);
+        } elseif (in_array($status, ['expired', 'cancelled'])) {
             $subscription->update(['status' => 'cancelled']);
         }
 
         return response('OK', 200);
     }
 
-    // Halaman sukses
-    public function success(Request $request): View
+    // =========================================================================
+    // SUCCESS — Halaman setelah redirect dari bayar.gg
+    // =========================================================================
+
+    public function success(Request $request): View|RedirectResponse
     {
-        $orderId      = $request->get('order_id');
+        $orderId = $request->get('order');
+
+        if (!$orderId) {
+            return redirect()->route('dashboard');
+        }
+
+        // Cari subscription berdasarkan order ID internal
         $subscription = Subscription::where('midtrans_order_id', $orderId)
             ->where('user_id', $request->user()->id)
             ->with('plan')
-            ->firstOrFail();
+            ->first();
+
+        if (!$subscription) {
+            return redirect()->route('dashboard')->with('info', 'Pembayaran sedang diproses.');
+        }
+
+        // Jika belum active, cek ke API bayar.gg sekali lagi
+        if ($subscription->status !== 'active') {
+            $invoiceId = $subscription->midtrans_snap_token;
+            $payment   = $this->bayarGg->checkPayment($invoiceId);
+
+            if ($payment && $payment['status'] === 'paid') {
+                $this->activateSubscription($subscription, $payment['payment_method'] ?? 'qris');
+                $subscription->refresh();
+            }
+        }
 
         return view('payment.success', compact('subscription'));
     }
+
+    // =========================================================================
+    // CHECK STATUS — AJAX polling dari frontend
+    // =========================================================================
+
+    public function checkStatus(Request $request, int $subscriptionId)
+    {
+        $subscription = Subscription::where('id', $subscriptionId)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$subscription) {
+            return response()->json(['status' => 'not_found'], 404);
+        }
+
+        // Kalau sudah active, return langsung
+        if ($subscription->status === 'active') {
+            return response()->json([
+                'status'      => 'active',
+                'redirect_url'=> route('dashboard'),
+            ]);
+        }
+
+        // Cek ke API bayar.gg
+        $invoiceId = $subscription->midtrans_snap_token;
+        $payment   = $this->bayarGg->checkPayment($invoiceId);
+
+        if ($payment && $payment['status'] === 'paid') {
+            $this->activateSubscription($subscription, $payment['payment_method'] ?? 'qris');
+            return response()->json([
+                'status'      => 'active',
+                'redirect_url'=> route('payment.success') . '?order=' . $subscription->midtrans_order_id,
+            ]);
+        }
+
+        return response()->json([
+            'status'     => $subscription->status,
+            'expires_at' => $payment['expires_at'] ?? null,
+        ]);
+    }
+
+    // =========================================================================
+    // PRIVATE HELPERS
+    // =========================================================================
 
     private function activateSubscription(Subscription $subscription, string $paymentMethod): void
     {

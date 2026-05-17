@@ -16,7 +16,12 @@ use Illuminate\Support\Facades\Route;
 // PUBLIC
 // ============================================================================
 
-Route::get('/', fn() => redirect()->route('dashboard'));
+Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return view('welcome');
+})->name('home');
 
 // ============================================================================
 // AUTH BREEZE (login, logout, password reset — jangan hapus)
@@ -89,6 +94,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::post('/payment/callback', [SubscriptionController::class, 'callback'])
     ->name('payment.callback')
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
+Route::get('/payment/check-status/{id}', [SubscriptionController::class, 'checkStatus'])
+    ->name('payment.check-status');
 
 // ============================================================================
 // ADMIN & MENTOR

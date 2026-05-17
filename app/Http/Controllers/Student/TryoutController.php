@@ -16,7 +16,9 @@ class TryoutController extends Controller
     // Daftar tryout
     public function index(): View
     {
-        $tryouts = Tryout::published()->with('subject')->get();
+        $tryouts = Tryout::published()
+            ->with(['subject', 'attempts' => fn($q) => $q->where('user_id', auth()->id())])
+            ->get();
 
         return view('student.tryout.index', compact('tryouts'));
     }
@@ -36,15 +38,15 @@ class TryoutController extends Controller
 
         if ($existingAttempt) {
             return view('student.tryout.exam', [
-                'tryout'  => $tryout,
+                'tryout' => $tryout,
                 'attempt' => $existingAttempt,
             ]);
         }
 
         // Buat attempt baru
         $attempt = UserTryoutAttempt::create([
-            'user_id'    => $request->user()->id,
-            'tryout_id'  => $tryout->id,
+            'user_id' => $request->user()->id,
+            'tryout_id' => $tryout->id,
             'started_at' => now(),
         ]);
 
@@ -59,11 +61,11 @@ class TryoutController extends Controller
             ->whereNull('submitted_at')
             ->firstOrFail();
 
-        $tryout    = $attempt->tryout()->with('questions')->first();
-        $answers   = $request->input('answers', []);
-        $correct   = 0;
-        $wrong     = 0;
-        $empty     = 0;
+        $tryout = $attempt->tryout()->with('questions')->first();
+        $answers = $request->input('answers', []);
+        $correct = 0;
+        $wrong = 0;
+        $empty = 0;
 
         foreach ($tryout->questions as $question) {
             $userAnswer = $answers[$question->id] ?? null;
@@ -87,23 +89,23 @@ class TryoutController extends Controller
             ->count() + 1;
 
         $attempt->update([
-            'submitted_at'  => now(),
-            'answers'       => $answers,
-            'score'         => $score,
+            'submitted_at' => now(),
+            'answers' => $answers,
+            'score' => $score,
             'correct_count' => $correct,
-            'wrong_count'   => $wrong,
-            'empty_count'   => $empty,
-            'rank_at_submit'=> $rank,
+            'wrong_count' => $wrong,
+            'empty_count' => $empty,
+            'rank_at_submit' => $rank,
         ]);
 
         // Catat ke study history
         StudyHistory::create([
-            'user_id'          => $request->user()->id,
-            'activity_type'    => 'tryout',
-            'reference_id'     => $tryout->id,
-            'reference_type'   => Tryout::class,
+            'user_id' => $request->user()->id,
+            'activity_type' => 'tryout',
+            'reference_id' => $tryout->id,
+            'reference_type' => Tryout::class,
             'duration_seconds' => now()->diffInSeconds($attempt->started_at),
-            'score'            => $score,
+            'score' => $score,
         ]);
 
         // Update leaderboard
