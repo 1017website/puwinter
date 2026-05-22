@@ -10,6 +10,10 @@ use App\Http\Controllers\Student\LeaderboardController;
 use App\Http\Controllers\Student\LiveClassController;
 use App\Http\Controllers\Student\StudyHistoryController;
 use App\Http\Controllers\Student\TryoutController;
+use App\Http\Controllers\Student\BankSoalController;
+use App\Http\Controllers\Student\MateriPdfController;
+use App\Http\Controllers\Student\PembahasanController;
+use App\Http\Controllers\Student\SettingsController as StudentSettings;
 use App\Http\Controllers\Admin\LiveClassController as AdminLiveClass;
 use App\Http\Controllers\Admin\SettingsController as AdminSettings;
 use App\Http\Controllers\Admin\SubjectController as AdminSubject;
@@ -89,6 +93,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Leaderboard & Riwayat
     Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('student.leaderboard.index');
     Route::get('/riwayat', [StudyHistoryController::class, 'index'])->name('student.history.index');
+
+    // Bank Soal
+    Route::prefix('bank-soal')->name('student.bank.')->group(function () {
+        Route::get('/', [BankSoalController::class, 'index'])->name('index');
+        Route::post('/simpan/{questionId}', [BankSoalController::class, 'toggleSave'])->name('toggle-save');
+    });
+
+    // Materi PDF
+    Route::prefix('materi-pdf')->name('student.pdf.')->group(function () {
+        Route::get('/', [MateriPdfController::class, 'index'])->name('index');
+        Route::post('/simpan/{materialId}', [MateriPdfController::class, 'toggleSave'])->name('toggle-save');
+    });
+
+    // Pembahasan
+    Route::get('/pembahasan', [PembahasanController::class, 'index'])->name('student.pembahasan.index');
+
+    // Pengaturan Siswa
+    Route::prefix('pengaturan')->name('student.settings.')->group(function () {
+        Route::get('/', [StudentSettings::class, 'index'])->name('index');
+        Route::post('/profil', [StudentSettings::class, 'updateProfile'])->name('profile');
+        Route::post('/password', [StudentSettings::class, 'updatePassword'])->name('password');
+    });
 
     // Upgrade Premium
     Route::prefix('upgrade')->name('upgrade.')->group(function () {

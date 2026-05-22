@@ -632,26 +632,75 @@
             .stats-row.cols-4 {
                 grid-template-columns: repeat(2, 1fr);
             }
-
             .topbar-search input {
                 width: 200px;
             }
         }
 
+        /* ------------------------------------------------------------------ */
+        /* MOBILE — Full support                                               */
+        /* ------------------------------------------------------------------ */
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
+                transition: transform 0.25s ease;
+                z-index: 200;
+                width: 240px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 199;
+            }
+            .sidebar-overlay.open { display: block; }
+
+            .main-wrapper { margin-left: 0; }
+
+            /* Hamburger button */
+            .hamburger-btn {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                width: 38px;
+                height: 38px;
+                border-radius: 8px;
+                border: 1px solid var(--border);
+                background: var(--bg);
+                cursor: pointer;
+                color: var(--text-muted);
+                flex-shrink: 0;
             }
 
-            .main-wrapper {
-                margin-left: 0;
-            }
+            .topbar-search { display: none; }
+            .topbar-greeting h1 { font-size: 15px; }
+            .topbar-greeting p  { display: none; }
+            .topbar-username    { display: none; }
 
+            /* Grid adjustments */
             .stats-row.cols-4,
-            .stats-row.cols-3 {
-                grid-template-columns: repeat(2, 1fr);
-            }
+            .stats-row.cols-3 { grid-template-columns: repeat(2, 1fr); }
+            .stats-row.cols-2 { grid-template-columns: 1fr; }
+
+            /* Page content padding */
+            .page-content { padding: 16px; }
+
+            /* Topbar */
+            .topbar { padding: 0 16px; gap: 10px; }
         }
+
+        @media (max-width: 480px) {
+            .stats-row.cols-4,
+            .stats-row.cols-3,
+            .stats-row.cols-2 { grid-template-columns: 1fr; }
+        }
+
+        /* Hamburger hidden on desktop */
+        .hamburger-btn { display: none; }
     </style>
 
     @stack('styles')
@@ -659,10 +708,13 @@
 
 <body>
 
+    {{-- Mobile overlay --}}
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
     {{-- ======================================================================== --}}
     {{-- SIDEBAR --}}
     {{-- ======================================================================== --}}
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
         {{-- Logo --}}
         <div class="sidebar-logo">
             <a href="{{ route('dashboard') }}" style="display:flex; align-items:center; justify-content:center; text-decoration:none; padding:8px 0;">
@@ -684,17 +736,17 @@
                 class="nav-item {{ request()->routeIs('student.tryout.*') ? 'active' : '' }}">
                 <i class="fas fa-bullseye"></i> Tryout
             </a>
-            <a href="#" class="nav-item {{ request()->routeIs('student.bank.*') ? 'active' : '' }}">
+            <a href="{{ route('student.bank.index') }}" class="nav-item {{ request()->routeIs('student.bank.*') ? 'active' : '' }}">
                 <i class="fas fa-database"></i> Bank Soal
             </a>
             <a href="{{ route('student.live.index') }}"
                 class="nav-item {{ request()->routeIs('student.live.*') ? 'active' : '' }}">
                 <i class="fas fa-video"></i> Live Class
             </a>
-            <a href="#" class="nav-item {{ request()->routeIs('student.pdf.*') ? 'active' : '' }}">
+            <a href="{{ route('student.pdf.index') }}" class="nav-item {{ request()->routeIs('student.pdf.*') ? 'active' : '' }}">
                 <i class="fas fa-file-pdf"></i> Materi PDF
             </a>
-            <a href="#" class="nav-item {{ request()->routeIs('student.pembahasan.*') ? 'active' : '' }}">
+            <a href="{{ route('student.pembahasan.index') }}" class="nav-item {{ request()->routeIs('student.pembahasan.*') ? 'active' : '' }}">
                 <i class="fas fa-lightbulb"></i> Pembahasan
             </a>
             <a href="{{ route('student.leaderboard.index') }}"
@@ -705,7 +757,7 @@
                 class="nav-item {{ request()->routeIs('student.history.*') ? 'active' : '' }}">
                 <i class="fas fa-clock-rotate-left"></i> Riwayat
             </a>
-            <a href="#" class="nav-item {{ request()->routeIs('student.settings.*') ? 'active' : '' }}">
+            <a href="{{ route('student.settings.index') }}" class="nav-item {{ request()->routeIs('student.settings.*') ? 'active' : '' }}">
                 <i class="fas fa-gear"></i> Pengaturan
             </a>
         </nav>
@@ -739,6 +791,11 @@
 
         {{-- TOPBAR --}}
         <header class="topbar">
+            {{-- Hamburger (mobile only) --}}
+            <button class="hamburger-btn" onclick="openSidebar()" aria-label="Menu">
+                <i class="fas fa-bars" style="font-size:16px;"></i>
+            </button>
+
             <div class="topbar-greeting">
                 <h1>Halo, {{ auth()->user()->name ?? 'Pelajar' }}! 👋</h1>
                 <p>{{ $subtitle ?? 'Semangat belajar hari ini!' }}</p>
@@ -780,13 +837,13 @@
                     {{-- Dropdown --}}
                     <div x-show="open" @click.outside="open = false"
                         style="position:absolute; right:0; top:calc(100% + 8px); background:#fff; border:1px solid var(--border); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.1); min-width:180px; z-index:999; overflow:hidden;">
-                        <a href="#"
+                        <a href="{{ route('profile.edit') }}"
                             style="display:flex; align-items:center; gap:10px; padding:11px 16px; font-size:13px; color:var(--text-main); text-decoration:none; transition:background 0.1s;"
                             onmouseover="this.style.background='#F8FAFC'"
                             onmouseout="this.style.background='transparent'">
                             <i class="fas fa-user" style="width:16px; color:var(--text-muted);"></i> Profil Saya
                         </a>
-                        <a href="#"
+                        <a href="{{ route('student.settings.index') }}"
                             style="display:flex; align-items:center; gap:10px; padding:11px 16px; font-size:13px; color:var(--text-main); text-decoration:none; transition:background 0.1s;"
                             onmouseover="this.style.background='#F8FAFC'"
                             onmouseout="this.style.background='transparent'">
@@ -842,3 +899,20 @@
 </body>
 
 </html>
+<script>
+function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebar-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.querySelectorAll('.sidebar .nav-item').forEach(el => {
+    el.addEventListener('click', () => {
+        if (window.innerWidth <= 768) closeSidebar();
+    });
+});
+</script>
