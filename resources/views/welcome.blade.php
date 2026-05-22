@@ -2,6 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('images/favicon.png') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Puwinter — Platform UTBK Terbaik Indonesia</title>
     <meta name="description" content="Belajar UTBK lebih cerdas bersama Puwinter. Live class, tryout, dan pembahasan soal bersama tutor terbaik.">
@@ -985,15 +987,8 @@
 {{-- ======================================================================== --}}
 <nav id="navbar">
     <a href="{{ url('/') }}" class="nav-logo">
-        <div class="nav-logo-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#fff"/>
-            </svg>
-        </div>
-        <div>
-            <div class="nav-logo-text">Puwinter</div>
-            <div class="nav-logo-sub">UTBK</div>
-        </div>
+        <img src="{{ asset('images/logo.png') }}" alt="Puwinter"
+             style="width:160px; height:auto; object-fit:contain; filter:brightness(0) invert(1);">
     </a>
 
     <ul class="nav-links">
@@ -1047,7 +1042,7 @@
                 <span>A</span><span>R</span><span>D</span><span>N</span><span style="background:#7C3AED;">+</span>
             </div>
             <div class="trust-text">
-                Bergabung dengan <strong>24.560+</strong> pejuang UTBK aktif
+                Bergabung dengan <strong>{{ number_format($stats['total_students']) }}+</strong> pejuang UTBK aktif
             </div>
         </div>
     </div>
@@ -1078,7 +1073,7 @@
             </div>
             <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B; margin-top:6px;">
                 <span>Peringkat: <strong style="color:#fff;">128</strong></span>
-                <span>dari 24.560 peserta</span>
+                <span>dari {{ number_format($stats['total_students']) }} peserta</span>
             </div>
         </div>
 
@@ -1100,23 +1095,33 @@
 {{-- ======================================================================== --}}
 {{-- STATS BAR                                                                  --}}
 {{-- ======================================================================== --}}
+@php
+    $displayStudents = $stats['total_students'] >= 1000
+        ? number_format($stats['total_students'] / 1000, 0) . 'K+'
+        : $stats['total_students'] . '+';
+    $displaySoal = $stats['total_soal'] >= 1000
+        ? number_format($stats['total_soal'] / 1000, 1) . 'K+'
+        : $stats['total_soal'] . '+';
+    $displayMateri = $stats['total_materi'] . '+';
+    $displayKelas  = $stats['total_kelas'] . '+';
+@endphp
 <div class="stats-bar">
     <div class="stats-inner">
         <div class="stat-item reveal">
-            <div class="stat-number">24<span>K+</span></div>
+            <div class="stat-number">{{ $displayStudents }}</div>
             <div class="stat-desc">Pejuang UTBK aktif</div>
         </div>
         <div class="stat-item reveal">
-            <div class="stat-number">12<span>K+</span></div>
+            <div class="stat-number">{{ $displaySoal }}</div>
             <div class="stat-desc">Soal + pembahasan</div>
         </div>
         <div class="stat-item reveal">
-            <div class="stat-number">245<span>+</span></div>
+            <div class="stat-number">{{ $displayMateri }}</div>
             <div class="stat-desc">Materi premium</div>
         </div>
         <div class="stat-item reveal">
-            <div class="stat-number">4.8<span>★</span></div>
-            <div class="stat-desc">Rating rata-rata</div>
+            <div class="stat-number">{{ $displayKelas }}<span></span></div>
+            <div class="stat-desc">Kelas tersedia</div>
         </div>
     </div>
 </div>
@@ -1189,48 +1194,46 @@
     </div>
 
     <div class="pricing-grid">
-        {{-- Paket 1 Bulan --}}
-        <div class="pricing-card reveal">
-            <div class="pricing-name">Paket 1 Bulan</div>
-            <div class="pricing-price"><sup>Rp</sup>89K</div>
-            <div class="pricing-period">/ bulan</div>
-            <div class="pricing-strike">Rp 129.000</div>
+        @forelse($plans as $plan)
+        @php
+            $priceK = $plan->price >= 1000
+                ? number_format($plan->price / 1000, 0) . 'K'
+                : number_format($plan->price);
+            $discount = $plan->original_price > $plan->price
+                ? ' · Hemat ' . $plan->discountPercentage() . '%'
+                : '';
+        @endphp
+        <div class="pricing-card {{ $plan->is_popular ? 'popular' : '' }} reveal">
+            @if($plan->is_popular)
+                <div class="popular-tag">PALING POPULER</div>
+            @endif
+            <div class="pricing-name">{{ $plan->name }}</div>
+            <div class="pricing-price"><sup>Rp</sup>{{ $priceK }}</div>
+            <div class="pricing-period">/ {{ $plan->duration_months }} bulan</div>
+            @if($plan->original_price > $plan->price)
+                <div class="pricing-strike">Rp {{ number_format($plan->original_price) }}{{ $discount }}</div>
+            @endif
+            @if($plan->bonus)
+                <div style="font-size:12px; color:var(--accent); font-weight:600; margin:6px 0;">🎁 {{ $plan->bonus }}</div>
+            @endif
+            @if($plan->features)
             <ul class="pricing-features">
-                @foreach(['Akses semua kelas','Live class eksklusif','Tryout tanpa batas','Materi premium','Pembahasan video tutor','Analisis belajar detail','Tanpa iklan'] as $f)
+                @foreach($plan->features as $f)
                 <li><i class="fas fa-check-circle"></i> {{ $f }}</li>
                 @endforeach
             </ul>
-            <a href="{{ route('register') }}" class="btn-pricing btn-pricing-outline">Mulai Sekarang</a>
+            @endif
+            <a href="{{ route('register') }}"
+               class="btn-pricing {{ $plan->is_popular ? 'btn-pricing-filled' : 'btn-pricing-outline' }}">
+                {{ $plan->is_popular ? 'Pilih Paket Ini' : 'Mulai Sekarang' }}
+            </a>
         </div>
-
-        {{-- Paket 6 Bulan (Popular) --}}
-        <div class="pricing-card popular reveal">
-            <div class="popular-tag">PALING POPULER</div>
-            <div class="pricing-name">Paket 6 Bulan</div>
-            <div class="pricing-price"><sup>Rp</sup>249K</div>
-            <div class="pricing-period">/ 6 bulan</div>
-            <div class="pricing-strike">Rp 498.000 · Hemat 50%</div>
-            <ul class="pricing-features">
-                @foreach(['Akses semua kelas','Live class eksklusif','Tryout tanpa batas','Materi premium','Pembahasan video tutor','Analisis belajar detail','Tanpa iklan','1x Konsultasi Personal'] as $f)
-                <li><i class="fas fa-check-circle"></i> {{ $f }}</li>
-                @endforeach
-            </ul>
-            <a href="{{ route('register') }}" class="btn-pricing btn-pricing-filled">Pilih Paket Ini</a>
+        @empty
+        {{-- Fallback jika belum ada paket di DB --}}
+        <div class="pricing-card reveal" style="grid-column:1/-1; text-align:center; padding:40px;">
+            <p style="color:#94A3B8;">Paket harga belum tersedia. Hubungi admin.</p>
         </div>
-
-        {{-- Paket 12 Bulan --}}
-        <div class="pricing-card reveal">
-            <div class="pricing-name">Paket 12 Bulan</div>
-            <div class="pricing-price"><sup>Rp</sup>399K</div>
-            <div class="pricing-period">/ 12 bulan</div>
-            <div class="pricing-strike">Rp 798.000 · Hemat 50%</div>
-            <ul class="pricing-features">
-                @foreach(['Akses semua kelas','Live class eksklusif','Tryout tanpa batas','Materi premium','Pembahasan video tutor','Analisis belajar detail','Tanpa iklan','2x Konsultasi Personal'] as $f)
-                <li><i class="fas fa-check-circle"></i> {{ $f }}</li>
-                @endforeach
-            </ul>
-            <a href="{{ route('register') }}" class="btn-pricing btn-pricing-outline">Mulai Sekarang</a>
-        </div>
+        @endforelse
     </div>
 
     {{-- Garansi --}}
@@ -1283,7 +1286,7 @@
 <div class="cta-section">
     <div class="cta-box reveal">
         <h2>Siap mulai perjalanan UTBK-mu?</h2>
-        <p>Daftar gratis sekarang dan mulai belajar bersama 24.560+ pejuang UTBK lainnya.</p>
+        <p>Daftar gratis sekarang dan mulai belajar bersama {{ number_format($stats['total_students']) }}+ pejuang UTBK lainnya.</p>
         <div class="cta-actions">
             <a href="{{ route('register') }}" class="btn-hero">
                 Daftar Gratis Sekarang <i class="fas fa-arrow-right"></i>
@@ -1303,15 +1306,8 @@
         <div class="footer-top">
             <div class="footer-brand">
                 <a href="{{ url('/') }}" class="nav-logo" style="margin-bottom:14px; display:inline-flex;">
-                    <div class="nav-logo-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#fff"/>
-                        </svg>
-                    </div>
-                    <div style="margin-left:8px;">
-                        <div class="nav-logo-text">Puwinter</div>
-                        <div class="nav-logo-sub">UTBK</div>
-                    </div>
+                    <img src="{{ asset('images/logo.png') }}" alt="Puwinter"
+                         style="width:160px; height:auto; object-fit:contain; filter:brightness(0) invert(1);">
                 </a>
                 <p>Platform persiapan UTBK terlengkap dan terpercaya. Belajar lebih cerdas, lolos lebih pasti.</p>
             </div>

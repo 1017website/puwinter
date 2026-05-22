@@ -14,13 +14,45 @@ use Illuminate\View\View;
 class TryoutController extends Controller
 {
     // Daftar tryout
-    public function index(): View
+    public function index(Request $request): View
     {
-        $tryouts = Tryout::published()
-            ->with(['subject', 'attempts' => fn($q) => $q->where('user_id', auth()->id())])
-            ->get();
+        $filter = $request->get('filter', '');
 
-        return view('student.tryout.index', compact('tryouts'));
+        $query = Tryout::published()
+            ->with(['subject', 'attempts' => fn($q) => $q->where('user_id', auth()->id())]);
+
+        if ($filter === 'gratis') {
+            $query->free();
+        } elseif ($filter === 'premium') {
+            $query->premium();
+        }
+
+        $tryouts = $query->get();
+
+        // Stats real dari DB
+        $totalSoal      = \App\Models\TryoutQuestion::count();
+        $soalDiselesaikan = \App\Models\UserTryoutAttempt::where('user_id', auth()->id())
+            ->whereNotNull('submitted_at')
+            ->withSum('tryout', 'total_questions') // tidak bisa langsung, pakai alternatif
+            ->count(); // jumlah attempt selesai
+
+        // Hitung total soal yang sudah dijawab user (dari attempts)
+        $soalDijawab = \App\Models\UserTryoutAttempt::where('user_id', auth()->id())
+            ->whereNotNull('submitted_at')
+            ->selectRaw('SUM(correct_count + wrong_count + empty_count) as total')
+            ->value('total') ?? 0;
+
+        $totalPeserta = \App\Models\UserTryoutAttempt::whereNotNull('submitted_at')
+            ->distinct('user_id')->count('user_id');
+
+        $stats = [
+            'total_soal'      => $totalSoal,
+            'soal_dijawab'    => $soalDijawab,
+            'total_tryout'    => Tryout::published()->count(),
+            'total_peserta'   => $totalPeserta,
+        ];
+
+        return view('student.tryout.index', compact('tryouts', 'filter', 'stats'));
     }
 
     // Mulai tryout — buat attempt record

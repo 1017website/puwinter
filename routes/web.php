@@ -10,6 +10,10 @@ use App\Http\Controllers\Student\LeaderboardController;
 use App\Http\Controllers\Student\LiveClassController;
 use App\Http\Controllers\Student\StudyHistoryController;
 use App\Http\Controllers\Student\TryoutController;
+use App\Http\Controllers\Admin\LiveClassController as AdminLiveClass;
+use App\Http\Controllers\Admin\SettingsController as AdminSettings;
+use App\Http\Controllers\Admin\SubjectController as AdminSubject;
+use App\Http\Controllers\Admin\PlanController as AdminPlan;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\UserController as AdminUser;
 use App\Http\Controllers\Admin\CourseController as AdminCourse;
@@ -17,16 +21,13 @@ use App\Http\Controllers\Admin\TryoutController as AdminTryout;
 use App\Http\Controllers\Admin\SubscriptionController as AdminSubscription;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\WelcomeController;
+
 // ============================================================================
 // PUBLIC
 // ============================================================================
 
-Route::get('/', function () {
-    if (auth()->check()) {
-        return redirect()->route('dashboard');
-    }
-    return view('welcome');
-})->name('home');
+Route::get('/', [WelcomeController::class, 'index'])->name('home');
 
 // ============================================================================
 // AUTH BREEZE (login, logout, password reset — jangan hapus)
@@ -66,6 +67,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('kelas')->name('student.course.')->group(function () {
         Route::get('/', [CourseController::class, 'index'])->name('index');
         Route::get('/{slug}', [CourseController::class, 'show'])->name('show');
+        Route::get('/{slug}/materi/{materialId}', [CourseController::class, 'showMaterial'])->name('material.show');
         Route::post('/materi/{materialId}/selesai', [CourseController::class, 'markComplete'])
             ->name('material.complete');
     });
@@ -173,6 +175,39 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
             Route::patch('/{subscription}/activate', [AdminSubscription::class, 'activate'])->name('activate');
             Route::patch('/{subscription}/cancel', [AdminSubscription::class, 'cancel'])->name('cancel');
             Route::patch('/{subscription}/extend', [AdminSubscription::class, 'extend'])->name('extend');
+        });
+
+        // Live Class
+        Route::prefix('live-classes')->name('live-classes.')->group(function () {
+            Route::get('/', [AdminLiveClass::class, 'index'])->name('index');
+            Route::get('/create', [AdminLiveClass::class, 'create'])->name('create');
+            Route::post('/', [AdminLiveClass::class, 'store'])->name('store');
+            Route::get('/{liveClass}/edit', [AdminLiveClass::class, 'edit'])->name('edit');
+            Route::put('/{liveClass}', [AdminLiveClass::class, 'update'])->name('update');
+            Route::delete('/{liveClass}', [AdminLiveClass::class, 'destroy'])->name('destroy');
+            Route::patch('/{liveClass}/status', [AdminLiveClass::class, 'setStatus'])->name('set-status');
+        });
+
+        // Settings
+        Route::get('/settings', [AdminSettings::class, 'index'])->name('settings.index');
+        Route::post('/settings/logo', [AdminSettings::class, 'uploadLogo'])->name('settings.logo');
+        Route::post('/settings/favicon', [AdminSettings::class, 'uploadFavicon'])->name('settings.favicon');
+
+        // Mata Pelajaran
+        Route::prefix('subjects')->name('subjects.')->group(function () {
+            Route::get('/', [AdminSubject::class, 'index'])->name('index');
+            Route::post('/', [AdminSubject::class, 'store'])->name('store');
+            Route::put('/{subject}', [AdminSubject::class, 'update'])->name('update');
+            Route::delete('/{subject}', [AdminSubject::class, 'destroy'])->name('destroy');
+            Route::patch('/{subject}/toggle-active', [AdminSubject::class, 'toggleActive'])->name('toggle-active');
+        });
+
+        // Paket Harga
+        Route::prefix('plans')->name('plans.')->group(function () {
+            Route::get('/', [AdminPlan::class, 'index'])->name('index');
+            Route::post('/', [AdminPlan::class, 'store'])->name('store');
+            Route::put('/{plan}', [AdminPlan::class, 'update'])->name('update');
+            Route::delete('/{plan}', [AdminPlan::class, 'destroy'])->name('destroy');
         });
 
     });

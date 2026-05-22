@@ -59,7 +59,9 @@
                         {{ $lastProgress->material->module->course->title ?? '' }}
                     </div>
                 </div>
-                <a href="{{ route('student.course.show', $lastProgress->material->module->course->slug ?? '#') }}"
+                <a href="{{ $lastProgress->material->module->course->slug ?? null
+                    ? route('student.course.material.show', [$lastProgress->material->module->course->slug, $lastProgress->material->id])
+                    : route('student.course.index') }}"
                    class="btn btn-primary" style="white-space:nowrap;">
                     <i class="fas fa-play"></i> Lanjutkan
                 </a>
@@ -89,24 +91,40 @@
         {{-- Rekomendasi --}}
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
             <div style="font-size:15px; font-weight:700;">Rekomendasi Untuk Kamu</div>
-            <a href="#" style="font-size:12px; color:var(--primary); font-weight:600; text-decoration:none;">
+            <a href="{{ route('student.course.index') }}" style="font-size:12px; color:var(--primary); font-weight:600; text-decoration:none;">
                 Lihat Semua <i class="fas fa-arrow-right" style="font-size:10px;"></i>
             </a>
         </div>
 
-        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;">
-            @foreach($recentActivities->take(4) as $activity)
-            <div class="card" style="padding:12px; cursor:pointer;" onclick="">
-                <div style="height:80px; background:linear-gradient(135deg,#1E293B,#2563EB); border-radius:8px; display:flex;align-items:center;justify-content:center; margin-bottom:10px; position:relative;">
-                    <i class="fas fa-play-circle" style="color:rgba(255,255,255,0.3); font-size:24px;"></i>
-                    <div style="position:absolute; bottom:6px; right:6px; background:rgba(0,0,0,0.6); color:#fff; font-size:10px; padding:2px 5px; border-radius:4px;">
-                        {{ gmdate('i:s', $activity->duration_seconds) }}
-                    </div>
-                </div>
-                <div style="font-size:11px; color:var(--text-muted);">{{ ucfirst($activity->activity_type) }}</div>
+        @if($recommendedCourses->isEmpty())
+            <div class="card" style="text-align:center; padding:30px; color:var(--text-muted);">
+                <i class="fas fa-check-circle" style="font-size:28px; color:var(--success); opacity:0.4; display:block; margin-bottom:8px;"></i>
+                <p style="font-size:13px; font-weight:600;">Kamu sudah mengikuti semua kelas yang tersedia!</p>
             </div>
-            @endforeach
-        </div>
+        @else
+            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
+                @foreach($recommendedCourses as $course)
+                @php
+                    $colors = ['#2563EB','#7C3AED','#059669','#D97706'];
+                    $color  = $colors[$loop->index % 4];
+                @endphp
+                <a href="{{ route('student.course.show', $course->slug) }}"
+                   style="background:{{ $color }}; border-radius:12px; padding:16px; color:#fff; text-decoration:none; display:block; position:relative; overflow:hidden; min-height:120px; transition:opacity 0.2s;"
+                   onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                    <div style="position:absolute; top:-15px; right:-15px; width:70px; height:70px; background:rgba(255,255,255,0.1); border-radius:50%;"></div>
+                    <div style="font-size:10px; font-weight:700; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:20px; display:inline-block; margin-bottom:8px;">
+                        {{ $course->subject->name ?? 'Kelas' }}
+                        @if($course->is_premium) · <i class="fas fa-crown" style="font-size:9px;"></i> Premium @endif
+                    </div>
+                    <div style="font-size:13px; font-weight:700; line-height:1.3; margin-bottom:8px;">{{ Str::limit($course->title, 40) }}</div>
+                    <div style="font-size:11px; opacity:0.8;">
+                        <i class="fas fa-users" style="font-size:9px; margin-right:3px;"></i>{{ $course->enrollments_count }} siswa
+                        @if($course->mentor) · {{ $course->mentor->name }} @endif
+                    </div>
+                </a>
+                @endforeach
+            </div>
+        @endif
 
     </div>
 

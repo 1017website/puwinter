@@ -14,10 +14,10 @@
 
 {{-- Stats --}}
 <div class="stats-row cols-4" style="margin-bottom:28px;">
-    <x-stat-card icon="fa-file-circle-check" color="blue"  value="12.458" label="Total Pembahasan" suffix=" soal" />
-    <x-stat-card icon="fa-play-circle"        color="green" value="8.923"  label="Video Pembahasan" suffix=" soal" />
-    <x-stat-card icon="fa-star"               color="yellow" value="4.8"  label="Rata-rata Rating" suffix=" / 5" />
-    <x-stat-card icon="fa-pen-to-square"      color="purple" value="3.462" label="Soal Diselesaikan" suffix=" soal" />
+    <x-stat-card icon="fa-file-circle-check" color="blue"   :value="number_format($stats['total_soal'])"    label="Total Soal"         suffix=" soal" />
+    <x-stat-card icon="fa-bullseye"          color="purple" :value="number_format($stats['total_tryout'])"  label="Paket Tryout"       suffix=" paket" />
+    <x-stat-card icon="fa-users"             color="green"  :value="number_format($stats['total_peserta'])" label="Total Peserta"      suffix=" siswa" />
+    <x-stat-card icon="fa-pen-to-square"     color="yellow" :value="number_format($stats['soal_dijawab'])"  label="Soal Kamu Kerjakan" suffix=" soal" />
 </div>
 
 {{-- Filter --}}

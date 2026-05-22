@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('images/favicon.png') }}">
     <title>{{ $title ?? 'Admin' }} — Puwinter</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -352,15 +354,11 @@
 
 {{-- SIDEBAR --}}
 <aside class="admin-sidebar">
-    <div class="sidebar-logo">
-        <div class="sidebar-logo-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#fff"/>
-            </svg>
-        </div>
-        <div>
-            <div class="sidebar-logo-text">Puwinter</div>
-        </div>
+    <div class="sidebar-logo" style="flex-direction:column; align-items:center; padding:12px 16px; gap:6px;">
+        <a href="{{ route('admin.dashboard') }}" style="display:flex; align-items:center; justify-content:center; text-decoration:none; width:100%;">
+            <img src="{{ asset('images/logo.png') }}" alt="Puwinter"
+                 style="width:130px; height:auto; object-fit:contain; filter:brightness(0) invert(1);">
+        </a>
         <span class="sidebar-logo-badge">ADMIN</span>
     </div>
 
@@ -395,17 +393,20 @@
 
         <div class="sidebar-section">
             <div class="sidebar-section-label">Konten</div>
-            <a href="#" class="nav-item {{ request()->routeIs('admin.subjects.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.subjects.index') }}" class="nav-item {{ request()->routeIs('admin.subjects.*') ? 'active' : '' }}">
                 <i class="fas fa-tag"></i> Mata Pelajaran
             </a>
-            <a href="#" class="nav-item {{ request()->routeIs('admin.live.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.live-classes.index') }}" class="nav-item {{ request()->routeIs('admin.live-classes.*') ? 'active' : '' }}">
                 <i class="fas fa-video"></i> Live Class
+            </a>
+            <a href="{{ route('admin.plans.index') }}" class="nav-item {{ request()->routeIs('admin.plans.*') ? 'active' : '' }}">
+                <i class="fas fa-tags"></i> Paket Harga
             </a>
         </div>
 
         <div class="sidebar-section">
             <div class="sidebar-section-label">Sistem</div>
-            <a href="#" class="nav-item">
+            <a href="{{ route('admin.settings.index') }}" class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                 <i class="fas fa-gear"></i> Pengaturan
             </a>
         </div>

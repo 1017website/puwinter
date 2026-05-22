@@ -12,16 +12,23 @@ class LiveClassController extends Controller
 {
     public function index(): View
     {
-        $upcoming = LiveClass::upcoming()->with(['mentor', 'subject'])->get();
-        $live     = LiveClass::live()->with(['mentor', 'subject'])->get();
-        $ended    = LiveClass::where('status', 'ended')
+        $upcoming = LiveClass::upcoming()
+            ->with(['mentor', 'subject'])
+            ->get();
+
+        $live = LiveClass::live()
+            ->with(['mentor', 'subject'])
+            ->get();
+
+        // Rekaman: live class yang sudah selesai dan punya recording_url
+        $recordings = LiveClass::where('status', 'ended')
             ->whereNotNull('recording_url')
             ->with(['mentor', 'subject'])
             ->latest('scheduled_at')
-            ->take(9)
+            ->take(12)
             ->get();
 
-        return view('student.live-classes.index', compact('upcoming', 'live', 'ended'));
+        return view('student.live-classes.index', compact('upcoming', 'live', 'recordings'));
     }
 
     public function show(Request $request, int $id): View

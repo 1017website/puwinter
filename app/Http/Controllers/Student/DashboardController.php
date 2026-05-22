@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Course;
 use App\Models\LiveClass;
-use App\Models\StudyHistory;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -16,14 +16,14 @@ class DashboardController extends Controller
 
         // Progress kelas yang di-enroll
         $enrollments = $user->enrollments()
-            ->with(['course.subject', 'course.mentor'])
+            ->with(['course.subject', 'course.mentor', 'course.modules.materials'])
             ->latest('last_accessed_at')
             ->take(4)
             ->get();
 
         // Materi terakhir diakses (untuk "Lanjutkan Belajar")
         $lastProgress = $user->materialProgress()
-            ->with(['material.module.course'])
+            ->with(['material.module.course.subject'])
             ->where('is_completed', false)
             ->latest('updated_at')
             ->first();
@@ -60,11 +60,20 @@ class DashboardController extends Controller
             ->take(4)
             ->get();
 
-        // Progress kelas per subject
-        $classProgress = $user->enrollments()
-            ->with('course.subject')
-            ->get()
-            ->groupBy('course.subject.name');
+        // Rekomendasi kelas: published, belum dienroll user, max 4
+        $enrolledCourseIds = $user->enrollments()->pluck('course_id');
+        $recommendedCourses = Course::published()
+            ->whereNotIn('id', $enrolledCourseIds)
+            ->with(['subject', 'mentor'])
+            ->withCount('enrollments')
+            ->orderByDesc('enrollments_count')
+            ->take(4)
+            ->get();
+
+        // Jumlah notifikasi (pending live class yang belum dilihat — sederhana)
+        $notifCount = LiveClass::upcoming()
+            ->where('scheduled_at', '<=', now()->addDays(3))
+            ->count();
 
         return view('student.dashboard.index', compact(
             'user',
@@ -75,7 +84,8 @@ class DashboardController extends Controller
             'recentActivities',
             'studyStats',
             'recentAchievements',
-            'classProgress',
+            'recommendedCourses',
+            'notifCount',
         ));
     }
 }

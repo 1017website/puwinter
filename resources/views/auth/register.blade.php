@@ -304,15 +304,8 @@
 {{-- LEFT PANEL --}}
 <div class="left-panel">
     <div class="left-logo">
-        <div class="left-logo-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#fff"/>
-            </svg>
-        </div>
-        <div>
-            <div class="left-logo-text">Puwinter</div>
-            <div class="left-logo-sub">UTBK</div>
-        </div>
+        <img src="{{ asset('images/logo.png') }}" alt="Puwinter"
+             style="width:160px; height:auto; object-fit:contain; filter:brightness(0) invert(1);">
     </div>
 
     <div class="left-hero">

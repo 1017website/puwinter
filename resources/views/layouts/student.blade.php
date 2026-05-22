@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
+    <link rel="shortcut icon" href="{{ asset('images/favicon.png') }}">
     <title>{{ $title ?? 'Puwinter' }} — Belajar UTBK Lebih Cerdas</title>
 
     {{-- Fonts --}}
@@ -663,16 +665,9 @@
     <aside class="sidebar">
         {{-- Logo --}}
         <div class="sidebar-logo">
-            <a href="{{ route('dashboard') }}">
-                <div class="logo-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#fff" />
-                    </svg>
-                </div>
-                <div>
-                    <div class="logo-text">Puwinter</div>
-                    <div class="logo-sub">UTBK</div>
-                </div>
+            <a href="{{ route('dashboard') }}" style="display:flex; align-items:center; justify-content:center; text-decoration:none; padding:8px 0;">
+                <img src="{{ asset('images/logo.png') }}" alt="Puwinter"
+                     style="width:140px; height:auto; object-fit:contain; filter:brightness(0) invert(1);">
             </a>
         </div>
 
@@ -756,9 +751,11 @@
 
             <div class="topbar-actions">
                 {{-- Notifikasi --}}
-                <a href="#" class="topbar-icon-btn">
+                <a href="{{ route('student.live.index') }}" class="topbar-icon-btn">
                     <i class="fas fa-bell"></i>
-                    <span class="badge-notif">3</span>
+                    @if(isset($notifCount) && $notifCount > 0)
+                        <span class="badge-notif">{{ $notifCount > 9 ? '9+' : $notifCount }}</span>
+                    @endif
                 </a>
 
                 {{-- Chat --}}
