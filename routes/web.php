@@ -218,6 +218,7 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
         Route::get('/settings', [AdminSettings::class, 'index'])->name('settings.index');
         Route::post('/settings/logo', [AdminSettings::class, 'uploadLogo'])->name('settings.logo');
         Route::post('/settings/favicon', [AdminSettings::class, 'uploadFavicon'])->name('settings.favicon');
+        Route::post('/settings/artisan', [AdminSettings::class, 'runArtisan'])->name('settings.artisan');
 
         // Mata Pelajaran
         Route::prefix('subjects')->name('subjects.')->group(function () {

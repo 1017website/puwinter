@@ -346,14 +346,63 @@
         @media (max-width: 1024px) {
             .stats-grid { grid-template-columns: repeat(2,1fr); }
         }
+
+        /* ------------------------------------------------------------------ */
+        /* MOBILE ADMIN                                                         */
+        /* ------------------------------------------------------------------ */
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+                z-index: 200;
+            }
+            .admin-sidebar.open { transform: translateX(0); }
+
+            .admin-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.55);
+                z-index: 199;
+            }
+            .admin-overlay.open { display: block; }
+
+            .admin-main { margin-left: 0 !important; }
+
+            .admin-hamburger {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                width: 36px; height: 36px;
+                border-radius: 7px;
+                border: 1px solid var(--border);
+                background: var(--bg);
+                cursor: pointer;
+                color: var(--muted);
+                flex-shrink: 0;
+            }
+
+            .topbar-title { font-size: 14px !important; }
+            .stats-grid   { grid-template-columns: repeat(2,1fr) !important; }
+            .page-header  { flex-direction: column; align-items: flex-start !important; gap: 10px; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr !important; }
+        }
+
+        .admin-hamburger { display: none; }
     </style>
 
     @stack('styles')
 </head>
 <body>
 
+{{-- Mobile overlay --}}
+<div class="admin-overlay" id="admin-overlay" onclick="closeAdminSidebar()"></div>
+
 {{-- SIDEBAR --}}
-<aside class="admin-sidebar">
+<aside class="admin-sidebar" id="admin-sidebar">
     <div class="sidebar-logo" style="flex-direction:column; align-items:center; padding:12px 16px; gap:6px;">
         <a href="{{ route('admin.dashboard') }}" style="display:flex; align-items:center; justify-content:center; text-decoration:none; width:100%;">
             <img src="{{ asset('images/logo.png') }}" alt="Puwinter"
@@ -437,6 +486,9 @@
 
     {{-- TOPBAR --}}
     <header class="admin-topbar">
+        <button class="admin-hamburger" onclick="openAdminSidebar()" aria-label="Menu">
+            <i class="fas fa-bars" style="font-size:15px;"></i>
+        </button>
         <div class="topbar-title">{{ $title ?? 'Dashboard' }}</div>
 
         <div class="topbar-actions">
@@ -475,5 +527,22 @@
 </div>
 
 @stack('scripts')
+<script>
+function openAdminSidebar() {
+    document.getElementById('admin-sidebar').classList.add('open');
+    document.getElementById('admin-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeAdminSidebar() {
+    document.getElementById('admin-sidebar').classList.remove('open');
+    document.getElementById('admin-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.querySelectorAll('.admin-sidebar .nav-item').forEach(el => {
+    el.addEventListener('click', () => {
+        if (window.innerWidth <= 768) closeAdminSidebar();
+    });
+});
+</script>
 </body>
 </html>
