@@ -13,6 +13,33 @@ use Illuminate\View\View;
 
 class CourseController extends Controller
 {
+    // Jelajahi semua kelas yang tersedia (published)
+    public function explore(Request $request): View
+    {
+        $user      = $request->user();
+        $subjectId = $request->get('subject_id');
+        $type      = $request->get('type'); // gratis | premium
+        $search    = $request->get('search');
+
+        $enrolledIds = $user->enrollments()->pluck('course_id');
+
+        $query = Course::published()
+            ->with(['subject', 'mentor'])
+            ->withCount('enrollments')
+            ->when($subjectId, fn($q) => $q->where('subject_id', $subjectId))
+            ->when($type === 'gratis',  fn($q) => $q->where('is_premium', false))
+            ->when($type === 'premium', fn($q) => $q->where('is_premium', true))
+            ->when($search, fn($q) => $q->where('title', 'like', "%{$search}%"))
+            ->orderByDesc('enrollments_count');
+
+        $courses  = $query->paginate(12)->withQueryString();
+        $subjects = \App\Models\Subject::active()->get();
+
+        return view('student.courses.explore', compact(
+            'courses', 'subjects', 'enrolledIds', 'subjectId', 'type', 'search'
+        ));
+    }
+
     // Daftar kelas yang diikuti user
     public function index(Request $request): View
     {

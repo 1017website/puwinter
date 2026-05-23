@@ -35,6 +35,10 @@
         <i class="fas fa-book-open" style="font-size:48px; opacity:0.2; margin-bottom:16px; display:block;"></i>
         <p style="font-size:15px; font-weight:600;">Belum ada kelas</p>
         <p style="font-size:13px; margin-top:4px;">Mulai jelajahi kelas yang tersedia.</p>
+        <a href="{{ route('student.course.explore') }}"
+           class="btn btn-primary" style="margin-top:20px; display:inline-flex;">
+            <i class="fas fa-compass"></i> Jelajahi Kelas
+        </a>
     </div>
 @else
     <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px;">

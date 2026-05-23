@@ -83,7 +83,7 @@
             @empty
                 <div style="grid-column:span 2; text-align:center; padding:40px; color:var(--text-muted);">
                     <i class="fas fa-book-open" style="font-size:32px; margin-bottom:10px; opacity:0.3;"></i>
-                    <p>Belum ada kelas. <a href="#" style="color:var(--primary);">Jelajahi kelas</a></p>
+                    <p>Belum ada kelas. <a href="{{ route('student.course.explore') }}" style="color:var(--primary); font-weight:600;">Jelajahi kelas</a></p>
                 </div>
             @endforelse
         </div>

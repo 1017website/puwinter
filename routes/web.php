@@ -70,6 +70,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Kelas Saya
     Route::prefix('kelas')->name('student.course.')->group(function () {
         Route::get('/', [CourseController::class, 'index'])->name('index');
+        Route::get('/jelajahi', [CourseController::class, 'explore'])->name('explore');
         Route::get('/{slug}', [CourseController::class, 'show'])->name('show');
         Route::get('/{slug}/materi/{materialId}', [CourseController::class, 'showMaterial'])->name('material.show');
         Route::post('/materi/{materialId}/selesai', [CourseController::class, 'markComplete'])
