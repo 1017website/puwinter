@@ -69,7 +69,10 @@ class CourseController extends Controller
             ->with(['subject', 'mentor', 'modules.materials'])
             ->firstOrFail();
 
-        $this->authorize('view', $course);
+        // Cek akses: kelas premium hanya untuk user premium
+        if ($course->is_premium && !$user->isPremium()) {
+            abort(403, 'Kelas ini hanya tersedia untuk member Premium.');
+        }
 
         // Auto-enroll jika belum
         $enrollment = UserCourseEnrollment::firstOrCreate(
@@ -110,7 +113,10 @@ class CourseController extends Controller
             ->with(['subject', 'mentor', 'modules.materials'])
             ->firstOrFail();
 
-        $this->authorize('view', $course);
+        // Cek akses: kelas premium hanya untuk user premium
+        if ($course->is_premium && !$user->isPremium()) {
+            abort(403, 'Kelas ini hanya tersedia untuk member Premium.');
+        }
 
         $material = CourseMaterial::whereHas('module', fn($q) => $q->where('course_id', $course->id))
             ->findOrFail($materialId);

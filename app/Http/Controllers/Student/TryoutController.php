@@ -59,7 +59,12 @@ class TryoutController extends Controller
     public function start(Request $request, int $id): View|RedirectResponse
     {
         $tryout = Tryout::published()->with('questions.subject')->findOrFail($id);
-        $this->authorize('attempt', $tryout);
+
+        // Cek akses: tryout premium hanya untuk user premium
+        if ($tryout->is_premium && !$request->user()->isPremium()) {
+            return redirect()->route('upgrade.index')
+                ->with('error', 'Tryout ini hanya tersedia untuk member Premium.');
+        }
 
         // Cek apakah ada attempt yang belum selesai
         $existingAttempt = UserTryoutAttempt::where('user_id', $request->user()->id)

@@ -31,10 +31,15 @@ class LiveClassController extends Controller
         return view('student.live-classes.index', compact('upcoming', 'live', 'recordings'));
     }
 
-    public function show(Request $request, int $id): View
+    public function show(Request $request, int $id): View|\Illuminate\Http\RedirectResponse
     {
         $liveClass = LiveClass::with(['mentor', 'subject', 'course'])->findOrFail($id);
-        $this->authorize('view', $liveClass);
+
+        // Cek akses: live class premium hanya untuk user premium
+        if ($liveClass->is_premium && !$request->user()->isPremium()) {
+            return redirect()->route('upgrade.index')
+                ->with('error', 'Live class ini hanya tersedia untuk member Premium.');
+        }
 
         // Catat kehadiran jika live
         if ($liveClass->isLive()) {
