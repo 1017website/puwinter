@@ -9,7 +9,7 @@
     /* Video player container */
     .video-wrapper {
         position: relative;
-        padding-bottom: 56.25%; /* 16:9 */
+        padding-bottom: 56.25%;
         height: 0;
         overflow: hidden;
         border-radius: 12px;
@@ -18,10 +18,30 @@
     .video-wrapper iframe,
     .video-wrapper video {
         position: absolute;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
+        /* Perbesar iframe keluar container untuk memotong title bar atas & bar bawah */
+        top: -40px;
+        left: 0;
+        width: 100%;
+        height: calc(100% + 80px);
         border: none;
-        border-radius: 12px;
+    }
+    /* Tutup title bar YouTube di atas */
+    .video-wrapper::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 44px;
+        background: #000;
+        z-index: 2;
+    }
+    /* Tutup info bar YouTube di bawah (share, watch on youtube, channel) */
+    .video-wrapper::before {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 44px;
+        background: #000;
+        z-index: 2;
     }
     .material-sidebar {
         width: 320px;
@@ -91,7 +111,10 @@
                     $videoUrl   = $material->content_url;
                     $isYoutube  = preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $videoUrl, $ytMatch);
                     $embedUrl   = $isYoutube
-                        ? 'https://www.youtube.com/embed/' . $ytMatch[1] . '?rel=0&modestbranding=1'
+                        ? 'https://www.youtube-nocookie.com/embed/' . $ytMatch[1]
+                          . '?rel=0&modestbranding=1&iv_load_policy=3&fs=1'
+                          . '&disablekb=0&color=white&showinfo=0&controls=1'
+                          . '&playsinline=1&enablejsapi=0'
                         : null;
                     $isDirectVideo = !$isYoutube && preg_match('/\.(mp4|webm|ogg)(\?.*)?$/i', $videoUrl);
                 @endphp
