@@ -367,6 +367,18 @@
 </head>
 <body>
 
+    {{-- Banner peringatan saat siswa meninggalkan jendela tryout --}}
+    <div id="leave-warning" style="display:none; position:fixed; top:0; left:0; right:0; z-index:9999;
+         background:#DC2626; color:#fff; padding:12px 20px; text-align:center; font-size:14px; font-weight:600;
+         box-shadow:0 2px 12px rgba(0,0,0,0.25);">
+        <i class="fas fa-triangle-exclamation" style="margin-right:6px;"></i>
+        Kamu meninggalkan jendela tryout! Pelanggaran tercatat (<span id="leave-count">0</span>x).
+        Tetaplah di halaman ini selama mengerjakan.
+        <button onclick="document.getElementById('leave-warning').style.display='none';"
+                style="margin-left:12px; background:rgba(255,255,255,0.2); border:none; color:#fff;
+                       padding:4px 12px; border-radius:6px; cursor:pointer; font-weight:700;">Mengerti</button>
+    </div>
+
 {{-- ======================================================================== --}}
 {{-- EXAM TOPBAR                                                                --}}
 {{-- ======================================================================== --}}
@@ -554,6 +566,7 @@
 {{-- ======================================================================== --}}
 <form id="exam-form" method="POST" action="{{ route('student.tryout.submit', $attempt->id) }}" style="display:none;">
     @csrf
+    <input type="hidden" name="tab_switch_count" id="tab-switch-input" value="0">
     <div id="answer-inputs"></div>
 </form>
 
@@ -572,6 +585,7 @@
     let answers  = {}; // { questionId: 'a'|'b'|... }
     let flagged  = {}; // { questionId: true }
     let timeLeft = DURATION;
+    let leaveCount = 0; // jumlah kali meninggalkan jendela tryout
 
     // =========================================================================
     // INIT — restore from localStorage
@@ -583,7 +597,10 @@
             answers  = data.answers  || {};
             flagged  = data.flagged  || {};
             timeLeft = data.timeLeft || DURATION;
+            leaveCount = data.leaveCount || 0;
         }
+        // tampilkan counter awal bila ada
+        const lc = document.getElementById('leave-count'); if (lc) lc.textContent = leaveCount;
 
         // Restore UI
         Object.entries(answers).forEach(([qId, val]) => {
@@ -606,7 +623,7 @@
     // SAVE STATE
     // =========================================================================
     function saveState() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers, flagged, timeLeft }));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers, flagged, timeLeft, leaveCount }));
     }
 
     // =========================================================================
@@ -753,11 +770,41 @@
             inputs.appendChild(input);
         });
 
+        // sertakan jumlah pelanggaran meninggalkan jendela
+        const tsi = document.getElementById('tab-switch-input');
+        if (tsi) tsi.value = leaveCount;
+
         localStorage.removeItem(STORAGE_KEY);
         form.submit();
     }
 
     // =========================================================================
+    // ANTI-TINGGALKAN JENDELA — deteksi pindah tab / minimize / blur
+    // =========================================================================
+    let lastLeaveAt = 0;
+    function registerLeave() {
+        // debounce: blur + visibilitychange bisa menyala bersamaan, hitung 1 saja
+        const now = Date.now();
+        if (now - lastLeaveAt < 800) return;
+        lastLeaveAt = now;
+
+        leaveCount++;
+        saveState();
+
+        const lc = document.getElementById('leave-count');
+        if (lc) lc.textContent = leaveCount;
+        const banner = document.getElementById('leave-warning');
+        if (banner) banner.style.display = 'block';
+    }
+
+    // Pindah tab atau minimize window
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') registerLeave();
+    });
+    // Klik ke aplikasi lain (alt-tab) tanpa mengubah visibility
+    window.addEventListener('blur', registerLeave);
+
+        // =========================================================================
     // WARN BEFORE LEAVE
     // =========================================================================
     window.addEventListener('beforeunload', (e) => {

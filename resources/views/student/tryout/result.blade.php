@@ -94,6 +94,22 @@
             </div>
         </div>
 
+        @if(($attempt->tab_switch_count ?? 0) > 0)
+        {{-- Catatan integritas: siswa meninggalkan jendela saat tryout --}}
+        <div class="card" style="margin-bottom:20px; border-left:3px solid #F59E0B; background:#FFFBEB;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-triangle-exclamation" style="color:#D97706; font-size:18px;"></i>
+                <div>
+                    <div style="font-size:14px; font-weight:700; color:#92400E;">Catatan Integritas</div>
+                    <div style="font-size:13px; color:#B45309; margin-top:2px;">
+                        Kamu tercatat meninggalkan jendela tryout sebanyak
+                        <strong>{{ $attempt->tab_switch_count }}x</strong> selama mengerjakan.
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         {{-- Skor Berbobot Kesulitan --}}
         <div class="card" style="margin-bottom:20px;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">

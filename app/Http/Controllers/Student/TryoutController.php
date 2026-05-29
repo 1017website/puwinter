@@ -179,6 +179,7 @@ class TryoutController extends Controller
             'empty_count' => $empty,
             'rank_at_submit' => $rank,
             'weighted_score' => $weightedScore,
+            'tab_switch_count' => (int) $request->input('tab_switch_count', 0),
         ]);
 
         // Catat ke study history

@@ -110,10 +110,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Bank Soal
+    // Bank Soal dinonaktifkan sementara (uncomment untuk mengaktifkan kembali).
+    // Disembunyikan agar siswa tidak bisa melihat semua soal + kunci di luar tryout.
+    /*
     Route::prefix('bank-soal')->name('student.bank.')->group(function () {
         Route::get('/', [BankSoalController::class, 'index'])->name('index');
         Route::post('/simpan/{questionId}', [BankSoalController::class, 'toggleSave'])->name('toggle-save');
     });
+    */
 
     // Materi PDF
     Route::prefix('materi-pdf')->name('student.pdf.')->group(function () {

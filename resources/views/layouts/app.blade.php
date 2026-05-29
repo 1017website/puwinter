@@ -582,10 +582,12 @@
            class="nav-item {{ request()->routeIs('student.tryout.*') ? 'active' : '' }}">
             <i class="fas fa-bullseye"></i> Tryout
         </a>
+        {{-- Bank Soal disembunyikan sementara
         <a href="#"
            class="nav-item {{ request()->routeIs('student.bank.*') ? 'active' : '' }}">
             <i class="fas fa-database"></i> Bank Soal
         </a>
+        --}}
         <a href="{{ route('student.live.index') }}"
            class="nav-item {{ request()->routeIs('student.live.*') ? 'active' : '' }}">
             <i class="fas fa-video"></i> Live Class
