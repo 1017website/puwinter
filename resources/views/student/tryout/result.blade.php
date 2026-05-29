@@ -94,6 +94,32 @@
             </div>
         </div>
 
+        {{-- Skor Berbobot Kesulitan --}}
+        <div class="card" style="margin-bottom:20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                <div style="font-size:15px; font-weight:700;">
+                    <i class="fas fa-scale-balanced" style="color:#7C3AED; margin-right:6px;"></i>
+                    Skor Berbobot Kesulitan
+                </div>
+                <span style="font-size:11px; background:#F3E8FF; color:#7C3AED; padding:3px 10px; border-radius:20px; font-weight:700;">Info Tambahan</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:14px;">
+                <div style="background:#FAF5FF; border:1px solid #E9D5FF; border-radius:10px; padding:16px; text-align:center;">
+                    <div style="font-size:30px; font-weight:800; color:#7C3AED; line-height:1;">{{ number_format($attempt->weighted_score ?? 0, 1) }}</div>
+                    <div style="font-size:11px; color:#9333EA; margin-top:4px;">dari 100 (bobot kesulitan)</div>
+                </div>
+                <div style="background:#FAF5FF; border:1px solid #E9D5FF; border-radius:10px; padding:16px; text-align:center;">
+                    <div style="font-size:30px; font-weight:800; color:#7C3AED; line-height:1;">#{{ $weightedRank ?? '-' }}</div>
+                    <div style="font-size:11px; color:#9333EA; margin-top:4px;">peringkat versi bobot</div>
+                </div>
+            </div>
+            <p style="font-size:12px; color:var(--text-muted); margin-top:12px; line-height:1.6;">
+                Skor ini memberi nilai lebih besar untuk soal yang sulit (sedikit peserta yang menjawab benar).
+                Dua siswa dengan jumlah benar sama bisa berbeda skor di sini.
+                <strong>Peringkat resmi tetap memakai skor total.</strong>
+            </p>
+        </div>
+
         {{-- Per subject stats --}}
         <div class="card" style="margin-bottom:20px;">
             <div style="font-size:15px; font-weight:700; margin-bottom:16px;">Performa Per Mata Pelajaran</div>
@@ -135,10 +161,34 @@
                             @endif
                         </span>
                     </div>
-                    <div style="font-size:12px; color:var(--text-muted);">
-                        Jawaban kamu: <strong>{{ $userAnswer ? strtoupper($userAnswer) : '—' }}</strong>
-                        &nbsp;·&nbsp;
-                        Kunci: <strong style="color:#10B981;">{{ strtoupper($question->correct_answer) }}</strong>
+                    <div style="font-size:12px; color:var(--text-muted); text-align:right;">
+                        <div>
+                            Jawaban kamu: <strong>{{ $userAnswer ? strtoupper($userAnswer) : '—' }}</strong>
+                            &nbsp;·&nbsp;
+                            Kunci: <strong style="color:#10B981;">{{ strtoupper($question->correct_answer) }}</strong>
+                        </div>
+                        <div style="margin-top:4px; display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;">
+                            @php
+                                $diffColor = match($question->difficulty) {
+                                    'sulit'  => ['#FEF2F2','#DC2626'],
+                                    'sedang' => ['#FFFBEB','#D97706'],
+                                    default  => ['#ECFDF5','#059669'],
+                                };
+                            @endphp
+                            <span style="background:{{ $diffColor[0] }}; color:{{ $diffColor[1] }}; padding:2px 8px; border-radius:6px; font-weight:700; font-size:11px;">
+                                {{ ucfirst($question->difficulty) }}
+                            </span>
+                            @if($question->answered_count > 0)
+                                <span style="background:#F1F5F9; color:#475569; padding:2px 8px; border-radius:6px; font-weight:700; font-size:11px;"
+                                      title="Persentase peserta yang menjawab benar">
+                                    {{ number_format($question->correct_rate, 0) }}% benar
+                                </span>
+                                <span style="background:#F3E8FF; color:#7C3AED; padding:2px 8px; border-radius:6px; font-weight:700; font-size:11px;"
+                                      title="Bobot kesulitan soal">
+                                    bobot {{ number_format($question->difficultyWeight(), 2) }}
+                                </span>
+                            @endif
+                        </div>
                     </div>
                 </div>
 

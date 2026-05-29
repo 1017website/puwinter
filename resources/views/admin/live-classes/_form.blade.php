@@ -28,6 +28,17 @@
                 @error('subject_id') <div class="text-danger" style="font-size:12px; margin-top:4px;">{{ $message }}</div> @enderror
             </div>
             <div class="form-group">
+                <label>Kelas / Tingkat</label>
+                <select name="grade" class="form-control">
+                    <option value="">Semua Kelas</option>
+                    @foreach(['10','11','12'] as $g)
+                        <option value="{{ $g }}" {{ old('grade', $lc->grade ?? '') == $g ? 'selected' : '' }}>Kelas {{ $g }}</option>
+                    @endforeach
+                </select>
+                <small style="color:var(--muted); font-size:11px;">Kosongkan = tampil untuk semua kelas siswa.</small>
+                @error('grade') <div class="text-danger" style="font-size:12px; margin-top:4px;">{{ $message }}</div> @enderror
+            </div>
+            <div class="form-group">
                 <label>Mentor <span style="color:var(--danger);">*</span></label>
                 <select name="mentor_id" class="form-control" required>
                     <option value="">-- Pilih Mentor --</option>

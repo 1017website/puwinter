@@ -40,6 +40,16 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Kelas / Tingkat</label>
+                    <select name="grade" class="form-control">
+                        <option value="">Semua Kelas</option>
+                        @foreach(['10','11','12'] as $g)
+                        <option value="{{ $g }}" {{ old('grade') == $g ? 'selected' : '' }}>Kelas {{ $g }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label>Durasi (menit) <span style="color:red;">*</span></label>
                     <input type="number" name="duration_minutes" value="{{ old('duration_minutes', 90) }}" class="form-control" min="1">
                 </div>

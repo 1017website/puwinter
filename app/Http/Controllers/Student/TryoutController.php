@@ -7,6 +7,7 @@ use App\Models\LeaderboardScore;
 use App\Models\StudyHistory;
 use App\Models\Tryout;
 use App\Models\UserTryoutAttempt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -19,6 +20,7 @@ class TryoutController extends Controller
         $filter = $request->get('filter', '');
 
         $query = Tryout::published()
+            ->forUser($request->user())
             ->with(['subject', 'attempts' => fn($q) => $q->where('user_id', auth()->id())]);
 
         if ($filter === 'gratis') {
@@ -59,6 +61,12 @@ class TryoutController extends Controller
     public function start(Request $request, int $id): View|RedirectResponse
     {
         $tryout = Tryout::published()->with('questions.subject')->findOrFail($id);
+
+        // Cek akses kelas/grade
+        if (!$request->user()->canAccessGrade($tryout->grade)) {
+            return redirect()->route('student.tryout.index')
+                ->with('error', 'Tryout ini untuk kelas ' . $tryout->grade . ', tidak tersedia untuk kelasmu.');
+        }
 
         // Cek akses: tryout premium hanya untuk user premium
         if ($tryout->is_premium && !$request->user()->isPremium()) {
@@ -104,20 +112,56 @@ class TryoutController extends Controller
         $wrong = 0;
         $empty = 0;
 
+        // Akumulator skor berbobot kesulitan (ditampilkan sebagai info tambahan)
+        $weightedRaw = 0.0;   // total bobot yang berhasil diraih
+        $weightedMax = 0.0;   // total bobot maksimum (jika semua benar)
+
         foreach ($tryout->questions as $question) {
             $userAnswer = $answers[$question->id] ?? null;
 
+            // bobot kesulitan soal saat ini (sebelum diperbarui statistiknya)
+            $weight       = $question->difficultyWeight();
+            $weightedMax += $weight;
+
+            $isThisCorrect = $userAnswer && $question->isCorrect($userAnswer);
+
             if (!$userAnswer) {
                 $empty++;
-            } elseif ($question->isCorrect($userAnswer)) {
+            } elseif ($isThisCorrect) {
                 $correct++;
+                $weightedRaw += $weight; // soal sulit memberi poin lebih besar
             } else {
                 $wrong++;
             }
+
+            // --- Perbarui statistik global soal (rolling, hanya yang dijawab) ---
+            if ($userAnswer) {
+                $prevAnswered = (int) $question->answered_count;
+                $prevRate     = (float) ($question->correct_rate ?? 0);
+                $prevCorrect  = $prevRate / 100 * $prevAnswered;
+
+                $newAnswered = $prevAnswered + 1;
+                $newCorrect  = $prevCorrect + ($isThisCorrect ? 1 : 0);
+                $newRate     = round($newCorrect / $newAnswered * 100, 2);
+
+                DB::table('tryout_questions')
+                    ->where('id', $question->id)
+                    ->update([
+                        'answered_count' => $newAnswered,
+                        'correct_rate'   => $newRate,
+                    ]);
+            }
         }
 
-        // Hitung skor (benar x 4, salah -1, kosong 0)
+        // Hitung skor (benar x 4, salah -1, kosong 0) — TETAP penentu ranking
         $score = ($correct * 4) - ($wrong * 1);
+
+        // Skor berbobot kesulitan (skala 0..100). Ditampilkan saja, tidak untuk ranking.
+        // Dua siswa dengan jumlah benar sama bisa beda nilai: yang menjawab benar
+        // soal-soal sulit akan punya weighted_score lebih tinggi.
+        $weightedScore = $weightedMax > 0
+            ? round($weightedRaw / $weightedMax * 100, 2)
+            : 0.0;
 
         // Hitung rank sementara
         $rank = UserTryoutAttempt::where('tryout_id', $tryout->id)
@@ -133,6 +177,7 @@ class TryoutController extends Controller
             'wrong_count' => $wrong,
             'empty_count' => $empty,
             'rank_at_submit' => $rank,
+            'weighted_score' => $weightedScore,
         ]);
 
         // Catat ke study history
@@ -164,7 +209,13 @@ class TryoutController extends Controller
             ->whereNotNull('submitted_at')
             ->count();
 
-        return view('student.tryout.result', compact('attempt', 'totalParticipants'));
+        // Peringkat versi skor berbobot kesulitan (info tambahan)
+        $weightedRank = UserTryoutAttempt::where('tryout_id', $attempt->tryout_id)
+            ->whereNotNull('submitted_at')
+            ->where('weighted_score', '>', $attempt->weighted_score ?? 0)
+            ->count() + 1;
+
+        return view('student.tryout.result', compact('attempt', 'totalParticipants', 'weightedRank'));
     }
 
     private function updateLeaderboard(int $userId, ?int $subjectId, float $score): void

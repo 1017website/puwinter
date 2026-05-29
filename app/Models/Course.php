@@ -13,7 +13,7 @@ class Course extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'subject_id', 'mentor_id', 'title', 'slug', 'description',
+        'subject_id', 'grade', 'mentor_id', 'title', 'slug', 'description',
         'thumbnail', 'is_premium', 'is_published', 'total_modules', 'order',
     ];
 
@@ -39,6 +39,20 @@ class Course extends Model
     public function scopeFree($query)
     {
         return $query->where('is_premium', false);
+    }
+
+    /**
+     * Filter konten sesuai kelas (grade) user.
+     * Admin/mentor lihat semua; student hanya grade-nya + konten tanpa grade.
+     */
+    public function scopeForUser($query, $user)
+    {
+        if (!$user || in_array($user->role, ['superadmin', 'admin', 'mentor']) || empty($user->grade)) {
+            return $query;
+        }
+        return $query->where(function ($q) use ($user) {
+            $q->whereNull('grade')->orWhere('grade', (string) $user->grade);
+        });
     }
 
     // -------------------------------------------------------------------------

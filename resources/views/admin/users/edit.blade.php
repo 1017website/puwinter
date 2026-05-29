@@ -86,8 +86,8 @@
                     <label>Kelas</label>
                     <select name="grade" class="form-control">
                         <option value="">Pilih kelas</option>
-                        @foreach(['X IPA','X IPS','XI IPA','XI IPS','XII IPA','XII IPS','Alumni'] as $g)
-                        <option value="{{ $g }}" {{ old('grade', $user->grade) === $g ? 'selected' : '' }}>{{ $g }}</option>
+                        @foreach(['10','11','12'] as $g)
+                        <option value="{{ $g }}" {{ (string) old('grade', $user->grade) === $g ? 'selected' : '' }}>Kelas {{ $g }}</option>
                         @endforeach
                     </select>
                 </div>

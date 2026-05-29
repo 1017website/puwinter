@@ -42,6 +42,7 @@ class TryoutController extends Controller
         $request->validate([
             'title'            => 'required|string|max:255',
             'subject_id'       => 'nullable|exists:subjects,id',
+            'grade'            => 'nullable|in:10,11,12',
             'description'      => 'nullable|string',
             'duration_minutes' => 'required|integer|min:1',
             'series'           => 'nullable|string|max:100',
@@ -52,6 +53,7 @@ class TryoutController extends Controller
             'title'            => $request->title,
             'slug'             => Str::slug($request->title) . '-' . time(),
             'subject_id'       => $request->subject_id,
+            'grade'            => $request->filled('grade') ? $request->grade : null,
             'description'      => $request->description,
             'duration_minutes' => $request->duration_minutes,
             'series'           => $request->series,
@@ -82,6 +84,7 @@ class TryoutController extends Controller
         $request->validate([
             'title'            => 'required|string|max:255',
             'subject_id'       => 'nullable|exists:subjects,id',
+            'grade'            => 'nullable|in:10,11,12',
             'description'      => 'nullable|string',
             'duration_minutes' => 'required|integer|min:1',
             'series'           => 'nullable|string|max:100',
@@ -92,6 +95,7 @@ class TryoutController extends Controller
         $tryout->update([
             'title'            => $request->title,
             'subject_id'       => $request->subject_id,
+            'grade'            => $request->filled('grade') ? $request->grade : null,
             'description'      => $request->description,
             'duration_minutes' => $request->duration_minutes,
             'series'           => $request->series,

@@ -50,6 +50,7 @@ class CourseController extends Controller
         $request->validate([
             'title'      => 'required|string|max:255',
             'subject_id' => 'required|exists:subjects,id',
+            'grade'      => 'nullable|in:10,11,12',
             'mentor_id'  => 'required|exists:users,id',
             'description'=> 'nullable|string',
             'is_premium' => 'boolean',
@@ -59,6 +60,7 @@ class CourseController extends Controller
         $data = $request->except('thumbnail');
         $data['slug']       = Str::slug($request->title) . '-' . time();
         $data['is_premium'] = $request->boolean('is_premium');
+        $data['grade']      = $request->filled('grade') ? $request->grade : null;
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
@@ -88,6 +90,7 @@ class CourseController extends Controller
         $request->validate([
             'title'        => 'required|string|max:255',
             'subject_id'   => 'required|exists:subjects,id',
+            'grade'        => 'nullable|in:10,11,12',
             'mentor_id'    => 'required|exists:users,id',
             'description'  => 'nullable|string',
             'is_premium'   => 'boolean',
@@ -98,6 +101,7 @@ class CourseController extends Controller
         $data = $request->except('thumbnail');
         $data['is_premium']   = $request->boolean('is_premium');
         $data['is_published'] = $request->boolean('is_published');
+        $data['grade']        = $request->filled('grade') ? $request->grade : null;
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');

@@ -12,7 +12,7 @@ class Tryout extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'slug', 'subject_id', 'description',
+        'title', 'slug', 'subject_id', 'grade', 'description',
         'duration_minutes', 'total_questions',
         'is_premium', 'is_published', 'series', 'order',
     ];
@@ -39,6 +39,16 @@ class Tryout extends Model
     public function scopeFree($query)
     {
         return $query->where('is_premium', false);
+    }
+
+    public function scopeForUser($query, $user)
+    {
+        if (!$user || in_array($user->role, ['superadmin', 'admin', 'mentor']) || empty($user->grade)) {
+            return $query;
+        }
+        return $query->where(function ($q) use ($user) {
+            $q->whereNull('grade')->orWhere('grade', (string) $user->grade);
+        });
     }
 
     // -------------------------------------------------------------------------

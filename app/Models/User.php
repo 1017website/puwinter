@@ -87,6 +87,34 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     // -------------------------------------------------------------------------
+    // Grade / Kelas Helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Apakah user boleh mengakses konten dengan grade tertentu.
+     * - Admin / mentor / superadmin: bebas semua grade.
+     * - Student: hanya grade yang cocok. Konten grade NULL = berlaku semua kelas.
+     */
+    public function canAccessGrade(?string $grade): bool
+    {
+        if (in_array($this->role, ['superadmin', 'admin', 'mentor'])) {
+            return true;
+        }
+
+        // Konten tanpa grade tersedia untuk semua kelas
+        if ($grade === null || $grade === '') {
+            return true;
+        }
+
+        // Student tanpa grade terisi: jangan blokir (fallback aman)
+        if (empty($this->grade)) {
+            return true;
+        }
+
+        return (string) $this->grade === (string) $grade;
+    }
+
+    // -------------------------------------------------------------------------
     // Relationships
     // -------------------------------------------------------------------------
 

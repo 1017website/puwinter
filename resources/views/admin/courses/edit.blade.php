@@ -39,6 +39,17 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Kelas / Tingkat</label>
+                    <select name="grade" class="form-control">
+                        <option value="">Semua Kelas</option>
+                        @foreach(['10','11','12'] as $g)
+                        <option value="{{ $g }}" {{ old('grade', $course->grade) == $g ? 'selected' : '' }}>Kelas {{ $g }}</option>
+                        @endforeach
+                    </select>
+                    <small style="color:#94a3b8; font-size:11px;">Kosongkan = tampil untuk semua kelas siswa.</small>
+                </div>
+
+                <div class="form-group">
                     <label>Mentor <span style="color:red;">*</span></label>
                     <select name="mentor_id" class="form-control">
                         @foreach($mentors as $mentor)

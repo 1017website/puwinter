@@ -27,10 +27,16 @@
                     </div>
                     <h2 style="color:#fff; font-size:20px; font-weight:800; margin-bottom:8px;">{{ $liveClass->title }}</h2>
                     <p style="color:rgba(255,255,255,0.75); font-size:13px; margin-bottom:24px;">Kelas sedang berlangsung. Segera bergabung!</p>
-                    <a href="{{ $liveClass->zoom_link }}" target="_blank"
-                       style="display:inline-flex; align-items:center; gap:8px; padding:12px 28px; background:#fff; color:#DC2626; border-radius:10px; font-size:14px; font-weight:800; text-decoration:none;">
+<a href="{{ route('student.live.join', $liveClass->id) }}" target="_blank" rel="noopener noreferrer"
+                       class="zoom-join-btn"
+                       oncontextmenu="return false;"
+                       style="display:inline-flex; align-items:center; gap:8px; padding:12px 28px; background:#fff; color:#DC2626; border-radius:10px; font-size:14px; font-weight:800; text-decoration:none; user-select:none; -webkit-user-select:none;">
                         <i class="fas fa-video"></i> Bergabung ke Zoom
                     </a>
+                    <p style="margin-top:14px; font-size:11px; color:rgba(255,255,255,0.6);">
+                        <i class="fas fa-lock" style="margin-right:4px;"></i>
+                        Link bersifat pribadi &amp; tidak boleh disebarkan.
+                    </p>
                 </div>
             @else
                 <div class="card" style="margin-bottom:20px; text-align:center; padding:40px; border:2px solid #FCA5A5;">
@@ -45,7 +51,7 @@
             @php
                 $isYoutube = preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $liveClass->recording_url, $ytMatch);
                 $embedUrl  = $isYoutube
-                    ? 'https://www.youtube.com/embed/' . $ytMatch[1] . '?rel=0&modestbranding=1'
+                    ? 'https://www.youtube-nocookie.com/embed/' . $ytMatch[1] . '?rel=0&modestbranding=1&controls=1&fs=0&disablekb=1&iv_load_policy=3'
                     : null;
                 $isDirectVideo = !$isYoutube && preg_match('/\.(mp4|webm|ogg)(\?.*)?$/i', $liveClass->recording_url);
             @endphp
@@ -53,10 +59,17 @@
             <div class="card" style="padding:0; overflow:hidden; margin-bottom:20px;">
                 <div style="position:relative; padding-bottom:56.25%; height:0; background:#000; border-radius:12px;">
                     @if($isYoutube)
+                        {{-- iframe YouTube di-hardening: nocookie, tanpa fullscreen, overlay penutup --}}
                         <iframe src="{{ $embedUrl }}"
-                                style="position:absolute; inset:0; width:100%; height:100%; border:none; border-radius:12px;"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowfullscreen></iframe>
+                                oncontextmenu="return false;"
+                                style="position:absolute; inset:0; width:100%; height:100%; border:none; border-radius:12px; pointer-events:auto;"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                        {{-- Penutup area judul YouTube (kiri-atas) agar klik judul/logo → YouTube terblok --}}
+                        <div style="position:absolute; top:0; left:0; right:0; height:64px; z-index:5; cursor:default;"
+                             oncontextmenu="return false;"></div>
+                        {{-- Penutup logo YouTube (kanan-bawah) --}}
+                        <div style="position:absolute; bottom:0; right:0; width:120px; height:44px; z-index:5; cursor:default;"
+                             oncontextmenu="return false;"></div>
                     @elseif($isDirectVideo)
                         <video controls controlslist="nodownload"
                                style="position:absolute; inset:0; width:100%; height:100%; border-radius:12px; background:#000;">

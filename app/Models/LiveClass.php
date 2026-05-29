@@ -12,7 +12,7 @@ class LiveClass extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'course_id', 'mentor_id', 'subject_id', 'title', 'description',
+        'course_id', 'mentor_id', 'subject_id', 'grade', 'title', 'description',
         'scheduled_at', 'duration_minutes', 'zoom_link', 'zoom_meeting_id',
         'is_premium', 'status', 'recording_url', 'total_participants',
     ];
@@ -41,6 +41,16 @@ class LiveClass extends Model
     public function scopePremium($query)
     {
         return $query->where('is_premium', true);
+    }
+
+    public function scopeForUser($query, $user)
+    {
+        if (!$user || in_array($user->role, ['superadmin', 'admin', 'mentor']) || empty($user->grade)) {
+            return $query;
+        }
+        return $query->where(function ($q) use ($user) {
+            $q->whereNull('grade')->orWhere('grade', (string) $user->grade);
+        });
     }
 
     // -------------------------------------------------------------------------

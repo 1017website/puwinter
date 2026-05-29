@@ -81,6 +81,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('live-class')->name('student.live.')->group(function () {
         Route::get('/', [LiveClassController::class, 'index'])->name('index');
         Route::get('/{id}', [LiveClassController::class, 'show'])->name('show');
+        // Redirect aman ke Zoom (link asli tidak dirender di HTML)
+        Route::get('/{id}/join', [LiveClassController::class, 'join'])->name('join');
     });
 
     // Tryout
