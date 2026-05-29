@@ -4,6 +4,8 @@ use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Payment\SubscriptionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Student\AchievementController;
 use App\Http\Controllers\Student\CourseController;
 use App\Http\Controllers\Student\DashboardController;
 use App\Http\Controllers\Student\LeaderboardController;
@@ -97,6 +99,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('student.leaderboard.index');
     Route::get('/riwayat', [StudyHistoryController::class, 'index'])->name('student.history.index');
 
+    // Pencapaian / Achievement
+    Route::get('/pencapaian', [AchievementController::class, 'index'])->name('student.achievement.index');
+
+    // Notifikasi (dipakai student & admin)
+    Route::prefix('notifikasi')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::post('/baca-semua', [NotificationController::class, 'readAll'])->name('read-all');
+        Route::get('/{id}', [NotificationController::class, 'read'])->name('read');
+    });
+
     // Bank Soal
     Route::prefix('bank-soal')->name('student.bank.')->group(function () {
         Route::get('/', [BankSoalController::class, 'index'])->name('index');
@@ -154,6 +166,8 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
         // Users
         Route::prefix('users')->name('users.')->group(function () {
             Route::get('/', [AdminUser::class, 'index'])->name('index');
+            Route::get('/create', [AdminUser::class, 'create'])->name('create');
+            Route::post('/', [AdminUser::class, 'store'])->name('store');
             Route::get('/{user}', [AdminUser::class, 'show'])->name('show');
             Route::get('/{user}/edit', [AdminUser::class, 'edit'])->name('edit');
             Route::put('/{user}', [AdminUser::class, 'update'])->name('update');

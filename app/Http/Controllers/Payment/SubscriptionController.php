@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\PaymentLog;
+use App\Models\Notification;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
 use App\Services\BayarGgService;
@@ -243,5 +244,15 @@ class SubscriptionController extends Controller
             'started_at'     => now(),
             'expired_at'     => now()->addMonths($plan->duration_months),
         ]);
+
+        // Notifikasi pembayaran berhasil
+        Notification::notify(
+            $subscription->user_id,
+            'payment',
+            'Pembayaran berhasil — ' . ($plan->name ?? 'Premium'),
+            'Akun kamu kini Premium hingga ' . $subscription->expired_at->translatedFormat('d M Y') . '.',
+            route('dashboard'),
+            'fa-crown'
+        );
     }
 }

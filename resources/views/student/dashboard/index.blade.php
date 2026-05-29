@@ -170,7 +170,7 @@
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
                 <div style="font-size:15px; font-weight:700;">Pencapaian</div>
-                <a href="#" style="font-size:12px; color:var(--primary); font-weight:600; text-decoration:none;">Lihat Semua</a>
+                <a href="{{ route('student.achievement.index') }}" style="font-size:12px; color:var(--primary); font-weight:600; text-decoration:none;">Lihat Semua</a>
             </div>
             <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;">
                 @foreach($recentAchievements as $ua)

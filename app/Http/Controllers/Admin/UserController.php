@@ -60,6 +60,41 @@ class UserController extends Controller
         return view('admin.users.index', compact('users', 'totalStats'));
     }
 
+    /** Form tambah user baru. */
+    public function create(): View
+    {
+        return view('admin.users.create');
+    }
+
+    /** Simpan user baru. */
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'role'     => 'required|in:superadmin,admin,mentor,student',
+            'password' => 'required|string|min:8',
+            'phone'    => 'nullable|string|max:20',
+            'school'   => 'nullable|string|max:255',
+            'city'     => 'nullable|string|max:255',
+            'province' => 'nullable|string|max:255',
+            'grade'    => 'nullable|in:10,11,12',
+            'is_active'=> 'boolean',
+        ]);
+
+        $validated['password']  = Hash::make($validated['password']);
+        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['grade']     = $request->filled('grade') ? $request->grade : null;
+
+        $user = User::create($validated);
+
+        // Akun dibuat admin dianggap terverifikasi (email_verified_at di luar $fillable)
+        $user->forceFill(['email_verified_at' => now()])->save();
+
+        return redirect()->route('admin.users.show', $user)
+            ->with('success', 'User berhasil dibuat.');
+    }
+
     public function show(User $user): View
     {
         $user->load([

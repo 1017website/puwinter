@@ -183,7 +183,10 @@
                 <i class="fas fa-question-circle" style="font-size:48px; color:#7C3AED; opacity:0.4; display:block; margin-bottom:16px;"></i>
                 <p style="font-size:15px; font-weight:700; margin-bottom:6px;">Quiz</p>
                 <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Uji pemahaman kamu dengan quiz ini.</p>
-                <a href="#" class="btn btn-primary"><i class="fas fa-play"></i> Mulai Quiz</a>
+                {{-- Fitur quiz belum tersedia: tombol disembunyikan sementara --}}
+                <span class="btn btn-outline" style="cursor:not-allowed; opacity:0.6;">
+                    <i class="fas fa-clock"></i> Quiz segera hadir
+                </span>
             </div>
 
         {{-- === LIVE CLASS === --}}

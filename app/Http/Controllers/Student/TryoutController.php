@@ -7,6 +7,7 @@ use App\Models\LeaderboardScore;
 use App\Models\StudyHistory;
 use App\Models\Tryout;
 use App\Models\UserTryoutAttempt;
+use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -192,6 +193,16 @@ class TryoutController extends Controller
 
         // Update leaderboard
         $this->updateLeaderboard($request->user()->id, $tryout->subject_id, $score);
+
+        // Notifikasi hasil tryout
+        Notification::notify(
+            $request->user()->id,
+            'tryout',
+            'Tryout selesai: ' . $tryout->title,
+            "Skor kamu {$score} (benar {$correct}, salah {$wrong}). Peringkat #{$rank}.",
+            route('student.tryout.result', $attempt->id),
+            'fa-clipboard-check'
+        );
 
         return redirect()->route('student.tryout.result', $attempt->id);
     }

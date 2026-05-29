@@ -8,7 +8,7 @@
         <h2>Manajemen User</h2>
         <p>Kelola semua akun user platform.</p>
     </div>
-    <a href="#" class="btn btn-primary"><i class="fas fa-user-plus"></i> Tambah User</a>
+    <a href="{{ route('admin.users.create') }}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Tambah User</a>
 </div>
 
 {{-- Filter tabs --}}

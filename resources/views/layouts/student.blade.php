@@ -796,6 +796,10 @@
                 class="nav-item {{ request()->routeIs('student.history.*') ? 'active' : '' }}">
                 <i class="fas fa-clock-rotate-left"></i> Riwayat
             </a>
+            <a href="{{ route('student.achievement.index') }}"
+                class="nav-item {{ request()->routeIs('student.achievement.*') ? 'active' : '' }}">
+                <i class="fas fa-trophy"></i> Pencapaian
+            </a>
             <a href="{{ route('student.settings.index') }}" class="nav-item {{ request()->routeIs('student.settings.*') ? 'active' : '' }}">
                 <i class="fas fa-gear"></i> Pengaturan
             </a>
@@ -847,7 +851,7 @@
 
             <div class="topbar-actions">
                 {{-- Notifikasi --}}
-                <a href="{{ route('student.live.index') }}" class="topbar-icon-btn">
+                <a href="{{ route('notifications.index') }}" class="topbar-icon-btn" title="Notifikasi">
                     <i class="fas fa-bell"></i>
                     @if(isset($notifCount) && $notifCount > 0)
                         <span class="badge-notif">{{ $notifCount > 9 ? '9+' : $notifCount }}</span>

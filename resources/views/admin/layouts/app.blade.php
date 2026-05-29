@@ -495,9 +495,11 @@
             <a href="{{ route('dashboard') }}" class="topbar-icon-btn" title="Lihat sebagai student">
                 <i class="fas fa-eye"></i>
             </a>
-            <a href="#" class="topbar-icon-btn">
+            <a href="{{ route('notifications.index') }}" class="topbar-icon-btn" title="Notifikasi">
                 <i class="fas fa-bell"></i>
-                <span class="notif-dot">3</span>
+                @if(isset($notifCount) && $notifCount > 0)
+                    <span class="notif-dot">{{ $notifCount > 9 ? '9+' : $notifCount }}</span>
+                @endif
             </a>
             <div class="topbar-user">
                 <div class="topbar-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
