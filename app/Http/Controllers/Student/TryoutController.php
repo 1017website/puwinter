@@ -220,9 +220,28 @@ class TryoutController extends Controller
 
     private function updateLeaderboard(int $userId, ?int $subjectId, float $score): void
     {
-        LeaderboardScore::updateOrCreate(
-            ['user_id' => $userId, 'subject_id' => $subjectId],
-            ['total_score' => \DB::raw("GREATEST(total_score, {$score})"), 'updated_at' => now()]
-        );
+        // Catatan: tidak memakai updateOrCreate dengan DB::raw karena kolom
+        // total_score punya cast 'float' — meneruskan Expression ke atribut
+        // ber-cast akan error. Pakai query builder langsung (ambil skor tertinggi).
+        $existing = LeaderboardScore::where('user_id', $userId)
+            ->where('subject_id', $subjectId)
+            ->first();
+
+        if ($existing) {
+            // Simpan hanya bila skor baru lebih tinggi (best score)
+            if ($score > (float) $existing->total_score) {
+                LeaderboardScore::where('id', $existing->id)->update([
+                    'total_score' => $score,
+                    'updated_at'  => now(),
+                ]);
+            }
+        } else {
+            LeaderboardScore::insert([
+                'user_id'     => $userId,
+                'subject_id'  => $subjectId,
+                'total_score' => $score,
+                'updated_at'  => now(),
+            ]);
+        }
     }
 }

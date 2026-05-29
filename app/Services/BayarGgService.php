@@ -43,7 +43,7 @@ class BayarGgService
                 'description'    => $description,
                 'payment_method' => $this->paymentMethod,
                 'callback_url'   => route('payment.callback'),
-                'redirect_url'   => route('payment.success') . '?order=' . $orderId,
+                'redirect_url'   => route('upgrade.success') . '?order=' . $orderId,
             ];
 
             if (!empty($customer['name']))  $payload['customer_name']  = $customer['name'];

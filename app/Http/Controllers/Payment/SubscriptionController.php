@@ -219,7 +219,7 @@ class SubscriptionController extends Controller
             $this->activateSubscription($subscription, $payment['payment_method'] ?? 'qris');
             return response()->json([
                 'status'      => 'active',
-                'redirect_url'=> route('payment.success') . '?order=' . $subscription->midtrans_order_id,
+                'redirect_url'=> route('upgrade.success') . '?order=' . $subscription->midtrans_order_id,
             ]);
         }
 
