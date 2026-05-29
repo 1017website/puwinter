@@ -50,25 +50,29 @@ class SettingsController extends Controller
     {
         $command = $request->input('command');
 
-        // Whitelist command yang aman
+        // Whitelist command yang aman.
+        // Format: 'key' => ['nama-command-artisan', [parameter asosiatif]]
+        // Parameter HARUS associative (mis. ['--force' => true]), bukan numerik,
+        // karena Artisan::call() memperlakukan key numerik sebagai nama argument
+        // (itulah penyebab error "The '1' argument does not exist").
         $allowed = [
-            'migrate'               => ['migrate', '--force'],
-            'migrate:fresh'         => ['migrate:fresh', '--force'],
-            'migrate:rollback'      => ['migrate:rollback', '--force'],
-            'db:seed'               => ['db:seed', '--force'],
-            'storage:link'          => ['storage:link'],
-            'optimize'              => ['optimize'],
-            'optimize:clear'        => ['optimize:clear'],
-            'cache:clear'           => ['cache:clear'],
-            'config:clear'          => ['config:clear'],
-            'config:cache'          => ['config:cache'],
-            'route:clear'           => ['route:clear'],
-            'route:cache'           => ['route:cache'],
-            'view:clear'            => ['view:clear'],
-            'view:cache'            => ['view:cache'],
-            'queue:restart'         => ['queue:restart'],
-            'schedule:run'          => ['schedule:run'],
-            'event:clear'           => ['event:clear'],
+            'migrate'          => ['migrate',          ['--force' => true]],
+            'migrate:fresh'    => ['migrate:fresh',    ['--force' => true]],
+            'migrate:rollback' => ['migrate:rollback', ['--force' => true]],
+            'db:seed'          => ['db:seed',          ['--force' => true]],
+            'storage:link'     => ['storage:link',     []],
+            'optimize'         => ['optimize',         []],
+            'optimize:clear'   => ['optimize:clear',   []],
+            'cache:clear'      => ['cache:clear',      []],
+            'config:clear'     => ['config:clear',     []],
+            'config:cache'     => ['config:cache',     []],
+            'route:clear'      => ['route:clear',      []],
+            'route:cache'      => ['route:cache',      []],
+            'view:clear'       => ['view:clear',       []],
+            'view:cache'       => ['view:cache',       []],
+            'queue:restart'    => ['queue:restart',    []],
+            'schedule:run'     => ['schedule:run',     []],
+            'event:clear'      => ['event:clear',      []],
         ];
 
         if (!array_key_exists($command, $allowed)) {
@@ -76,11 +80,8 @@ class SettingsController extends Controller
         }
 
         try {
-            $exitCode = Artisan::call($allowed[$command][0],
-                count($allowed[$command]) > 1
-                    ? array_slice($allowed[$command], 1, null, false) + ['--force' => true]
-                    : []
-            );
+            [$artisanCommand, $parameters] = $allowed[$command];
+            $exitCode = Artisan::call($artisanCommand, $parameters);
 
             $output = Artisan::output();
             $output = $output ?: 'Command selesai dijalankan.';
