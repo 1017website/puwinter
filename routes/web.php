@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Payment\SubscriptionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\SystemMaintenanceController;
 use App\Http\Controllers\Student\AchievementController;
 use App\Http\Controllers\Student\CourseController;
 use App\Http\Controllers\Student\DashboardController;
@@ -43,6 +44,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Jalur perawatan sistem khusus superadmin (untuk migrate via browser di
+    // shared hosting tanpa terminal). Tidak memakai 'verified' agar tetap bisa
+    // diakses; pengecekan superadmin dilakukan di dalam controller.
+    Route::get('/system/maintenance', [SystemMaintenanceController::class, 'index'])->name('system.maintenance.index');
+    Route::post('/system/maintenance/run', [SystemMaintenanceController::class, 'run'])->name('system.maintenance.run');
 });
 
 require __DIR__ . '/auth.php';
