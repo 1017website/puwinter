@@ -58,7 +58,7 @@ class UserSeeder extends Seeder
             'school'            => 'SMA Negeri 1 Jakarta',
             'city'              => 'Jakarta Selatan',
             'province'          => 'DKI Jakarta',
-            'grade'             => 'XII IPA',
+            'grade'             => '12',
             'birth_date'        => '2006-05-12',
             'is_active'         => true,
             'created_at'        => now(),

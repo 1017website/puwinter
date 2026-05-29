@@ -29,12 +29,15 @@ class SettingsController extends Controller
             'city'       => 'nullable|string|max:100',
             'province'   => 'nullable|string|max:100',
             'birth_date' => 'nullable|date',
-            'grade'      => 'nullable|string|max:30',
+            'grade'      => 'nullable|in:10,11,12',
         ]);
 
-        $user->update($request->only([
+        $data = $request->only([
             'name', 'phone', 'school', 'city', 'province', 'birth_date', 'grade',
-        ]));
+        ]);
+        $data['grade'] = $request->filled('grade') ? $request->grade : null;
+
+        $user->update($data);
 
         return back()->with('success', 'Profil berhasil diperbarui.');
     }

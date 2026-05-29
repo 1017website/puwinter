@@ -159,9 +159,9 @@
                     <label class="settings-label">Kelas</label>
                     <select name="grade" class="settings-input settings-select">
                         <option value="">-- Pilih Kelas --</option>
-                        @foreach(['X IPA','X IPS','XI IPA','XI IPS','XII IPA','XII IPS','Lulus/Gap Year'] as $g)
-                            <option value="{{ $g }}" {{ old('grade', $user->grade) === $g ? 'selected' : '' }}>
-                                {{ $g }}
+                        @foreach(['10','11','12'] as $g)
+                            <option value="{{ $g }}" {{ (string) old('grade', $user->grade) === $g ? 'selected' : '' }}>
+                                Kelas {{ $g }}
                             </option>
                         @endforeach
                     </select>
