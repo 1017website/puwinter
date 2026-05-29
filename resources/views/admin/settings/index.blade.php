@@ -96,7 +96,6 @@
             $cmdGroups = [
                 'Database' => [
                     'migrate'          => ['label'=>'migrate',          'desc'=>'Jalankan semua migration baru',             'color'=>'blue',  'icon'=>'fa-database'],
-                    'migrate:fresh'    => ['label'=>'migrate:fresh',    'desc'=>'Drop semua tabel & migrate ulang (HATI-HATI!)', 'color'=>'red', 'icon'=>'fa-triangle-exclamation'],
                     'migrate:rollback' => ['label'=>'migrate:rollback', 'desc'=>'Rollback migration terakhir',               'color'=>'yellow','icon'=>'fa-rotate-left'],
                     'db:seed'          => ['label'=>'db:seed',          'desc'=>'Jalankan semua database seeder',            'color'=>'green', 'icon'=>'fa-seedling'],
                 ],
@@ -160,7 +159,6 @@
             <div style="background:#FEF3C7; border:1px solid #FCD34D; border-radius:8px; padding:10px 12px; display:flex; gap:8px; margin-top:4px;">
                 <i class="fas fa-triangle-exclamation" style="color:#F59E0B; flex-shrink:0; margin-top:1px;"></i>
                 <div style="font-size:11px; color:#92400E; line-height:1.5;">
-                    <strong>migrate:fresh</strong> akan <u>menghapus semua data</u>. Gunakan hanya saat setup awal atau development.
                     Setelah <strong>config:cache</strong> atau <strong>route:cache</strong>, jalankan <strong>optimize:clear</strong> jika ada perubahan kode.
                 </div>
             </div>

@@ -57,7 +57,6 @@ class SettingsController extends Controller
         // (itulah penyebab error "The '1' argument does not exist").
         $allowed = [
             'migrate'          => ['migrate',          ['--force' => true]],
-            'migrate:fresh'    => ['migrate:fresh',    ['--force' => true]],
             'migrate:rollback' => ['migrate:rollback', ['--force' => true]],
             'db:seed'          => ['db:seed',          ['--force' => true]],
             'storage:link'     => ['storage:link',     []],
