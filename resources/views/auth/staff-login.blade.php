@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login — Puwinter</title>
+    <title>Login Staff — Puwinter</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -36,7 +36,7 @@
             position: absolute;
             top: -100px; left: -100px;
             width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(37,99,235,0.3) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(124,58,237,0.35) 0%, transparent 70%);
             pointer-events: none;
         }
 
@@ -317,35 +317,38 @@
     </div>
 
     <div class="left-hero">
-        <h1>Belajar Lebih <span>Cerdas</span>, Lolos Lebih Pasti</h1>
-        <p>Platform persiapan UTBK terlengkap dengan live class, tryout, dan pembahasan soal bersama tutor terbaik.</p>
+        <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(124,58,237,0.18); border:1px solid rgba(124,58,237,0.4); color:#C4B5FD; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:6px 12px; border-radius:999px; margin-bottom:18px;">
+            <i class="fas fa-shield-halved"></i> Staff Area
+        </div>
+        <h1>Panel <span>Manajemen</span> Puwinter</h1>
+        <p>Halaman ini khusus untuk Admin, Mentor, dan Super Admin. Siswa silakan masuk lewat halaman login siswa.</p>
 
         <div class="stat-pills">
             <div class="stat-pill">
                 <div class="stat-pill-icon" style="background:rgba(37,99,235,0.2);">
-                    <i class="fas fa-users" style="color:#60A5FA;"></i>
+                    <i class="fas fa-users-gear" style="color:#60A5FA;"></i>
                 </div>
                 <div>
-                    <div class="stat-pill-val">24.560+</div>
-                    <div class="stat-pill-label">Pejuang UTBK aktif</div>
+                    <div class="stat-pill-val">Kelola</div>
+                    <div class="stat-pill-label">Siswa, kelas & tryout</div>
                 </div>
             </div>
             <div class="stat-pill">
                 <div class="stat-pill-icon" style="background:rgba(16,185,129,0.2);">
-                    <i class="fas fa-file-circle-check" style="color:#34D399;"></i>
+                    <i class="fas fa-chalkboard-user" style="color:#34D399;"></i>
                 </div>
                 <div>
-                    <div class="stat-pill-val">12.458+</div>
-                    <div class="stat-pill-label">Soal + pembahasan lengkap</div>
+                    <div class="stat-pill-val">Mentor</div>
+                    <div class="stat-pill-label">Live class & materi</div>
                 </div>
             </div>
             <div class="stat-pill">
-                <div class="stat-pill-icon" style="background:rgba(245,158,11,0.2);">
-                    <i class="fas fa-video" style="color:#FBBF24;"></i>
+                <div class="stat-pill-icon" style="background:rgba(124,58,237,0.2);">
+                    <i class="fas fa-gauge-high" style="color:#A78BFA;"></i>
                 </div>
                 <div>
-                    <div class="stat-pill-val">245+</div>
-                    <div class="stat-pill-label">Materi & live class tersedia</div>
+                    <div class="stat-pill-val">Kontrol</div>
+                    <div class="stat-pill-label">Langganan & pengaturan</div>
                 </div>
             </div>
         </div>
@@ -360,8 +363,8 @@
 <div class="right-panel">
     <div class="form-card">
 
-        <h2>Selamat datang kembali 👋</h2>
-        <p class="subtitle">Login Siswa — masuk dan lanjutkan belajar.</p>
+        <h2>Login Staff 🔐</h2>
+        <p class="subtitle">Khusus Admin, Mentor &amp; Super Admin.</p>
 
         {{-- Session error --}}
         @if(session('status'))
@@ -376,7 +379,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('login') }}">
+        <form method="POST" action="{{ route('staff.login.store') }}">
             @csrf
 
             {{-- Email --}}
@@ -433,7 +436,9 @@
             </div>
             <div style="display:flex; flex-direction:column; gap:6px;">
                 @foreach([
-                    ['role'=>'student',    'label'=>'Siswa (Premium)','email'=>'student@puwinter.com',    'icon'=>'fa-graduation-cap', 'color'=>'#059669', 'bg'=>'#ECFDF5'],
+                    ['role'=>'superadmin', 'label'=>'Super Admin','email'=>'superadmin@puwinter.com', 'icon'=>'fa-shield-halved', 'color'=>'#EF4444', 'bg'=>'#FEF2F2'],
+                    ['role'=>'admin',      'label'=>'Admin',      'email'=>'admin@puwinter.com',      'icon'=>'fa-user-gear',      'color'=>'#2563EB', 'bg'=>'#EFF6FF'],
+                    ['role'=>'mentor',     'label'=>'Mentor',     'email'=>'mentor@puwinter.com',     'icon'=>'fa-chalkboard-user','color'=>'#7C3AED', 'bg'=>'#F5F3FF'],
                 ] as $account)
                 <button type="button"
                         onclick="fillLogin('{{ $account['email'] }}')"
@@ -459,13 +464,9 @@
             </div>
         </div>
 
-        <div class="register-link">
-            Belum punya akun? <a href="{{ route('register') }}">Daftar sekarang</a>
-        </div>
-
-        <div style="margin-top:14px; text-align:center; font-size:12.5px; color:#94A3B8;">
-            Admin atau Mentor?
-            <a href="{{ route('staff.login') }}" style="color:#2563EB; font-weight:600; text-decoration:none;">Masuk lewat Login Staff</a>
+        <div style="text-align:center; font-size:12.5px; color:#94A3B8;">
+            Kamu siswa?
+            <a href="{{ route('login') }}" style="color:#2563EB; font-weight:600; text-decoration:none;">Masuk lewat Login Siswa</a>
         </div>
 
     </div>

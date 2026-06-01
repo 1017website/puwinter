@@ -16,6 +16,15 @@ return Application::configure(basePath: dirname(__DIR__))
             'premium' => \App\Http\Middleware\CheckPremiumAccess::class,
         ]);
 
+        // Guest yang mengakses area staff diarahkan ke login staff,
+        // selain itu ke login siswa.
+        $middleware->redirectGuestsTo(function (\Illuminate\Http\Request $request) {
+            if ($request->is('admin*') || $request->is('mentor*')) {
+                return route('staff.login');
+            }
+            return route('login');
+        });
+
         $middleware->validateCsrfTokens(except: [
             'payment/callback',
         ]);

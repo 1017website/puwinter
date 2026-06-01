@@ -22,6 +22,13 @@ Route::middleware('guest')->group(function () {
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
+    // Login khusus staff (admin / mentor / superadmin)
+    Route::get('staff/login', [AuthenticatedSessionController::class, 'createStaff'])
+        ->name('staff.login');
+
+    Route::post('staff/login', [AuthenticatedSessionController::class, 'storeStaff'])
+        ->name('staff.login.store');
+
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 

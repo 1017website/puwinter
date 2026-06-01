@@ -1378,7 +1378,7 @@
             ['icon'=>'fa-lightbulb','color'=>'rgba(245,158,11,0.15)','icolor'=>'#FBBF24','title'=>'Pembahasan Lengkap','desc'=>'Setiap latihan ada pembahasan teks dan video tutor. Pahami konsep bahasa Inggris, bukan hanya hafal jawaban.'],
             ['icon'=>'fa-file-pdf','color'=>'rgba(16,185,129,0.15)','icolor'=>'#34D399','title'=>'English PDF Materials Premium','desc'=>'245+ dokumen belajar ringkas dan terstruktur. Download dan belajar kapan saja, di mana saja.'],
             ['icon'=>'fa-chart-bar','color'=>'rgba(83,55,236,0.15)','icolor'=>'#9f91ff','title'=>'Leaderboard & Ranking','desc'=>'Pantau progresmu di antara ribuan siswa bahasa Inggris lain. Filter per sekolah, kota, atau provinsi.'],
-            ['icon'=>'fa-chart-line','color'=>'rgba(139,124,246,0.15)','icolor'=>'#8b7cf6','title'=>'Analisis Belajar Detail','desc'=>'Grafik progres, distribusi waktu belajar, dan rekomendasi latihan personal berdasarkan hasil practice test.'],
+            ['icon'=>'fa-chart-line','color'=>'rgba(139,124,246,0.15)','icolor'=>'#8b7cf6','title'=>'Analisis Belajar Detail','desc'=>'Lihat grafik progres dan distribusi waktu belajar secara visual untuk memantau perkembangan dan konsistensi belajar siswa.'],
             ] as $f)<div class="feature-card reveal">
                 <div class="feature-icon" style="background:{{ $f['color'] }};"><i class="fas {{ $f['icon'] }}" style="color:{{ $f['icolor'] }};"></i></div>
                 <h3>{{ $f['title'] }}</h3>

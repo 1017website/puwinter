@@ -16,7 +16,9 @@ class CheckRole
         $user = $request->user();
 
         if (!$user) {
-            return redirect()->route('login');
+            // Area staff (admin/mentor) diarahkan ke login staff, selain itu login siswa.
+            $staffLogin = $request->is('admin*') || $request->is('mentor*');
+            return redirect()->route($staffLogin ? 'staff.login' : 'login');
         }
 
         // Superadmin selalu lolos

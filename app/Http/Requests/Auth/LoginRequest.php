@@ -36,9 +36,10 @@ class LoginRequest extends FormRequest
     /**
      * Attempt to authenticate the request's credentials.
      *
+     * @param  array<int,string>  $allowedRoles  Role yang diizinkan lewat pintu ini.
      * @throws ValidationException
      */
-    public function authenticate(): void
+    public function authenticate(array $allowedRoles = []): void
     {
         $this->ensureIsNotRateLimited();
 
@@ -47,6 +48,23 @@ class LoginRequest extends FormRequest
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
+            ]);
+        }
+
+        // Batasi pintu masuk sesuai role (login siswa vs login staff).
+        if (! empty($allowedRoles) && ! in_array(Auth::user()->role, $allowedRoles, true)) {
+            $isStaffDoor = in_array('admin', $allowedRoles, true);
+
+            Auth::guard('web')->logout();
+            $this->session()->invalidate();
+            $this->session()->regenerateToken();
+
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => $isStaffDoor
+                    ? 'Akun ini bukan akun staff. Silakan masuk lewat halaman login siswa.'
+                    : 'Akun staff harus masuk lewat halaman login staff.',
             ]);
         }
 
