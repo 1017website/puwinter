@@ -7,6 +7,7 @@ use App\Models\LiveClass;
 use App\Models\Subject;
 use App\Models\Course;
 use App\Models\User;
+use App\Models\Grade;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -36,8 +37,9 @@ class LiveClassController extends Controller
         $subjects = Subject::active()->get();
         $mentors  = User::where('role', 'mentor')->get();
         $courses  = Course::published()->with('subject')->get();
+        $grades   = Grade::active()->get();
 
-        return view('admin.live-classes.create', compact('subjects', 'mentors', 'courses'));
+        return view('admin.live-classes.create', compact('subjects', 'mentors', 'courses', 'grades'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -47,7 +49,8 @@ class LiveClassController extends Controller
             'subject_id'       => 'required|exists:subjects,id',
             'mentor_id'        => 'required|exists:users,id',
             'course_id'        => 'nullable|exists:courses,id',
-            'grade'            => 'nullable|in:10,11,12',
+            'grade_id'         => 'nullable|exists:grades,id',
+            'class_type'       => 'required|in:regular,private',
             'description'      => 'nullable|string',
             'scheduled_at'     => 'required|date',
             'duration_minutes' => 'required|integer|min:1',
@@ -56,18 +59,22 @@ class LiveClassController extends Controller
             'is_premium'       => 'boolean',
         ]);
 
+        $classType = $request->input('class_type', 'regular');
+        $isPremium = $classType === 'private' ? true : $request->boolean('is_premium');
+
         LiveClass::create([
             'title'            => $request->title,
             'subject_id'       => $request->subject_id,
             'mentor_id'        => $request->mentor_id,
             'course_id'        => $request->course_id,
-            'grade'            => $request->filled('grade') ? $request->grade : null,
+            'grade_id'         => $request->filled('grade_id') ? (int) $request->grade_id : null,
+            'class_type'       => $classType,
             'description'      => $request->description,
             'scheduled_at'     => $request->scheduled_at,
             'duration_minutes' => $request->duration_minutes,
             'zoom_link'        => $request->zoom_link,
             'zoom_meeting_id'  => $request->zoom_meeting_id,
-            'is_premium'       => $request->boolean('is_premium'),
+            'is_premium'       => $isPremium,
             'status'           => 'scheduled',
         ]);
 
@@ -80,8 +87,9 @@ class LiveClassController extends Controller
         $subjects = Subject::active()->get();
         $mentors  = User::where('role', 'mentor')->get();
         $courses  = Course::published()->with('subject')->get();
+        $grades   = Grade::active()->get();
 
-        return view('admin.live-classes.edit', compact('liveClass', 'subjects', 'mentors', 'courses'));
+        return view('admin.live-classes.edit', compact('liveClass', 'subjects', 'mentors', 'courses', 'grades'));
     }
 
     public function update(Request $request, LiveClass $liveClass): RedirectResponse
@@ -91,7 +99,8 @@ class LiveClassController extends Controller
             'subject_id'       => 'required|exists:subjects,id',
             'mentor_id'        => 'required|exists:users,id',
             'course_id'        => 'nullable|exists:courses,id',
-            'grade'            => 'nullable|in:10,11,12',
+            'grade_id'         => 'nullable|exists:grades,id',
+            'class_type'       => 'required|in:regular,private',
             'description'      => 'nullable|string',
             'scheduled_at'     => 'required|date',
             'duration_minutes' => 'required|integer|min:1',
@@ -102,12 +111,16 @@ class LiveClassController extends Controller
             'is_premium'       => 'boolean',
         ]);
 
+        $classType = $request->input('class_type', 'regular');
+        $isPremium = $classType === 'private' ? true : $request->boolean('is_premium');
+
         $liveClass->update([
             'title'            => $request->title,
             'subject_id'       => $request->subject_id,
             'mentor_id'        => $request->mentor_id,
             'course_id'        => $request->course_id,
-            'grade'            => $request->filled('grade') ? $request->grade : null,
+            'grade_id'         => $request->filled('grade_id') ? (int) $request->grade_id : null,
+            'class_type'       => $classType,
             'description'      => $request->description,
             'scheduled_at'     => $request->scheduled_at,
             'duration_minutes' => $request->duration_minutes,
@@ -115,7 +128,7 @@ class LiveClassController extends Controller
             'zoom_meeting_id'  => $request->zoom_meeting_id,
             'recording_url'    => $request->recording_url,
             'status'           => $request->status,
-            'is_premium'       => $request->boolean('is_premium'),
+            'is_premium'       => $isPremium,
         ]);
 
         return back()->with('success', 'Live class berhasil diperbarui.');

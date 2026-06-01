@@ -784,6 +784,10 @@
                 class="nav-item {{ request()->routeIs('student.live.*') ? 'active' : '' }}">
                 <i class="fas fa-video"></i> Live Class
             </a>
+            <a href="{{ route('student.extra.index') }}"
+                class="nav-item {{ request()->routeIs('student.extra.*') ? 'active' : '' }}">
+                <i class="fas fa-language"></i> Extra Class
+            </a>
             <a href="{{ route('student.pdf.index') }}" class="nav-item {{ request()->routeIs('student.pdf.*') ? 'active' : '' }}">
                 <i class="fas fa-file-pdf"></i> Materi PDF
             </a>

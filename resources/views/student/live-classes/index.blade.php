@@ -5,12 +5,34 @@
 
 @section('content')
 
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
     <div>
         <h2 style="font-size:22px; font-weight:800;">Live Class</h2>
         <p style="font-size:13px; color:var(--text-muted); margin-top:2px;">Ikuti kelas langsung bersama mentor terbaik.</p>
     </div>
 </div>
+
+{{-- Tab Reguler / Private --}}
+<div style="display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:0;">
+    <a href="{{ route('student.live.index', ['tab' => 'regular']) }}"
+       style="padding:10px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid {{ $tab === 'regular' ? 'var(--primary)' : 'transparent' }}; color:{{ $tab === 'regular' ? 'var(--primary)' : 'var(--text-muted)' }};">
+        <i class="fas fa-chalkboard-user"></i> Reguler
+    </a>
+    <a href="{{ route('student.live.index', ['tab' => 'private']) }}"
+       style="padding:10px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid {{ $tab === 'private' ? '#7C3AED' : 'transparent' }}; color:{{ $tab === 'private' ? '#7C3AED' : 'var(--text-muted)' }};">
+        <i class="fas fa-user-lock"></i> Private
+        @if($privateCount > 0)
+            <span style="background:#7C3AED; color:#fff; font-size:10px; font-weight:700; padding:1px 7px; border-radius:999px; margin-left:4px;">{{ $privateCount }}</span>
+        @endif
+    </a>
+</div>
+
+@if($tab === 'private')
+<div style="background:#F5F3FF; border:1px solid #DDD6FE; color:#5B21B6; padding:12px 16px; border-radius:10px; margin-bottom:20px; font-size:12.5px;">
+    <i class="fas fa-crown" style="color:#7C3AED;"></i>
+    Private class bersifat eksklusif dan memerlukan langganan premium.
+</div>
+@endif
 
 {{-- ===== LIVE SEKARANG ===== --}}
 @if($live->isNotEmpty())
@@ -85,6 +107,9 @@
                     <div style="flex:1; min-width:0;">
                         <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
                             <h4 style="font-size:14px; font-weight:700;">{{ $class->title }}</h4>
+                            @if($class->isPrivate())
+                                <span class="badge" style="background:#F5F3FF; color:#7C3AED; border:1px solid #DDD6FE;"><i class="fas fa-user-lock" style="font-size:9px;"></i> Private</span>
+                            @endif
                             @if($class->is_premium)
                                 <span class="badge badge-premium"><i class="fas fa-crown" style="font-size:9px;"></i> Premium</span>
                             @else

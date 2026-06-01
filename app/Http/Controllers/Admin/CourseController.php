@@ -53,7 +53,7 @@ class CourseController extends Controller
             'title'      => 'required|string|max:255',
             'subject_id' => 'required|exists:subjects,id',
             'grade_id'   => 'nullable|exists:grades,id',
-            'course_type'=> 'required|in:regular,extra,private',
+            'course_type'=> 'required|in:regular,extra',
             'mentor_id'  => 'required|exists:users,id',
             'description'=> 'nullable|string',
             'is_premium' => 'boolean',
@@ -65,9 +65,8 @@ class CourseController extends Controller
         $data['is_premium']  = $request->boolean('is_premium');
         $data['grade_id']    = $request->filled('grade_id') ? (int) $request->grade_id : null;
         $data['course_type'] = $request->input('course_type', 'regular');
-        // Kelas EXTRA lintas kelas (tanpa grade); PRIVATE selalu premium.
-        if ($data['course_type'] === 'extra')   { $data['grade_id'] = null; $data['is_premium'] = false; }
-        if ($data['course_type'] === 'private') { $data['is_premium'] = true; }
+        // Kelas EXTRA lintas kelas & non-premium.
+        if ($data['course_type'] === 'extra') { $data['grade_id'] = null; $data['is_premium'] = false; }
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
@@ -99,7 +98,7 @@ class CourseController extends Controller
             'title'        => 'required|string|max:255',
             'subject_id'   => 'required|exists:subjects,id',
             'grade_id'     => 'nullable|exists:grades,id',
-            'course_type'  => 'required|in:regular,extra,private',
+            'course_type'  => 'required|in:regular,extra',
             'mentor_id'    => 'required|exists:users,id',
             'description'  => 'nullable|string',
             'is_premium'   => 'boolean',
@@ -112,8 +111,7 @@ class CourseController extends Controller
         $data['is_published'] = $request->boolean('is_published');
         $data['grade_id']     = $request->filled('grade_id') ? (int) $request->grade_id : null;
         $data['course_type']  = $request->input('course_type', 'regular');
-        if ($data['course_type'] === 'extra')   { $data['grade_id'] = null; $data['is_premium'] = false; }
-        if ($data['course_type'] === 'private') { $data['is_premium'] = true; }
+        if ($data['course_type'] === 'extra') { $data['grade_id'] = null; $data['is_premium'] = false; }
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');

@@ -15,6 +15,7 @@ use App\Http\Controllers\Student\StudyHistoryController;
 use App\Http\Controllers\Student\TryoutController;
 use App\Http\Controllers\Student\BankSoalController;
 use App\Http\Controllers\Student\MateriPdfController;
+use App\Http\Controllers\Student\ExtraClassController;
 use App\Http\Controllers\Student\PembahasanController;
 use App\Http\Controllers\Student\SettingsController as StudentSettings;
 use App\Http\Controllers\Student\GradeChangeController;
@@ -89,6 +90,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{slug}/materi/{materialId}', [CourseController::class, 'showMaterial'])->name('material.show');
         Route::post('/materi/{materialId}/selesai', [CourseController::class, 'markComplete'])
             ->name('material.complete');
+    });
+
+    // Extra Class (mis. TOEFL) — menu tersendiri, bebas tanpa premium
+    Route::prefix('extra-class')->name('student.extra.')->group(function () {
+        Route::get('/', [ExtraClassController::class, 'index'])->name('index');
     });
 
     // Live Class

@@ -24,8 +24,7 @@ class Course extends Model
 
     // Tipe kelas
     public const TYPE_REGULAR = 'regular'; // ikut grade + flag is_premium
-    public const TYPE_EXTRA   = 'extra';   // mis. TOEFL — bebas akses, tanpa premium
-    public const TYPE_PRIVATE = 'private'; // privat/eksklusif — wajib premium
+    public const TYPE_EXTRA   = 'extra';   // mis. TOEFL — bebas akses, tanpa premium, menu sendiri
 
     // -------------------------------------------------------------------------
     // Scopes
@@ -49,7 +48,7 @@ class Course extends Model
     /**
      * Filter konten sesuai kelas (grade) user.
      * - Kelas EXTRA: selalu tampil untuk semua (lintas kelas, tanpa premium).
-     * - Kelas PRIVATE & REGULAR: ikut aturan grade.
+     * - Kelas REGULAR: ikut aturan grade.
      * Admin/mentor lihat semua; student hanya grade-nya + konten tanpa grade.
      */
     public function scopeForUser($query, $user)
@@ -71,26 +70,32 @@ class Course extends Model
         return $query->where('course_type', $type);
     }
 
+    // Kelas reguler saja (untuk menu "Kelas" — Extra punya menu sendiri)
+    public function scopeRegularType($query)
+    {
+        return $query->where('course_type', self::TYPE_REGULAR);
+    }
+
+    // Hanya Extra Class (untuk menu Extra Class)
+    public function scopeExtraType($query)
+    {
+        return $query->where('course_type', self::TYPE_EXTRA);
+    }
+
     // -------------------------------------------------------------------------
     // Access Helpers
     // -------------------------------------------------------------------------
 
     public function isExtra(): bool   { return $this->course_type === self::TYPE_EXTRA; }
-    public function isPrivate(): bool { return $this->course_type === self::TYPE_PRIVATE; }
 
     /**
      * Apakah kelas ini menuntut langganan premium?
-     * - private: selalu wajib premium.
      * - extra:   tidak pernah wajib premium.
      * - regular: ikut flag is_premium.
      */
     public function requiresPremium(): bool
     {
-        return match ($this->course_type) {
-            self::TYPE_PRIVATE => true,
-            self::TYPE_EXTRA   => false,
-            default            => (bool) $this->is_premium,
-        };
+        return $this->isExtra() ? false : (bool) $this->is_premium;
     }
 
     /**

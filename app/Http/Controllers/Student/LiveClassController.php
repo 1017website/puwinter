@@ -14,26 +14,29 @@ class LiveClassController extends Controller
     {
         $user = $request->user();
 
-        $upcoming = LiveClass::upcoming()
-            ->forUser($user)
-            ->with(['mentor', 'subject'])
-            ->get();
+        // Tab aktif: 'regular' (default) atau 'private'
+        $tab = $request->get('tab', 'regular');
+        $tab = in_array($tab, ['regular', 'private']) ? $tab : 'regular';
 
-        $live = LiveClass::live()
-            ->forUser($user)
-            ->with(['mentor', 'subject'])
-            ->get();
+        $base = fn() => LiveClass::forUser($user)->ofType($tab)->with(['mentor', 'subject']);
+
+        $upcoming = $base()->where('status', 'scheduled')->where('scheduled_at', '>', now())
+            ->orderBy('scheduled_at')->get();
+
+        $live = $base()->where('status', 'live')->get();
 
         // Rekaman: live class yang sudah selesai dan punya recording_url
-        $recordings = LiveClass::where('status', 'ended')
-            ->forUser($user)
+        $recordings = $base()->where('status', 'ended')
             ->whereNotNull('recording_url')
-            ->with(['mentor', 'subject'])
             ->latest('scheduled_at')
             ->take(12)
             ->get();
 
-        return view('student.live-classes.index', compact('upcoming', 'live', 'recordings'));
+        // Jumlah private khusus untuk badge tab (hanya yang akan datang / live)
+        $privateCount = LiveClass::forUser($user)->privateType()
+            ->whereIn('status', ['scheduled', 'live'])->count();
+
+        return view('student.live-classes.index', compact('upcoming', 'live', 'recordings', 'tab', 'privateCount'));
     }
 
     public function show(Request $request, int $id): View|\Illuminate\Http\RedirectResponse
@@ -41,16 +44,16 @@ class LiveClassController extends Controller
         $liveClass = LiveClass::with(['mentor', 'subject', 'course'])->findOrFail($id);
         $user      = $request->user();
 
-        // Cek akses kelas/grade: student hanya boleh kelasnya sendiri
-        if (!$user->canAccessGrade($liveClass->grade)) {
+        // Cek akses (grade + premium; private selalu wajib premium)
+        if (!$liveClass->isAccessibleBy($user)) {
+            if ($liveClass->requiresPremium() && !$user->isPremium()) {
+                return redirect()->route('upgrade.index')
+                    ->with('error', $liveClass->isPrivate()
+                        ? 'Private class hanya tersedia untuk member Premium.'
+                        : 'Live class ini hanya tersedia untuk member Premium.');
+            }
             return redirect()->route('student.live.index')
-                ->with('error', 'Live class ini untuk kelas ' . $liveClass->grade . ', tidak tersedia untuk kelasmu.');
-        }
-
-        // Cek akses: live class premium hanya untuk user premium
-        if ($liveClass->is_premium && !$user->isPremium()) {
-            return redirect()->route('upgrade.index')
-                ->with('error', 'Live class ini hanya tersedia untuk member Premium.');
+                ->with('error', 'Live class ini tidak tersedia untuk kelasmu.');
         }
 
         // Catat kehadiran jika live
@@ -75,15 +78,15 @@ class LiveClassController extends Controller
         $liveClass = LiveClass::findOrFail($id);
         $user      = $request->user();
 
-        // Validasi akses grade
-        if (!$user->canAccessGrade($liveClass->grade)) {
+        // Validasi akses (grade + premium; private wajib premium)
+        if (!$liveClass->isAccessibleBy($user)) {
+            if ($liveClass->requiresPremium() && !$user->isPremium()) {
+                return redirect()->route('upgrade.index')
+                    ->with('error', $liveClass->isPrivate()
+                        ? 'Private class hanya untuk member Premium.'
+                        : 'Live class ini hanya untuk member Premium.');
+            }
             abort(403, 'Live class ini bukan untuk kelasmu.');
-        }
-
-        // Validasi premium
-        if ($liveClass->is_premium && !$user->isPremium()) {
-            return redirect()->route('upgrade.index')
-                ->with('error', 'Live class ini hanya untuk member Premium.');
         }
 
         // Hanya boleh join saat status live

@@ -24,6 +24,7 @@ class CourseController extends Controller
         $enrolledIds = $user->enrollments()->pluck('course_id');
 
         $query = Course::published()
+            ->regularType()
             ->forUser($user)
             ->with(['subject', 'mentor'])
             ->withCount('enrollments')
@@ -49,6 +50,9 @@ class CourseController extends Controller
 
         // Fix: eager load modules.materials supaya tidak N+1 di course-card
         $query = $user->enrollments()->with(['course.subject', 'course.mentor', 'course.modules.materials']);
+
+        // Hanya tampilkan enrollment kelas REGULAR di menu ini. Extra Class punya menu sendiri.
+        $query->whereHas('course', fn($q) => $q->where('course_type', \App\Models\Course::TYPE_REGULAR));
 
         // Batasi hanya kelas (course) yang sesuai grade siswa
         // Batasi kelas yang sesuai grade siswa. Kelas EXTRA (mis. TOEFL) selalu lolos.

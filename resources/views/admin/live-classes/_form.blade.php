@@ -29,14 +29,14 @@
             </div>
             <div class="form-group">
                 <label>Kelas / Tingkat</label>
-                <select name="grade" class="form-control">
+                <select name="grade_id" class="form-control">
                     <option value="">Semua Kelas</option>
-                    @foreach(['10','11','12'] as $g)
-                        <option value="{{ $g }}" {{ old('grade', $lc->grade ?? '') == $g ? 'selected' : '' }}>Kelas {{ $g }}</option>
+                    @foreach($grades as $g)
+                        <option value="{{ $g->id }}" {{ old('grade_id', $lc->grade_id ?? '') == $g->id ? 'selected' : '' }}>{{ $g->name }}</option>
                     @endforeach
                 </select>
                 <small style="color:var(--muted); font-size:11px;">Kosongkan = tampil untuk semua kelas siswa.</small>
-                @error('grade') <div class="text-danger" style="font-size:12px; margin-top:4px;">{{ $message }}</div> @enderror
+                @error('grade_id') <div class="text-danger" style="font-size:12px; margin-top:4px;">{{ $message }}</div> @enderror
             </div>
             <div class="form-group">
                 <label>Mentor <span style="color:var(--danger);">*</span></label>
@@ -134,11 +134,22 @@
     @endif
 
     {{-- Status (hanya di edit) + Setting --}}
-    <div class="card">
+    <div class="card" x-data="{ ctype: '{{ old('class_type', $lc->class_type ?? 'regular') }}' }">
         <div style="font-size:13px; font-weight:700; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border);">
             Pengaturan
         </div>
-        <div style="display:grid; grid-template-columns:{{ $lc ? '1fr 1fr' : '1fr' }}; gap:14px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+            {{-- Tipe Live Class --}}
+            <div class="form-group">
+                <label>Tipe Live Class <span style="color:var(--danger);">*</span></label>
+                <select name="class_type" class="form-control" x-model="ctype">
+                    <option value="regular" {{ old('class_type', $lc->class_type ?? 'regular') === 'regular' ? 'selected' : '' }}>Reguler</option>
+                    <option value="private" {{ old('class_type', $lc->class_type ?? '') === 'private' ? 'selected' : '' }}>Private / Eksklusif — wajib premium</option>
+                </select>
+                <small style="color:var(--muted); font-size:11px;" x-text="ctype === 'private' ? 'Hanya untuk member premium.' : 'Mengikuti flag premium di samping.'"></small>
+                @error('class_type') <div class="text-danger" style="font-size:12px; margin-top:4px;">{{ $message }}</div> @enderror
+            </div>
+
             @if($lc)
             <div class="form-group">
                 <label>Status</label>
@@ -150,16 +161,20 @@
                 </select>
             </div>
             @endif
+
             <div class="form-group">
                 <label>Tipe Akses</label>
                 <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
                     <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:400; font-size:13px;">
                         <input type="checkbox" name="is_premium" value="1"
                                {{ old('is_premium', $lc->is_premium ?? false) ? 'checked' : '' }}
+                               :disabled="ctype === 'private'"
+                               x-bind:checked="ctype === 'private' ? true : $el.checked"
                                style="accent-color:var(--primary); width:16px; height:16px;">
                         <span>Premium only <span style="color:var(--muted); font-size:12px;">(siswa harus berlangganan)</span></span>
                     </label>
                 </div>
+                <small x-show="ctype === 'private'" style="color:var(--muted); font-size:11px;">Private otomatis premium.</small>
             </div>
         </div>
     </div>
