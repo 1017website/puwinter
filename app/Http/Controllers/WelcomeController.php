@@ -30,4 +30,44 @@ class WelcomeController extends Controller
 
         return view('welcome', compact('plans', 'stats'));
     }
+
+    public function index2(): View|\Illuminate\Http\RedirectResponse
+    {
+        if (auth()->check()) {
+            return redirect()->route('dashboard');
+        }
+
+        // Paket harga dari DB
+        $plans = SubscriptionPlan::active()->orderBy('order')->get();
+
+        // Stats platform dari DB
+        $stats = [
+            'total_students' => User::where('role', 'student')->count(),
+            'total_soal'     => TryoutQuestion::count(),
+            'total_materi'   => \App\Models\CourseMaterial::count(),
+            'total_kelas'    => Course::published()->count(),
+        ];
+
+        return view('welcome2', compact('plans', 'stats'));
+    }
+
+    public function index3(): View|\Illuminate\Http\RedirectResponse
+    {
+        if (auth()->check()) {
+            return redirect()->route('dashboard');
+        }
+
+        // Paket harga dari DB
+        $plans = SubscriptionPlan::active()->orderBy('order')->get();
+
+        // Stats platform dari DB
+        $stats = [
+            'total_students' => User::where('role', 'student')->count(),
+            'total_soal'     => TryoutQuestion::count(),
+            'total_materi'   => \App\Models\CourseMaterial::count(),
+            'total_kelas'    => Course::published()->count(),
+        ];
+
+        return view('welcome3', compact('plans', 'stats'));
+    }
 }

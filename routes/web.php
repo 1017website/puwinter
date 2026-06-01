@@ -35,6 +35,8 @@ use App\Http\Controllers\WelcomeController;
 // ============================================================================
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
+Route::get('/index2', [WelcomeController::class, 'index2'])->name('home2');
+Route::get('/index3', [WelcomeController::class, 'index3'])->name('home3');
 
 // ============================================================================
 // AUTH BREEZE (login, logout, password reset — jangan hapus)

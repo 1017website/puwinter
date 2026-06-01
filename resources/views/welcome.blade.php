@@ -1016,16 +1016,15 @@
     <div class="hero-content">
         <div class="hero-badge">
             <span class="dot"></span>
-            Platform UTBK #1 di Indonesia
+            The #1 English Online Tutoring Platform in Indonesia
         </div>
 
         <h1>
-            Belajar Lebih <span class="highlight">Cerdas</span>,<br>
-            Lolos UTBK Lebih <span class="highlight">Pasti</span>
+            Master English with Indonesia’s <br> <span class="highlight">#1 Online Tutoring Platform</span>
         </h1>
 
         <p>
-            Platform persiapan UTBK terlengkap dengan live class interaktif, ribuan soal & pembahasan, tryout simulasi, dan analisis belajar personal bersama tutor terbaik.
+            We guide students in mastering English based on their individual learning needs.
         </p>
 
         <div class="hero-actions">
@@ -1042,7 +1041,7 @@
                 <span>A</span><span>R</span><span>D</span><span>N</span><span style="background:#7C3AED;">+</span>
             </div>
             <div class="trust-text">
-                Bergabung dengan <strong>{{ number_format($stats['total_students']) }}+</strong> pejuang UTBK aktif
+                Bergabung dengan Puwinter
             </div>
         </div>
     </div>
@@ -1109,7 +1108,7 @@
     <div class="stats-inner">
         <div class="stat-item reveal">
             <div class="stat-number">{{ $displayStudents }}</div>
-            <div class="stat-desc">Pejuang UTBK aktif</div>
+            <div class="stat-desc">Sedang bergabung</div>
         </div>
         <div class="stat-item reveal">
             <div class="stat-number">{{ $displaySoal }}</div>
@@ -1131,14 +1130,14 @@
 {{-- ======================================================================== --}}
 <div id="fitur">
 <div class="section">
-    <div class="section-label">Fitur Unggulan</div>
-    <h2 class="section-title">Semua yang kamu butuhkan<br>untuk <span class="hl">lolos UTBK</span></h2>
+    <div class="section-label">Featured Programs</div>
+    <h2 class="section-title">Everything You Need to Learn English, <br> <span class="hl">All in One Place.</span></h2>
     <p class="section-desc">Dari live class interaktif hingga analisis belajar detail — semua tersedia dalam satu platform.</p>
 
     <div class="feature-grid">
         @foreach([
             ['icon'=>'fa-video','color'=>'rgba(37,99,235,0.15)','icolor'=>'#60A5FA','title'=>'Live Class Interaktif','desc'=>'Belajar langsung bersama mentor terbaik via Zoom. Tanya jawab real-time dan rekaman tersedia setelahnya.'],
-            ['icon'=>'fa-bullseye','color'=>'rgba(239,68,68,0.15)','icolor'=>'#F87171','title'=>'Tryout UTBK Simulasi','desc'=>'Simulasi ujian persis seperti UTBK asli. Timer, navigasi soal, dan hasil skor instan setelah submit.'],
+            ['icon'=>'fa-bullseye','color'=>'rgba(239,68,68,0.15)','icolor'=>'#F87171','title'=>'Tryout Literasi dalam Bahasa Inggris UTBK SNBT','desc'=>'Simulasi ujian persis seperti UTBK asli. Timer, navigasi soal, dan hasil skor instan setelah submit.'],
             ['icon'=>'fa-lightbulb','color'=>'rgba(245,158,11,0.15)','icolor'=>'#FBBF24','title'=>'Pembahasan Lengkap','desc'=>'Setiap soal ada pembahasan teks dan video tutor. Pahami konsep, bukan hanya hafal jawaban.'],
             ['icon'=>'fa-file-pdf','color'=>'rgba(16,185,129,0.15)','icolor'=>'#34D399','title'=>'Materi PDF Premium','desc'=>'245+ dokumen materi ringkas dan terstruktur. Download dan belajar kapan saja, di mana saja.'],
             ['icon'=>'fa-chart-bar','color'=>'rgba(124,58,237,0.15)','icolor'=>'#A78BFA','title'=>'Leaderboard & Ranking','desc'=>'Pantau posisimu di antara ribuan pejuang UTBK lain. Filter per sekolah, kota, atau provinsi.'],
@@ -1309,7 +1308,7 @@
                     <img src="{{ asset('images/logo.png') }}" alt="Puwinter"
                          style="width:160px; height:auto; object-fit:contain; filter:brightness(0) invert(1);">
                 </a>
-                <p>Platform persiapan UTBK terlengkap dan terpercaya. Belajar lebih cerdas, lolos lebih pasti.</p>
+                <p>Platform persiapan UTBK terlengkap dan terpercaya, belajar cerdas sukses lebih pasti.</p>
             </div>
 
             <div class="footer-col">
