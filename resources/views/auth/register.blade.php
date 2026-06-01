@@ -438,20 +438,24 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Kelas <span class="optional">(opsional)</span></label>
+                    <label>Kelas</label>
                     <div class="input-wrap">
                         <i class="fas fa-graduation-cap input-icon"></i>
-                        <select name="grade">
+                        <select name="grade_id" required class="@error('grade_id') is-invalid @enderror">
                             <option value="">Pilih kelas</option>
-                            <option value="X IPA"    {{ old('grade') == 'X IPA'    ? 'selected' : '' }}>X IPA</option>
-                            <option value="X IPS"    {{ old('grade') == 'X IPS'    ? 'selected' : '' }}>X IPS</option>
-                            <option value="XI IPA"   {{ old('grade') == 'XI IPA'   ? 'selected' : '' }}>XI IPA</option>
-                            <option value="XI IPS"   {{ old('grade') == 'XI IPS'   ? 'selected' : '' }}>XI IPS</option>
-                            <option value="XII IPA"  {{ old('grade') == 'XII IPA'  ? 'selected' : '' }}>XII IPA</option>
-                            <option value="XII IPS"  {{ old('grade') == 'XII IPS'  ? 'selected' : '' }}>XII IPS</option>
-                            <option value="Alumni"   {{ old('grade') == 'Alumni'   ? 'selected' : '' }}>Alumni</option>
+                            @foreach($grades as $grade)
+                                <option value="{{ $grade->id }}" {{ old('grade_id') == $grade->id ? 'selected' : '' }}>
+                                    {{ $grade->name }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
+                    @error('grade_id')
+                        <span class="error-text">{{ $message }}</span>
+                    @enderror
+                    <small class="optional" style="display:block;margin-top:6px;">
+                        Kelas hanya dipilih sekali saat daftar. Untuk pindah kelas, ajukan permintaan ke admin.
+                    </small>
                 </div>
             </div>
 

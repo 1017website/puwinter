@@ -51,10 +51,13 @@ class CourseController extends Controller
         $query = $user->enrollments()->with(['course.subject', 'course.mentor', 'course.modules.materials']);
 
         // Batasi hanya kelas (course) yang sesuai grade siswa
-        if (!in_array($user->role, ['superadmin', 'admin', 'mentor']) && !empty($user->grade)) {
+        // Batasi kelas yang sesuai grade siswa. Kelas EXTRA (mis. TOEFL) selalu lolos.
+        if (!in_array($user->role, ['superadmin', 'admin', 'mentor']) && !empty($user->grade_id)) {
             $query->whereHas('course', function ($q) use ($user) {
                 $q->where(function ($qq) use ($user) {
-                    $qq->whereNull('grade')->orWhere('grade', (string) $user->grade);
+                    $qq->where('course_type', \App\Models\Course::TYPE_EXTRA)
+                        ->orWhereNull('grade_id')
+                        ->orWhere('grade_id', $user->grade_id);
                 });
             });
         }
@@ -79,14 +82,12 @@ class CourseController extends Controller
             ->with(['subject', 'mentor', 'modules.materials'])
             ->firstOrFail();
 
-        // Cek akses kelas/grade
-        if (!$user->canAccessGrade($course->grade)) {
-            abort(403, 'Kelas ini diperuntukkan untuk kelas ' . $course->grade . '.');
-        }
-
-        // Cek akses: kelas premium hanya untuk user premium
-        if ($course->is_premium && !$user->isPremium()) {
-            abort(403, 'Kelas ini hanya tersedia untuk member Premium.');
+        // Cek akses kelas (grade + tipe + premium) dalam satu pintu.
+        if (!$course->isAccessibleBy($user)) {
+            if ($course->requiresPremium() && !$user->isPremium()) {
+                abort(403, 'Kelas ini hanya tersedia untuk member Premium.');
+            }
+            abort(403, 'Kelas ini tidak tersedia untuk kelas kamu.');
         }
 
         // Auto-enroll jika belum
@@ -128,14 +129,12 @@ class CourseController extends Controller
             ->with(['subject', 'mentor', 'modules.materials'])
             ->firstOrFail();
 
-        // Cek akses kelas/grade
-        if (!$user->canAccessGrade($course->grade)) {
-            abort(403, 'Kelas ini diperuntukkan untuk kelas ' . $course->grade . '.');
-        }
-
-        // Cek akses: kelas premium hanya untuk user premium
-        if ($course->is_premium && !$user->isPremium()) {
-            abort(403, 'Kelas ini hanya tersedia untuk member Premium.');
+        // Cek akses kelas (grade + tipe + premium) dalam satu pintu.
+        if (!$course->isAccessibleBy($user)) {
+            if ($course->requiresPremium() && !$user->isPremium()) {
+                abort(403, 'Kelas ini hanya tersedia untuk member Premium.');
+            }
+            abort(403, 'Kelas ini tidak tersedia untuk kelas kamu.');
         }
 
         $material = CourseMaterial::whereHas('module', fn($q) => $q->where('course_id', $course->id))

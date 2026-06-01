@@ -17,9 +17,12 @@ use App\Http\Controllers\Student\BankSoalController;
 use App\Http\Controllers\Student\MateriPdfController;
 use App\Http\Controllers\Student\PembahasanController;
 use App\Http\Controllers\Student\SettingsController as StudentSettings;
+use App\Http\Controllers\Student\GradeChangeController;
 use App\Http\Controllers\Admin\LiveClassController as AdminLiveClass;
 use App\Http\Controllers\Admin\SettingsController as AdminSettings;
 use App\Http\Controllers\Admin\SubjectController as AdminSubject;
+use App\Http\Controllers\Admin\GradeController as AdminGrade;
+use App\Http\Controllers\Admin\GradeChangeRequestController as AdminGradeRequest;
 use App\Http\Controllers\Admin\PlanController as AdminPlan;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\UserController as AdminUser;
@@ -136,6 +139,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Pembahasan
     Route::get('/pembahasan', [PembahasanController::class, 'index'])->name('student.pembahasan.index');
+
+    // Pindah Kelas (request ke admin)
+    Route::prefix('pindah-kelas')->name('student.grade-change.')->group(function () {
+        Route::get('/', [GradeChangeController::class, 'index'])->name('index');
+        Route::post('/', [GradeChangeController::class, 'store'])->name('store');
+    });
 
     // Pengaturan Siswa
     Route::prefix('pengaturan')->name('student.settings.')->group(function () {
@@ -257,6 +266,22 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
             Route::put('/{subject}', [AdminSubject::class, 'update'])->name('update');
             Route::delete('/{subject}', [AdminSubject::class, 'destroy'])->name('destroy');
             Route::patch('/{subject}/toggle-active', [AdminSubject::class, 'toggleActive'])->name('toggle-active');
+        });
+
+        // Master Kelas (grade)
+        Route::prefix('grades')->name('grades.')->group(function () {
+            Route::get('/', [AdminGrade::class, 'index'])->name('index');
+            Route::post('/', [AdminGrade::class, 'store'])->name('store');
+            Route::put('/{grade}', [AdminGrade::class, 'update'])->name('update');
+            Route::delete('/{grade}', [AdminGrade::class, 'destroy'])->name('destroy');
+            Route::patch('/{grade}/toggle-active', [AdminGrade::class, 'toggleActive'])->name('toggle-active');
+        });
+
+        // Permintaan Pindah Kelas
+        Route::prefix('grade-requests')->name('grade-requests.')->group(function () {
+            Route::get('/', [AdminGradeRequest::class, 'index'])->name('index');
+            Route::patch('/{gradeChangeRequest}/approve', [AdminGradeRequest::class, 'approve'])->name('approve');
+            Route::patch('/{gradeChangeRequest}/reject', [AdminGradeRequest::class, 'reject'])->name('reject');
         });
 
         // Paket Harga

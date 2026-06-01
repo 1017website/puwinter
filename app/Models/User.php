@@ -17,7 +17,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $fillable = [
         'name', 'email', 'password', 'role',
         'avatar', 'phone', 'phone_verified_at',
-        'school', 'city', 'province', 'birth_date', 'grade',
+        'school', 'city', 'province', 'birth_date', 'grade', 'grade_id', 'grade_locked',
         'is_active', 'last_login_at',
     ];
 
@@ -31,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'last_login_at'      => 'datetime',
         'birth_date'         => 'date',
         'is_active'          => 'boolean',
+        'grade_locked'       => 'boolean',
     ];
 
     // -------------------------------------------------------------------------
@@ -82,8 +83,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function hasAccessTo(Course $course): bool
     {
-        if (!$course->is_premium) return true;
-        return $this->isPremium();
+        return $course->isAccessibleBy($this);
     }
 
     // -------------------------------------------------------------------------
@@ -91,27 +91,31 @@ class User extends Authenticatable implements MustVerifyEmail
     // -------------------------------------------------------------------------
 
     /**
-     * Apakah user boleh mengakses konten dengan grade tertentu.
-     * - Admin / mentor / superadmin: bebas semua grade.
-     * - Student: hanya grade yang cocok. Konten grade NULL = berlaku semua kelas.
+     * Apakah user boleh mengakses konten dengan grade_id tertentu.
+     * - Admin / mentor / superadmin: bebas semua.
+     * - Konten grade_id NULL = berlaku semua kelas.
+     * - Student tanpa grade_id terisi: jangan blokir (fallback aman).
      */
-    public function canAccessGrade(?string $grade): bool
+    public function canAccessGradeId(?int $gradeId): bool
     {
         if (in_array($this->role, ['superadmin', 'admin', 'mentor'])) {
             return true;
         }
-
-        // Konten tanpa grade tersedia untuk semua kelas
-        if ($grade === null || $grade === '') {
+        if ($gradeId === null) {
             return true;
         }
-
-        // Student tanpa grade terisi: jangan blokir (fallback aman)
-        if (empty($this->grade)) {
+        if (empty($this->grade_id)) {
             return true;
         }
+        return (int) $this->grade_id === (int) $gradeId;
+    }
 
-        return (string) $this->grade === (string) $grade;
+    /**
+     * Apakah siswa punya request pindah kelas yang masih pending.
+     */
+    public function hasPendingGradeChange(): bool
+    {
+        return $this->gradeChangeRequests()->where('status', 'pending')->exists();
     }
 
     // -------------------------------------------------------------------------
@@ -121,6 +125,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    public function grade(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Grade::class);
+    }
+
+    public function gradeChangeRequests(): HasMany
+    {
+        return $this->hasMany(GradeChangeRequest::class)->latest();
     }
 
     public function enrollments(): HasMany

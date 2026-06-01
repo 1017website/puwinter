@@ -978,7 +978,309 @@
             .stat-item { border-right: none; }
             .footer-top { grid-template-columns: 1fr; }
         }
-    </style>
+    
+
+/* =========================================================
+   MOBILE RESPONSIVE FIXES - Added revision
+   ========================================================= */
+@media (max-width: 768px) {
+    body { overflow-x: hidden; }
+
+    nav {
+        top: 10px;
+        left: 12px;
+        right: 12px;
+        width: auto;
+        height: auto;
+        min-height: 64px;
+        padding: 10px 12px;
+        border-radius: 18px;
+        background: rgba(10,15,30,0.96);
+        backdrop-filter: blur(18px);
+        flex-wrap: nowrap;
+        gap: 10px;
+    }
+
+    .nav-logo img {
+        width: 118px !important;
+        max-width: 36vw;
+    }
+
+    .nav-links { display: none !important; }
+
+    .nav-cta {
+        gap: 8px;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+
+    .btn-ghost,
+    .btn-primary {
+        padding: 8px 11px;
+        font-size: 11.5px;
+        border-radius: 10px;
+        white-space: nowrap;
+    }
+
+    .btn-ghost { display: none; }
+
+    .hero {
+        min-height: auto;
+        padding: 118px 18px 56px;
+        display: block;
+        text-align: left;
+    }
+
+    .hero-grid {
+        background-size: 42px 42px;
+        opacity: .7;
+    }
+
+    .orb-1 {
+        width: 340px;
+        height: 340px;
+        top: -80px;
+        left: -140px;
+    }
+
+    .orb-2,
+    .orb-3 { display: none; }
+
+    .hero-content {
+        max-width: 100%;
+    }
+
+    .hero-badge {
+        max-width: 100%;
+        font-size: 11px;
+        line-height: 1.45;
+        padding: 7px 11px;
+        margin-bottom: 18px;
+    }
+
+    .hero h1 {
+        font-size: clamp(31px, 10vw, 42px);
+        line-height: 1.12;
+        margin-bottom: 16px;
+    }
+
+    .hero h1 br { display: none; }
+
+    .hero p {
+        font-size: 14.5px;
+        line-height: 1.7;
+        margin-bottom: 24px;
+    }
+
+    .hero-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .btn-hero,
+    .btn-hero-ghost {
+        width: 100%;
+        justify-content: center;
+        padding: 13px 16px;
+        font-size: 13.5px;
+        border-radius: 12px;
+    }
+
+    .hero-trust {
+        margin-top: 28px;
+        align-items: flex-start;
+    }
+
+    .trust-avatars span {
+        width: 31px;
+        height: 31px;
+        font-size: 11px;
+    }
+
+    .trust-text {
+        font-size: 12.5px;
+        line-height: 1.5;
+    }
+
+    .hero-visual { display: none !important; }
+
+    .stats-bar {
+        padding: 28px 18px;
+    }
+
+    .stats-inner {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .stat-item {
+        border-right: none;
+        padding: 18px 10px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.035);
+    }
+
+    .stat-number {
+        font-size: 27px;
+    }
+
+    .stat-desc {
+        font-size: 11.5px;
+        line-height: 1.4;
+    }
+
+    .section,
+    .steps-section,
+    .pricing-section,
+    .testi-section,
+    .cta-section {
+        padding: 58px 18px;
+    }
+
+    .section-label {
+        font-size: 11px;
+        line-height: 1.4;
+        margin-bottom: 10px;
+    }
+
+    .section-title {
+        font-size: clamp(25px, 8vw, 34px);
+        line-height: 1.18;
+    }
+
+    .section-title br { display: none; }
+
+    .section-desc {
+        font-size: 14px;
+        line-height: 1.7;
+        margin-bottom: 30px;
+    }
+
+    .feature-grid,
+    .pricing-grid,
+    .testi-grid,
+    .steps-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px;
+    }
+
+    .feature-card,
+    .pricing-card,
+    .testi-card,
+    .step-item {
+        padding: 20px;
+        border-radius: 18px;
+        min-height: auto;
+    }
+
+    .feature-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        margin-bottom: 14px;
+    }
+
+    .feature-card h3,
+    .step-item h3 {
+        font-size: 15px;
+        line-height: 1.35;
+    }
+
+    .feature-card p,
+    .step-item p,
+    .testi-text {
+        font-size: 13px;
+        line-height: 1.65;
+    }
+
+    .steps-grid::before { display: none; }
+
+    .step-number {
+        width: 54px;
+        height: 54px;
+        font-size: 18px;
+        margin-bottom: 14px;
+    }
+
+    .pricing-card.popular {
+        transform: none;
+        margin-top: 14px;
+    }
+
+    .popular-tag {
+        position: static;
+        transform: none;
+        display: inline-block;
+        margin-bottom: 14px;
+    }
+
+    .pricing-price {
+        font-size: 34px;
+    }
+
+    .pricing-features li {
+        align-items: flex-start;
+        font-size: 13px;
+        line-height: 1.45;
+    }
+
+    .cta-box {
+        padding: 32px 20px;
+        border-radius: 22px;
+    }
+
+    .cta-box h2 {
+        font-size: clamp(24px, 8vw, 32px);
+        line-height: 1.18;
+    }
+
+    .cta-box p {
+        font-size: 14px;
+        line-height: 1.65;
+    }
+
+    .cta-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    footer {
+        padding: 42px 18px 28px;
+    }
+
+    .footer-top {
+        grid-template-columns: 1fr !important;
+        gap: 28px;
+        margin-bottom: 30px;
+    }
+
+    .footer-brand p {
+        max-width: 100%;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        line-height: 1.5;
+    }
+}
+
+@media (max-width: 380px) {
+    .btn-primary { padding: 8px 9px; font-size: 11px; }
+    .nav-logo img { width: 108px !important; }
+    .hero { padding-left: 14px; padding-right: 14px; }
+    .section,
+    .steps-section,
+    .pricing-section,
+    .testi-section,
+    .cta-section { padding-left: 14px; padding-right: 14px; }
+}
+
+</style>
 </head>
 <body>
 

@@ -13,7 +13,7 @@ class Course extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'subject_id', 'grade', 'mentor_id', 'title', 'slug', 'description',
+        'subject_id', 'grade', 'grade_id', 'course_type', 'mentor_id', 'title', 'slug', 'description',
         'thumbnail', 'is_premium', 'is_published', 'total_modules', 'order',
     ];
 
@@ -21,6 +21,11 @@ class Course extends Model
         'is_premium'   => 'boolean',
         'is_published' => 'boolean',
     ];
+
+    // Tipe kelas
+    public const TYPE_REGULAR = 'regular'; // ikut grade + flag is_premium
+    public const TYPE_EXTRA   = 'extra';   // mis. TOEFL — bebas akses, tanpa premium
+    public const TYPE_PRIVATE = 'private'; // privat/eksklusif — wajib premium
 
     // -------------------------------------------------------------------------
     // Scopes
@@ -43,21 +48,91 @@ class Course extends Model
 
     /**
      * Filter konten sesuai kelas (grade) user.
+     * - Kelas EXTRA: selalu tampil untuk semua (lintas kelas, tanpa premium).
+     * - Kelas PRIVATE & REGULAR: ikut aturan grade.
      * Admin/mentor lihat semua; student hanya grade-nya + konten tanpa grade.
      */
     public function scopeForUser($query, $user)
     {
-        if (!$user || in_array($user->role, ['superadmin', 'admin', 'mentor']) || empty($user->grade)) {
+        if (!$user || in_array($user->role, ['superadmin', 'admin', 'mentor']) || empty($user->grade_id)) {
             return $query;
         }
+
         return $query->where(function ($q) use ($user) {
-            $q->whereNull('grade')->orWhere('grade', (string) $user->grade);
+            // Extra (TOEFL dsb) selalu lolos filter grade
+            $q->where('course_type', self::TYPE_EXTRA)
+                ->orWhereNull('grade_id')
+                ->orWhere('grade_id', $user->grade_id);
         });
+    }
+
+    public function scopeOfType($query, string $type)
+    {
+        return $query->where('course_type', $type);
+    }
+
+    // -------------------------------------------------------------------------
+    // Access Helpers
+    // -------------------------------------------------------------------------
+
+    public function isExtra(): bool   { return $this->course_type === self::TYPE_EXTRA; }
+    public function isPrivate(): bool { return $this->course_type === self::TYPE_PRIVATE; }
+
+    /**
+     * Apakah kelas ini menuntut langganan premium?
+     * - private: selalu wajib premium.
+     * - extra:   tidak pernah wajib premium.
+     * - regular: ikut flag is_premium.
+     */
+    public function requiresPremium(): bool
+    {
+        return match ($this->course_type) {
+            self::TYPE_PRIVATE => true,
+            self::TYPE_EXTRA   => false,
+            default            => (bool) $this->is_premium,
+        };
+    }
+
+    /**
+     * Apakah kelas ini terikat aturan grade siswa?
+     * Extra bersifat lintas kelas, jadi tidak.
+     */
+    public function enforcesGrade(): bool
+    {
+        return $this->course_type !== self::TYPE_EXTRA;
+    }
+
+    /**
+     * Cek apakah $user boleh mengakses kelas ini (grade + premium).
+     */
+    public function isAccessibleBy($user): bool
+    {
+        if (!$user) return false;
+        if (in_array($user->role, ['superadmin', 'admin', 'mentor'])) return true;
+
+        // Aturan kelas (grade) — kecuali extra
+        if ($this->enforcesGrade() && $this->grade_id !== null) {
+            if ((int) $user->grade_id !== (int) $this->grade_id) {
+                return false;
+            }
+        }
+
+        // Aturan premium
+        if ($this->requiresPremium() && !$user->isPremium()) {
+            return false;
+        }
+
+        return true;
     }
 
     // -------------------------------------------------------------------------
     // Relationships
     // -------------------------------------------------------------------------
+
+    public function grade(): BelongsTo
+    {
+        return $this->belongsTo(Grade::class);
+    }
 
     public function subject(): BelongsTo
     {

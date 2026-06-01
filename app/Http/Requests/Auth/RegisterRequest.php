@@ -19,7 +19,7 @@ class RegisterRequest extends FormRequest
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'school'   => ['nullable', 'string', 'max:255'],
             'city'     => ['nullable', 'string', 'max:255'],
-            'grade'    => ['nullable', 'string', 'max:10'],
+            'grade_id' => ['required', 'integer', 'exists:grades,id'],
         ];
     }
 
@@ -32,6 +32,8 @@ class RegisterRequest extends FormRequest
             'password.required'  => 'Password wajib diisi.',
             'password.min'       => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'grade_id.required'  => 'Kelas wajib dipilih.',
+            'grade_id.exists'    => 'Kelas yang dipilih tidak valid.',
         ];
     }
 }

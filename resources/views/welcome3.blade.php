@@ -989,7 +989,315 @@
                 grid-template-columns: 1fr
             }
         }
-    </style>
+    
+
+/* =========================================================
+   MOBILE RESPONSIVE FIXES - Added revision
+   ========================================================= */
+@media (max-width: 768px) {
+    body { overflow-x: hidden; }
+
+    nav {
+        top: 8px;
+        left: 12px;
+        right: 12px;
+        transform: none;
+        width: auto;
+        height: auto;
+        min-height: 62px;
+        padding: 10px 12px;
+        border-radius: 18px;
+        gap: 10px;
+    }
+
+    .nav-logo img {
+        width: 118px !important;
+        max-width: 36vw;
+    }
+
+    .nav-links { display: none !important; }
+
+    .nav-cta {
+        margin-left: auto;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .nav-cta .btn-ghost { display: none !important; }
+
+    .btn-primary,
+    .btn-ghost {
+        height: auto;
+        padding: 10px 12px;
+        font-size: 11.5px;
+        white-space: nowrap;
+    }
+
+    .hero {
+        min-height: auto;
+        grid-template-columns: 1fr !important;
+        display: grid;
+    }
+
+    .hero-left {
+        padding: 112px 18px 42px;
+    }
+
+    .hero-badge {
+        max-width: 100%;
+        width: auto;
+        font-size: 11px;
+        line-height: 1.45;
+        padding: 8px 12px;
+        margin-bottom: 16px;
+    }
+
+    .hero h1 {
+        font-size: clamp(31px, 10vw, 42px);
+        line-height: 1.08;
+        letter-spacing: -1.3px;
+        margin-bottom: 16px;
+    }
+
+    .hero h1 br { display: none; }
+
+    .hero p {
+        font-size: 14.5px;
+        line-height: 1.7;
+        margin-bottom: 24px;
+    }
+
+    .hero-actions,
+    .cta-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .btn-hero,
+    .btn-hero-ghost,
+    .btn-pricing {
+        width: 100%;
+        padding: 13px 16px;
+        font-size: 13.5px;
+        justify-content: center;
+    }
+
+    .hero-trust {
+        margin-top: 26px;
+        align-items: flex-start;
+    }
+
+    .trust-avatars span {
+        width: 31px;
+        height: 31px;
+        font-size: 11px;
+        border-radius: 10px;
+    }
+
+    .trust-text {
+        font-size: 12.5px;
+        line-height: 1.5;
+    }
+
+    .hero-right {
+        padding: 22px 18px 52px;
+        background: transparent;
+    }
+
+    .hero-stack {
+        transform: none;
+        gap: 12px;
+    }
+
+    .float-card,
+    .float-card:nth-child(2),
+    .float-card:nth-child(3) {
+        margin: 0;
+        border-radius: 20px;
+        padding: 18px;
+    }
+
+    .stats-bar {
+        padding: 20px 18px;
+        grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+        gap: 10px;
+    }
+
+    .stat-item {
+        padding: 14px;
+        border-radius: 16px;
+    }
+
+    .stat-number {
+        font-size: 26px;
+    }
+
+    .stat-desc {
+        font-size: 11.5px;
+        line-height: 1.35;
+    }
+
+    .section,
+    .steps-section,
+    .pricing-section,
+    .testi-section,
+    .cta-section {
+        padding: 56px 18px;
+    }
+
+    .section-title {
+        font-size: clamp(25px, 8vw, 34px);
+        line-height: 1.16;
+        letter-spacing: -0.6px;
+    }
+
+    .section-title br { display: none; }
+
+    .section-desc {
+        font-size: 14px;
+        line-height: 1.7;
+        margin-bottom: 30px;
+    }
+
+    .feature-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px;
+    }
+
+    .feature-card,
+    .feature-card:nth-child(1),
+    .feature-card:nth-child(6) {
+        grid-column: auto !important;
+        min-height: auto;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .feature-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        margin-bottom: 14px;
+    }
+
+    .feature-card h3,
+    .step-item h3 {
+        font-size: 16px;
+        line-height: 1.35;
+    }
+
+    .feature-card p,
+    .step-item p,
+    .testi-text {
+        font-size: 13px;
+        line-height: 1.65;
+    }
+
+    .steps-grid,
+    .pricing-grid {
+        grid-template-columns: 1fr !important;
+        gap: 14px;
+    }
+
+    .step-item {
+        display: block;
+        padding: 20px 0;
+    }
+
+    .step-number {
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+
+    .pricing-card,
+    .pricing-card.popular {
+        transform: none;
+        padding: 22px;
+        border-radius: 22px;
+    }
+
+    .pricing-price {
+        font-size: 36px;
+    }
+
+    .pricing-features li {
+        font-size: 13px;
+        line-height: 1.45;
+    }
+
+    .testi-grid {
+        columns: auto !important;
+        display: flex !important;
+        overflow-x: auto;
+        gap: 14px;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 12px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .testi-card {
+        min-width: 82vw;
+        scroll-snap-align: start;
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 0;
+    }
+
+    .cta-box {
+        grid-template-columns: 1fr !important;
+        padding: 32px 20px;
+        border-radius: 24px;
+        text-align: left;
+    }
+
+    .cta-box h2 {
+        font-size: clamp(24px, 8vw, 32px);
+        line-height: 1.18;
+    }
+
+    .cta-box p {
+        font-size: 14px;
+        line-height: 1.65;
+    }
+
+    .footer {
+        padding: 42px 18px 28px;
+        grid-template-columns: 1fr !important;
+        gap: 28px;
+    }
+
+    .footer-links {
+        grid-template-columns: 1fr !important;
+        gap: 18px;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        line-height: 1.5;
+    }
+}
+
+@media (max-width: 380px) {
+    nav { left: 10px; right: 10px; }
+    .nav-logo img { width: 108px !important; }
+    .btn-primary { padding: 9px 10px; font-size: 11px; }
+    .hero-left,
+    .hero-right,
+    .section,
+    .steps-section,
+    .pricing-section,
+    .testi-section,
+    .cta-section { padding-left: 14px; padding-right: 14px; }
+}
+
+</style>
 </head>
 
 <body>

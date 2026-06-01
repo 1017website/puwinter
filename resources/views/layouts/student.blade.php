@@ -802,6 +802,9 @@
                 class="nav-item {{ request()->routeIs('student.achievement.*') ? 'active' : '' }}">
                 <i class="fas fa-trophy"></i> Pencapaian
             </a>
+            <a href="{{ route('student.grade-change.index') }}" class="nav-item {{ request()->routeIs('student.grade-change.*') ? 'active' : '' }}">
+                <i class="fas fa-people-arrows"></i> Pindah Kelas
+            </a>
             <a href="{{ route('student.settings.index') }}" class="nav-item {{ request()->routeIs('student.settings.*') ? 'active' : '' }}">
                 <i class="fas fa-gear"></i> Pengaturan
             </a>

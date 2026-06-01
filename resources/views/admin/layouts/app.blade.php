@@ -438,12 +438,22 @@
                     <span class="nav-badge">{{ $pendingCount }}</span>
                 @endif
             </a>
+            <a href="{{ route('admin.grade-requests.index') }}" class="nav-item {{ request()->routeIs('admin.grade-requests.*') ? 'active' : '' }}">
+                <i class="fas fa-people-arrows"></i> Pindah Kelas
+                @php $gradeReqCount = \App\Models\GradeChangeRequest::where('status','pending')->count(); @endphp
+                @if($gradeReqCount > 0)
+                    <span class="nav-badge">{{ $gradeReqCount }}</span>
+                @endif
+            </a>
         </div>
 
         <div class="sidebar-section">
             <div class="sidebar-section-label">Konten</div>
             <a href="{{ route('admin.subjects.index') }}" class="nav-item {{ request()->routeIs('admin.subjects.*') ? 'active' : '' }}">
                 <i class="fas fa-tag"></i> Mata Pelajaran
+            </a>
+            <a href="{{ route('admin.grades.index') }}" class="nav-item {{ request()->routeIs('admin.grades.*') ? 'active' : '' }}">
+                <i class="fas fa-layer-group"></i> Master Kelas
             </a>
             <a href="{{ route('admin.live-classes.index') }}" class="nav-item {{ request()->routeIs('admin.live-classes.*') ? 'active' : '' }}">
                 <i class="fas fa-video"></i> Live Class

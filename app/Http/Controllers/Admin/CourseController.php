@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\Grade;
 use App\Models\CourseModule;
 use App\Models\CourseMaterial;
 use App\Models\Subject;
@@ -42,7 +43,8 @@ class CourseController extends Controller
     {
         $subjects = Subject::active()->get();
         $mentors  = User::where('role', 'mentor')->get();
-        return view('admin.courses.create', compact('subjects', 'mentors'));
+        $grades   = Grade::active()->get();
+        return view('admin.courses.create', compact('subjects', 'mentors', 'grades'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -50,7 +52,8 @@ class CourseController extends Controller
         $request->validate([
             'title'      => 'required|string|max:255',
             'subject_id' => 'required|exists:subjects,id',
-            'grade'      => 'nullable|in:10,11,12',
+            'grade_id'   => 'nullable|exists:grades,id',
+            'course_type'=> 'required|in:regular,extra,private',
             'mentor_id'  => 'required|exists:users,id',
             'description'=> 'nullable|string',
             'is_premium' => 'boolean',
@@ -59,8 +62,12 @@ class CourseController extends Controller
 
         $data = $request->except('thumbnail');
         $data['slug']       = Str::slug($request->title) . '-' . time();
-        $data['is_premium'] = $request->boolean('is_premium');
-        $data['grade']      = $request->filled('grade') ? $request->grade : null;
+        $data['is_premium']  = $request->boolean('is_premium');
+        $data['grade_id']    = $request->filled('grade_id') ? (int) $request->grade_id : null;
+        $data['course_type'] = $request->input('course_type', 'regular');
+        // Kelas EXTRA lintas kelas (tanpa grade); PRIVATE selalu premium.
+        if ($data['course_type'] === 'extra')   { $data['grade_id'] = null; $data['is_premium'] = false; }
+        if ($data['course_type'] === 'private') { $data['is_premium'] = true; }
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
@@ -82,7 +89,8 @@ class CourseController extends Controller
     {
         $subjects = Subject::active()->get();
         $mentors  = User::where('role', 'mentor')->get();
-        return view('admin.courses.edit', compact('course', 'subjects', 'mentors'));
+        $grades   = Grade::active()->get();
+        return view('admin.courses.edit', compact('course', 'subjects', 'mentors', 'grades'));
     }
 
     public function update(Request $request, Course $course): RedirectResponse
@@ -90,7 +98,8 @@ class CourseController extends Controller
         $request->validate([
             'title'        => 'required|string|max:255',
             'subject_id'   => 'required|exists:subjects,id',
-            'grade'        => 'nullable|in:10,11,12',
+            'grade_id'     => 'nullable|exists:grades,id',
+            'course_type'  => 'required|in:regular,extra,private',
             'mentor_id'    => 'required|exists:users,id',
             'description'  => 'nullable|string',
             'is_premium'   => 'boolean',
@@ -101,7 +110,10 @@ class CourseController extends Controller
         $data = $request->except('thumbnail');
         $data['is_premium']   = $request->boolean('is_premium');
         $data['is_published'] = $request->boolean('is_published');
-        $data['grade']        = $request->filled('grade') ? $request->grade : null;
+        $data['grade_id']     = $request->filled('grade_id') ? (int) $request->grade_id : null;
+        $data['course_type']  = $request->input('course_type', 'regular');
+        if ($data['course_type'] === 'extra')   { $data['grade_id'] = null; $data['is_premium'] = false; }
+        if ($data['course_type'] === 'private') { $data['is_premium'] = true; }
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
