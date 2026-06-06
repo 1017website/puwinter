@@ -60,6 +60,11 @@ class Tryout extends Model
         return $this->belongsTo(Subject::class);
     }
 
+    public function grade(): BelongsTo
+    {
+        return $this->belongsTo(Grade::class);
+    }
+
     public function questions(): HasMany
     {
         return $this->hasMany(TryoutQuestion::class)->orderBy('order');

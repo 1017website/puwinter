@@ -64,9 +64,10 @@ class TryoutController extends Controller
         $tryout = Tryout::published()->with('questions.subject')->findOrFail($id);
 
         // Cek akses kelas/grade
-        if (!$request->user()->canAccessGrade($tryout->grade)) {
+        if (!$request->user()->canAccessGradeId($tryout->grade_id)) {
+            $gradeName = optional($tryout->grade)->name ?? $tryout->grade ?? 'tertentu';
             return redirect()->route('student.tryout.index')
-                ->with('error', 'Tryout ini untuk kelas ' . $tryout->grade . ', tidak tersedia untuk kelasmu.');
+                ->with('error', 'Tryout ini untuk kelas ' . $gradeName . ', tidak tersedia untuk kelasmu.');
         }
 
         // Cek akses: tryout premium hanya untuk user premium
