@@ -7,7 +7,7 @@
     $date  = $liveClass->scheduled_at->day;
     $month = $months[$liveClass->scheduled_at->month];
     $time  = $liveClass->scheduled_at->format('H:i') . ' - ' .
-             $liveClass->scheduled_at->addMinutes($liveClass->duration_minutes)->format('H:i') . ' WIB';
+             $liveClass->scheduled_at->copy()->addMinutes((int) $liveClass->duration_minutes)->format('H:i') . ' WIB';
 @endphp
 
 <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border);">

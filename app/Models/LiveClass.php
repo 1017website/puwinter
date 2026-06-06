@@ -18,8 +18,10 @@ class LiveClass extends Model
     ];
 
     protected $casts = [
-        'scheduled_at' => 'datetime',
-        'is_premium'   => 'boolean',
+        'scheduled_at'       => 'datetime',
+        'is_premium'         => 'boolean',
+        'duration_minutes'   => 'integer',
+        'total_participants' => 'integer',
     ];
 
     // Tipe live class
