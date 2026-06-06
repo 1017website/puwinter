@@ -1,6 +1,10 @@
 @extends('admin.layouts.app')
 @section('title', 'Manajemen Langganan')
 
+@push('styles')
+<style>[x-cloak]{display:none !important;}</style>
+@endpush
+
 @section('content')
 
 <div class="page-header">
@@ -88,30 +92,50 @@
                     </td>
                     <td style="font-size:12px; color:var(--muted);">{{ $sub->created_at->format('d M Y') }}</td>
                     <td>
-                        <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                        <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">
+                            @if($sub->payment_proof)
+                            <a href="{{ asset('uploads/proofs/' . $sub->payment_proof) }}" target="_blank"
+                               class="btn btn-outline btn-sm" title="Lihat bukti transfer">
+                                <i class="fas fa-receipt"></i>
+                            </a>
+                            @endif
+
                             @if($sub->status === 'pending')
-                            <form method="POST" action="{{ route('admin.subscriptions.activate', $sub) }}">
+                            <form method="POST" action="{{ route('admin.subscriptions.activate', $sub) }}"
+                                  onsubmit="return confirm('Aktifkan langganan ini? Pastikan pembayaran sudah masuk.')">
                                 @csrf @method('PATCH')
-                                <button type="submit" class="btn btn-primary btn-sm" title="Aktifkan">
+                                <button type="submit" class="btn btn-primary btn-sm" title="Aktifkan / Validasi">
                                     <i class="fas fa-check"></i>
                                 </button>
                             </form>
                             @endif
 
                             @if($sub->status === 'active')
-                            <div x-data="{ open:false }" style="position:relative;">
-                                <button @click="open=!open" class="btn btn-outline btn-sm">
+                            <div x-data="{ open:false }">
+                                <button @click="open=true" class="btn btn-outline btn-sm">
                                     <i class="fas fa-plus"></i> Extend
                                 </button>
-                                <div x-show="open" @click.outside="open=false"
-                                     style="position:absolute; right:0; top:calc(100%+4px); background:#fff; border:1px solid var(--border); border-radius:8px; padding:12px; width:200px; z-index:50; box-shadow:0 4px 16px rgba(0,0,0,0.1);">
-                                    <form method="POST" action="{{ route('admin.subscriptions.extend', $sub) }}">
-                                        @csrf @method('PATCH')
-                                        <label style="font-size:12px; font-weight:600; display:block; margin-bottom:6px;">Perpanjang (bulan)</label>
-                                        <input type="number" name="months" value="1" min="1" max="24" class="form-control" style="margin-bottom:8px;">
-                                        <button type="submit" class="btn btn-primary btn-sm" style="width:100%; justify-content:center;">Simpan</button>
-                                    </form>
-                                </div>
+                                {{-- Modal fixed: tidak terpotong oleh overflow tabel --}}
+                                <template x-teleport="body">
+                                    <div x-show="open" x-cloak @click.self="open=false"
+                                         style="position:fixed; inset:0; background:rgba(15,23,42,0.45); display:flex; align-items:center; justify-content:center; z-index:1000;">
+                                        <div @click.outside="open=false"
+                                             style="background:#fff; border-radius:12px; padding:22px; width:320px; box-shadow:0 12px 40px rgba(0,0,0,0.2);">
+                                            <div style="font-size:15px; font-weight:700; margin-bottom:4px;">Perpanjang Langganan</div>
+                                            <div style="font-size:12.5px; color:var(--muted); margin-bottom:16px;">{{ $sub->user->name ?? '-' }} — {{ $sub->plan->name ?? '' }}</div>
+                                            <form method="POST" action="{{ route('admin.subscriptions.extend', $sub) }}">
+                                                @csrf @method('PATCH')
+                                                <label style="font-size:12px; font-weight:600; display:block; margin-bottom:6px;">Durasi perpanjangan (bulan)</label>
+                                                <input type="number" name="months" value="1" min="1" max="24"
+                                                       style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; margin-bottom:16px;">
+                                                <div style="display:flex; gap:8px;">
+                                                    <button type="button" @click="open=false" class="btn btn-outline btn-sm" style="flex:1; justify-content:center;">Batal</button>
+                                                    <button type="submit" class="btn btn-primary btn-sm" style="flex:1; justify-content:center;">Simpan</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
                             @endif
 

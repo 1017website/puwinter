@@ -6,6 +6,25 @@
 
 <div style="max-width:960px; margin:0 auto;">
 
+    @if(session('error'))
+        <div style="background:#FEF2F2; border:1px solid #FCA5A5; color:#991B1B; border-radius:10px; padding:14px 18px; margin-bottom:20px; font-size:13.5px;">
+            <i class="fas fa-circle-exclamation"></i> {{ session('error') }}
+        </div>
+    @endif
+
+    @if(!empty($pending))
+        <div style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:10px; padding:14px 18px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+            <div style="font-size:13.5px; color:#92400E;">
+                <i class="fas fa-hourglass-half"></i>
+                Kamu punya pembayaran <strong>{{ $pending->plan->name ?? 'Premium' }}</strong> yang belum selesai.
+            </div>
+            <a href="{{ route('upgrade.instruction', $pending->id) }}"
+               style="background:#D97706; color:#fff; text-decoration:none; padding:8px 16px; border-radius:8px; font-size:12.5px; font-weight:700; white-space:nowrap;">
+                Lanjutkan Pembayaran
+            </a>
+        </div>
+    @endif
+
     <div style="text-align:center; margin-bottom:32px;">
         <h2 style="font-size:26px; font-weight:800;">Upgrade ke Premium</h2>
         <p style="font-size:14px; color:var(--text-muted); margin-top:6px;">Dapatkan akses penuh ke semua fitur premium dan tingkatkan peluangmu lolos UTBK!</p>

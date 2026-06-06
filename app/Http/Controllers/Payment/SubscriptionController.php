@@ -3,20 +3,17 @@
 namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
-use App\Models\PaymentLog;
+use App\Models\AppSetting;
 use App\Models\Notification;
+use App\Models\PaymentLog;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
-use App\Services\BayarGgService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class SubscriptionController extends Controller
 {
-    public function __construct(private BayarGgService $bayarGg) {}
-
     // =========================================================================
     // INDEX — Halaman Pricing / Upgrade
     // =========================================================================
@@ -26,11 +23,18 @@ class SubscriptionController extends Controller
         $plans              = SubscriptionPlan::active()->get();
         $activeSubscription = $request->user()->activeSubscription();
 
-        return view('payment.upgrade', compact('plans', 'activeSubscription'));
+        // Subscription pending milik user (untuk lanjut bayar / upload bukti)
+        $pending = Subscription::where('user_id', $request->user()->id)
+            ->where('status', 'pending')
+            ->with('plan')
+            ->latest()
+            ->first();
+
+        return view('payment.upgrade', compact('plans', 'activeSubscription', 'pending'));
     }
 
     // =========================================================================
-    // CHECKOUT — Buat order & redirect ke bayar.gg
+    // CHECKOUT — Buat order transfer manual + kode unik
     // =========================================================================
 
     public function checkout(Request $request, string $slug): RedirectResponse
@@ -46,213 +50,119 @@ class SubscriptionController extends Controller
             ->where('status', 'pending')
             ->update(['status' => 'cancelled']);
 
-        // Buat order ID internal
+        // Kode unik 3 digit (100-999) agar nominal transfer mudah dicocokkan
+        $uniqueCode  = random_int(100, 999);
+        $totalAmount = (int) $plan->price + $uniqueCode;
+
         $orderId = 'PWR-' . $user->id . '-' . time();
 
-        // Buat subscription record dulu (pending)
         $subscription = Subscription::create([
-            'user_id'  => $user->id,
-            'plan_id'  => $plan->id,
-            'status'   => 'pending',
-            'amount_paid' => $plan->price,
+            'user_id'           => $user->id,
+            'plan_id'           => $plan->id,
+            'status'            => 'pending',
+            'payment_method'    => 'transfer_manual',
+            'amount_paid'       => $plan->price,
+            'unique_code'       => $uniqueCode,
+            'total_amount'      => $totalAmount,
+            'midtrans_order_id' => $orderId,
         ]);
 
-        // Simpan order ID di subscription (pakai midtrans_order_id field yang ada)
-        $subscription->update(['midtrans_order_id' => $orderId]);
-
-        // Buat payment di bayar.gg
-        $payment = $this->bayarGg->createPayment(
-            amount: $plan->price,
-            description: $plan->name . ' - Puwinter',
-            customer: [
-                'name'  => $user->name,
-                'email' => $user->email,
-                'phone' => $user->phone,
-            ],
-            orderId: $orderId
-        );
-
-        if (!$payment) {
-            $subscription->update(['status' => 'cancelled']);
-            return back()->with('error', 'Gagal membuat pembayaran. Coba lagi.');
-        }
-
-        // Simpan invoice ID dari bayar.gg
-        $invoiceId = $payment['payment']['invoice_id'];
-        $paymentUrl = $payment['payment_url'];
-
-        $subscription->update([
-            'midtrans_snap_token' => $invoiceId, // kita pakai field ini untuk invoice_id bayar.gg
-        ]);
-
-        // Log
         PaymentLog::create([
             'subscription_id' => $subscription->id,
             'user_id'         => $user->id,
-            'event_type'      => 'payment.created',
-            'payload'         => $payment,
+            'event_type'      => 'order.created',
+            'payload'         => ['order_id' => $orderId, 'total' => $totalAmount],
             'status'          => 'pending',
         ]);
 
-        // Redirect ke halaman bayar.gg
-        return redirect($paymentUrl);
+        return redirect()->route('upgrade.instruction', $subscription->id);
     }
 
     // =========================================================================
-    // CALLBACK / WEBHOOK dari bayar.gg
+    // INSTRUCTION — Halaman instruksi transfer + form upload bukti
     // =========================================================================
 
-    public function callback(Request $request): Response
+    public function instruction(Request $request, int $id): View|RedirectResponse
     {
-        $payload = $request->all();
+        $subscription = Subscription::where('id', $id)
+            ->where('user_id', $request->user()->id)
+            ->with('plan')
+            ->firstOrFail();
 
-        \Log::info('BayarGg Callback received', $payload);
-
-        $invoiceId = $payload['invoice_id'] ?? null;
-
-        if (!$invoiceId) {
-            return response('Missing invoice_id', 400);
-        }
-
-        // Verifikasi dengan double-check ke API
-        if (!$this->bayarGg->verifyCallback($payload)) {
-            \Log::warning('BayarGg callback verification failed', $payload);
-            return response('Verification failed', 400);
-        }
-
-        // Cari subscription berdasarkan invoice ID yang kita simpan di midtrans_snap_token
-        $subscription = Subscription::where('midtrans_snap_token', $invoiceId)->first();
-
-        if (!$subscription) {
-            \Log::warning('BayarGg callback: subscription not found for invoice ' . $invoiceId);
-            return response('Subscription not found', 404);
-        }
-
-        // Hindari proses duplikat
         if ($subscription->status === 'active') {
-            return response('Already processed', 200);
+            return redirect()->route('dashboard')->with('info', 'Langganan kamu sudah aktif.');
         }
 
-        $status      = $payload['status'] ?? 'pending';
-        $paymentMethod = $payload['payment_method'] ?? 'qris';
+        $bank = AppSetting::bankInfo();
 
-        // Log
+        return view('payment.instruction', compact('subscription', 'bank'));
+    }
+
+    // =========================================================================
+    // UPLOAD PROOF — Siswa unggah bukti transfer
+    // =========================================================================
+
+    public function uploadProof(Request $request, int $id): RedirectResponse
+    {
+        $request->validate([
+            'proof' => 'required|image|mimes:jpg,jpeg,png,webp|max:4096',
+        ], [
+            'proof.required' => 'Bukti transfer wajib diunggah.',
+            'proof.image'    => 'File harus berupa gambar.',
+            'proof.max'      => 'Ukuran maksimal 4MB.',
+        ]);
+
+        $subscription = Subscription::where('id', $id)
+            ->where('user_id', $request->user()->id)
+            ->with('plan')
+            ->firstOrFail();
+
+        if ($subscription->status === 'active') {
+            return redirect()->route('dashboard')->with('info', 'Langganan kamu sudah aktif.');
+        }
+
+        // Simpan ke public/uploads/proofs (kompatibel shared hosting tanpa storage:link)
+        $dir = public_path('uploads/proofs');
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+        $filename = 'proof_' . $subscription->id . '_' . time() . '.'
+            . $request->file('proof')->getClientOriginalExtension();
+        $request->file('proof')->move($dir, $filename);
+
+        // Hapus bukti lama jika ada
+        if ($subscription->payment_proof) {
+            $old = public_path('uploads/proofs/' . $subscription->payment_proof);
+            if (is_file($old)) @unlink($old);
+        }
+
+        $subscription->update([
+            'payment_proof'     => $filename,
+            'proof_uploaded_at' => now(),
+        ]);
+
         PaymentLog::create([
             'subscription_id' => $subscription->id,
             'user_id'         => $subscription->user_id,
-            'event_type'      => 'callback.' . $status,
-            'payload'         => $payload,
-            'status'          => $status,
+            'event_type'      => 'proof.uploaded',
+            'payload'         => ['file' => $filename],
+            'status'          => 'pending',
         ]);
 
-        if ($status === 'paid') {
-            $this->activateSubscription($subscription, $paymentMethod);
-        } elseif (in_array($status, ['expired', 'cancelled'])) {
-            $subscription->update(['status' => 'cancelled']);
+        // Notifikasi ke semua admin/superadmin
+        $admins = \App\Models\User::whereIn('role', ['admin', 'superadmin'])->pluck('id');
+        foreach ($admins as $adminId) {
+            Notification::notify(
+                $adminId,
+                'payment',
+                'Bukti transfer baru — ' . ($subscription->plan->name ?? 'Premium'),
+                $request->user()->name . ' mengunggah bukti transfer. Mohon divalidasi.',
+                route('admin.subscriptions.index'),
+                'fa-receipt'
+            );
         }
 
-        return response('OK', 200);
-    }
-
-    // =========================================================================
-    // SUCCESS — Halaman setelah redirect dari bayar.gg
-    // =========================================================================
-
-    public function success(Request $request): View|RedirectResponse
-    {
-        $orderId = $request->get('order');
-
-        if (!$orderId) {
-            return redirect()->route('dashboard');
-        }
-
-        // Cari subscription berdasarkan order ID internal
-        $subscription = Subscription::where('midtrans_order_id', $orderId)
-            ->where('user_id', $request->user()->id)
-            ->with('plan')
-            ->first();
-
-        if (!$subscription) {
-            return redirect()->route('dashboard')->with('info', 'Pembayaran sedang diproses.');
-        }
-
-        // Jika belum active, cek ke API bayar.gg sekali lagi
-        if ($subscription->status !== 'active') {
-            $invoiceId = $subscription->midtrans_snap_token;
-            $payment   = $this->bayarGg->checkPayment($invoiceId);
-
-            if ($payment && $payment['status'] === 'paid') {
-                $this->activateSubscription($subscription, $payment['payment_method'] ?? 'qris');
-                $subscription->refresh();
-            }
-        }
-
-        return view('payment.success', compact('subscription'));
-    }
-
-    // =========================================================================
-    // CHECK STATUS — AJAX polling dari frontend
-    // =========================================================================
-
-    public function checkStatus(Request $request, int $subscriptionId)
-    {
-        $subscription = Subscription::where('id', $subscriptionId)
-            ->where('user_id', $request->user()->id)
-            ->first();
-
-        if (!$subscription) {
-            return response()->json(['status' => 'not_found'], 404);
-        }
-
-        // Kalau sudah active, return langsung
-        if ($subscription->status === 'active') {
-            return response()->json([
-                'status'      => 'active',
-                'redirect_url'=> route('dashboard'),
-            ]);
-        }
-
-        // Cek ke API bayar.gg
-        $invoiceId = $subscription->midtrans_snap_token;
-        $payment   = $this->bayarGg->checkPayment($invoiceId);
-
-        if ($payment && $payment['status'] === 'paid') {
-            $this->activateSubscription($subscription, $payment['payment_method'] ?? 'qris');
-            return response()->json([
-                'status'      => 'active',
-                'redirect_url'=> route('upgrade.success') . '?order=' . $subscription->midtrans_order_id,
-            ]);
-        }
-
-        return response()->json([
-            'status'     => $subscription->status,
-            'expires_at' => $payment['expires_at'] ?? null,
-        ]);
-    }
-
-    // =========================================================================
-    // PRIVATE HELPERS
-    // =========================================================================
-
-    private function activateSubscription(Subscription $subscription, string $paymentMethod): void
-    {
-        $plan = $subscription->plan;
-
-        $subscription->update([
-            'status'         => 'active',
-            'payment_method' => $paymentMethod,
-            'started_at'     => now(),
-            'expired_at'     => now()->addMonths($plan->duration_months),
-        ]);
-
-        // Notifikasi pembayaran berhasil
-        Notification::notify(
-            $subscription->user_id,
-            'payment',
-            'Pembayaran berhasil — ' . ($plan->name ?? 'Premium'),
-            'Akun kamu kini Premium hingga ' . $subscription->expired_at->translatedFormat('d M Y') . '.',
-            route('dashboard'),
-            'fa-crown'
-        );
+        return redirect()->route('upgrade.instruction', $subscription->id)
+            ->with('success', 'Bukti transfer berhasil diunggah. Mohon tunggu validasi admin (maks. 1×24 jam).');
     }
 }

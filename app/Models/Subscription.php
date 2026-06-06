@@ -12,11 +12,16 @@ class Subscription extends Model
         'user_id', 'plan_id', 'status',
         'started_at', 'expired_at', 'payment_method',
         'midtrans_order_id', 'midtrans_snap_token', 'amount_paid',
+        'unique_code', 'total_amount', 'payment_proof', 'proof_uploaded_at',
     ];
 
     protected $casts = [
-        'started_at' => 'datetime',
-        'expired_at' => 'datetime',
+        'started_at'        => 'datetime',
+        'expired_at'        => 'datetime',
+        'proof_uploaded_at' => 'datetime',
+        'amount_paid'       => 'integer',
+        'unique_code'       => 'integer',
+        'total_amount'      => 'integer',
     ];
 
     // -------------------------------------------------------------------------

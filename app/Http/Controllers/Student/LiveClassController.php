@@ -56,6 +56,12 @@ class LiveClassController extends Controller
                 ->with('error', 'Live class ini tidak tersedia untuk kelasmu.');
         }
 
+        // Batas live class gratis: user free hanya boleh 1 live class seumur hidup.
+        if (!$user->isPremium() && !$user->canJoinFreeLiveClass($liveClass->id)) {
+            return redirect()->route('upgrade.index')
+                ->with('error', 'Pengguna gratis hanya dapat mengikuti 1 live class. Upgrade ke Premium untuk akses tanpa batas.');
+        }
+
         // Catat kehadiran jika live
         if ($liveClass->isLive()) {
             LiveClassAttendance::firstOrCreate([
@@ -87,6 +93,12 @@ class LiveClassController extends Controller
                         : 'Live class ini hanya untuk member Premium.');
             }
             abort(403, 'Live class ini bukan untuk kelasmu.');
+        }
+
+        // Batas live class gratis: user free hanya boleh 1 live class seumur hidup.
+        if (!$user->isPremium() && !$user->canJoinFreeLiveClass($liveClass->id)) {
+            return redirect()->route('upgrade.index')
+                ->with('error', 'Pengguna gratis hanya dapat mengikuti 1 live class. Upgrade ke Premium untuk akses tanpa batas.');
         }
 
         // Hanya boleh join saat status live

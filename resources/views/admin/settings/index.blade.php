@@ -82,6 +82,38 @@
     {{-- KANAN --}}
     <div style="display:flex; flex-direction:column; gap:20px;">
 
+        {{-- REKENING TRANSFER MANUAL --}}
+        <div class="card">
+            <div style="font-size:14px; font-weight:700; margin-bottom:4px;">Rekening Transfer Manual</div>
+            <p style="font-size:12px; color:var(--muted); margin-bottom:14px;">Ditampilkan ke siswa pada halaman instruksi pembayaran.</p>
+            <form method="POST" action="{{ route('admin.settings.bank') }}">
+                @csrf
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; display:block; margin-bottom:5px;">Nama Bank</label>
+                    <input type="text" name="bank_name" value="{{ $bank['bank_name'] }}" placeholder="mis. BCA"
+                           class="form-control" style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; outline:none;">
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; display:block; margin-bottom:5px;">No. Rekening</label>
+                    <input type="text" name="bank_account" value="{{ $bank['bank_account'] }}" placeholder="mis. 1234567890"
+                           class="form-control" style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; outline:none;">
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px; font-weight:600; display:block; margin-bottom:5px;">Atas Nama</label>
+                    <input type="text" name="bank_holder" value="{{ $bank['bank_holder'] }}" placeholder="mis. PT Puwinter Edukasi"
+                           class="form-control" style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; outline:none;">
+                </div>
+                <div style="margin-bottom:14px;">
+                    <label style="font-size:12px; font-weight:600; display:block; margin-bottom:5px;">Catatan Pembayaran (opsional)</label>
+                    <textarea name="payment_note" rows="2" placeholder="mis. Konfirmasi via WhatsApp 0812xxxx setelah transfer."
+                              class="form-control" style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; outline:none; resize:vertical;">{{ $bank['payment_note'] }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm" style="width:100%; justify-content:center;">
+                    <i class="fas fa-save"></i> Simpan Rekening
+                </button>
+            </form>
+        </div>
+
         {{-- ARTISAN PANEL --}}
         <div class="card">
             <div style="font-size:14px; font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:8px;">

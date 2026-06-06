@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AppSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -25,7 +26,29 @@ class SettingsController extends Controller
             'db_connection'   => config('database.default'),
         ];
 
-        return view('admin.settings.index', compact('sysInfo'));
+        $bank = AppSetting::bankInfo();
+
+        return view('admin.settings.index', compact('sysInfo', 'bank'));
+    }
+
+    // =========================================================================
+    // REKENING TRANSFER MANUAL
+    // =========================================================================
+
+    public function updateBank(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'bank_name'    => 'nullable|string|max:100',
+            'bank_account' => 'nullable|string|max:50',
+            'bank_holder'  => 'nullable|string|max:100',
+            'payment_note' => 'nullable|string|max:500',
+        ]);
+
+        foreach ($data as $key => $value) {
+            AppSetting::set($key, $value ?? '');
+        }
+
+        return back()->with('success', 'Informasi rekening berhasil disimpan.');
     }
 
     public function uploadLogo(Request $request): RedirectResponse

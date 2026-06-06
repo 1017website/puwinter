@@ -67,8 +67,8 @@
                         {{-- Penutup area judul YouTube (kiri-atas) agar klik judul/logo → YouTube terblok --}}
                         <div style="position:absolute; top:0; left:0; right:0; height:64px; z-index:5; cursor:default;"
                              oncontextmenu="return false;"></div>
-                        {{-- Penutup logo YouTube (kanan-bawah) --}}
-                        <div style="position:absolute; bottom:0; right:0; width:120px; height:44px; z-index:5; cursor:default;"
+                        {{-- Penutup seluruh bar kanan-bawah (tombol share, watch later, watch on youtube) --}}
+                        <div style="position:absolute; bottom:0; right:0; width:200px; height:48px; z-index:5; cursor:default;"
                              oncontextmenu="return false;"></div>
                     @elseif($isDirectVideo)
                         <video controls controlslist="nodownload"

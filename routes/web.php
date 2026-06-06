@@ -159,25 +159,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/password', [StudentSettings::class, 'updatePassword'])->name('password');
     });
 
-    // Upgrade Premium
+    // Upgrade Premium (transfer manual)
     Route::prefix('upgrade')->name('upgrade.')->group(function () {
         Route::get('/', [SubscriptionController::class, 'index'])->name('index');
         Route::post('/checkout/{slug}', [SubscriptionController::class, 'checkout'])->name('checkout');
-        Route::get('/sukses', [SubscriptionController::class, 'success'])->name('success');
+        Route::get('/instruksi/{id}', [SubscriptionController::class, 'instruction'])->name('instruction');
+        Route::post('/instruksi/{id}/bukti', [SubscriptionController::class, 'uploadProof'])->name('upload-proof');
     });
-
-    // Payment check status (AJAX polling)
-    Route::get('/payment/check-status/{id}', [SubscriptionController::class, 'checkStatus'])
-        ->name('payment.check-status');
 });
-
-// ============================================================================
-// PAYMENT CALLBACK / WEBHOOK (tanpa auth & tanpa CSRF)
-// ============================================================================
-
-Route::post('/payment/callback', [SubscriptionController::class, 'callback'])
-    ->name('payment.callback')
-    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
 // ============================================================================
 // ADMIN ROUTES
@@ -264,6 +253,7 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
         Route::post('/settings/logo', [AdminSettings::class, 'uploadLogo'])->name('settings.logo');
         Route::post('/settings/favicon', [AdminSettings::class, 'uploadFavicon'])->name('settings.favicon');
         Route::post('/settings/artisan', [AdminSettings::class, 'runArtisan'])->name('settings.artisan');
+        Route::post('/settings/bank', [AdminSettings::class, 'updateBank'])->name('settings.bank');
 
         // Mata Pelajaran
         Route::prefix('subjects')->name('subjects.')->group(function () {

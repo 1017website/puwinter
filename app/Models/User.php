@@ -86,6 +86,42 @@ class User extends Authenticatable implements MustVerifyEmail
         return $course->isAccessibleBy($this);
     }
 
+    /**
+     * Jumlah live class berbeda yang pernah diikuti (dihitung dari kehadiran unik).
+     */
+    public function liveClassesAttendedCount(): int
+    {
+        return \App\Models\LiveClassAttendance::where('user_id', $this->id)
+            ->distinct('live_class_id')
+            ->count('live_class_id');
+    }
+
+    /**
+     * Apakah user free masih boleh ikut live class baru.
+     * Aturan: user gratis dibatasi 1 live class seumur hidup.
+     * Sudah pernah ikut live class $liveClassId -> tetap boleh (akses ulang).
+     */
+    public function canJoinFreeLiveClass(?int $liveClassId = null): bool
+    {
+        // Premium / staff: bebas.
+        if ($this->isPremium()) {
+            return true;
+        }
+
+        // Jika live class ini sudah pernah diikuti, akses ulang diperbolehkan.
+        if ($liveClassId !== null) {
+            $already = \App\Models\LiveClassAttendance::where('user_id', $this->id)
+                ->where('live_class_id', $liveClassId)
+                ->exists();
+            if ($already) {
+                return true;
+            }
+        }
+
+        // Belum pernah ikut live class apa pun -> boleh 1x.
+        return $this->liveClassesAttendedCount() < 1;
+    }
+
     // -------------------------------------------------------------------------
     // Grade / Kelas Helpers
     // -------------------------------------------------------------------------
