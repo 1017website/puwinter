@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
 use Illuminate\Http\RedirectResponse;
@@ -51,8 +52,17 @@ class SubscriptionController extends Controller
         $subscription->update([
             'status'     => 'active',
             'started_at' => now(),
-            'expired_at' => now()->addMonths($plan->duration_months),
+            'expired_at' => now()->addMonths((int) $plan->duration_months),
         ]);
+
+        Notification::notify(
+            $subscription->user_id,
+            'payment',
+            'Pembayaran terverifikasi — ' . ($plan->name ?? 'Premium'),
+            'Akun kamu kini Premium hingga ' . $subscription->fresh()->expired_at->translatedFormat('d M Y') . '.',
+            route('dashboard'),
+            'fa-crown'
+        );
 
         return back()->with('success', 'Subscription berhasil diaktifkan.');
     }
@@ -70,8 +80,8 @@ class SubscriptionController extends Controller
         $request->validate(['months' => 'required|integer|min:1|max:24']);
 
         $newExpiry = ($subscription->expired_at && $subscription->expired_at->isFuture())
-            ? $subscription->expired_at->addMonths($request->months)
-            : now()->addMonths($request->months);
+            ? $subscription->expired_at->copy()->addMonths((int) $request->months)
+            : now()->addMonths((int) $request->months);
 
         $subscription->update([
             'status'     => 'active',

@@ -174,7 +174,7 @@ class UserController extends Controller
             'plan_id'        => $plan->id,
             'status'         => 'active',
             'started_at'     => now(),
-            'expired_at'     => now()->addMonths($plan->duration_months),
+            'expired_at'     => now()->addMonths((int) $plan->duration_months),
             'payment_method' => 'manual_admin',
             'amount_paid'    => 0,
         ]);

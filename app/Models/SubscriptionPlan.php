@@ -13,9 +13,13 @@ class SubscriptionPlan extends Model
     ];
 
     protected $casts = [
-        'features'   => 'array',
-        'is_popular' => 'boolean',
-        'is_active'  => 'boolean',
+        'features'        => 'array',
+        'is_popular'      => 'boolean',
+        'is_active'       => 'boolean',
+        'duration_months' => 'integer',
+        'price'           => 'integer',
+        'original_price'  => 'integer',
+        'order'           => 'integer',
     ];
 
     // -------------------------------------------------------------------------
