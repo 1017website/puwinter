@@ -91,12 +91,15 @@
                 @endphp
 
                 @if($myAttempt)
-                    <div style="background:#ECFDF5; border:1px solid #6EE7B7; border-radius:8px; padding:10px 12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                        <div style="font-size:12px; color:#065F46; font-weight:600;">
-                            <i class="fas fa-check-circle"></i> Skor terbaik: <strong>{{ $myAttempt->score }}</strong>
+                    <a href="{{ route('student.tryout.result', $myAttempt->id) }}"
+                       style="text-decoration:none; display:block;">
+                        <div style="background:#ECFDF5; border:1px solid #6EE7B7; border-radius:8px; padding:10px 12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                            <div style="font-size:12px; color:#065F46; font-weight:600;">
+                                <i class="fas fa-check-circle"></i> Skor terbaik: <strong>{{ $myAttempt->score }}</strong>
+                            </div>
+                            <div style="font-size:11px; color:#059669; font-weight:600;">Peringkat #{{ $myAttempt->rank_at_submit }} ›</div>
                         </div>
-                        <div style="font-size:11px; color:#6EE7B7; font-weight:600;">Peringkat #{{ $myAttempt->rank_at_submit }}</div>
-                    </div>
+                    </a>
                 @endif
 
                 <div style="display:flex; gap:8px;">
@@ -106,12 +109,25 @@
                             <i class="fas fa-crown"></i> Upgrade Premium
                         </a>
                     @else
-                        <a href="{{ route('student.tryout.start', $tryout->id) }}"
-                           style="flex:1; padding:10px; background:var(--primary); color:#fff; border-radius:8px; font-size:13px; font-weight:700; text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; transition:background 0.15s;"
-                           onmouseover="this.style.background='#1D4ED8'"
-                           onmouseout="this.style.background='var(--primary)'">
-                            <i class="fas fa-play"></i> {{ $myAttempt ? 'Ulangi Tryout' : 'Mulai Tryout' }}
-                        </a>
+                        @if($myAttempt)
+                            <a href="{{ route('student.tryout.result', $myAttempt->id) }}"
+                               style="flex:1; padding:10px; background:var(--primary); color:#fff; border-radius:8px; font-size:13px; font-weight:700; text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px;"
+                               onmouseover="this.style.background='#1D4ED8'"
+                               onmouseout="this.style.background='var(--primary)'">
+                                <i class="fas fa-clipboard-check"></i> Lihat Hasil
+                            </a>
+                            <a href="{{ route('student.tryout.start', $tryout->id) }}"
+                               style="flex:1; padding:10px; background:transparent; color:var(--primary); border:1.5px solid var(--primary); border-radius:8px; font-size:13px; font-weight:700; text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px;">
+                                <i class="fas fa-redo"></i> Ulangi
+                            </a>
+                        @else
+                            <a href="{{ route('student.tryout.start', $tryout->id) }}"
+                               style="flex:1; padding:10px; background:var(--primary); color:#fff; border-radius:8px; font-size:13px; font-weight:700; text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; transition:background 0.15s;"
+                               onmouseover="this.style.background='#1D4ED8'"
+                               onmouseout="this.style.background='var(--primary)'">
+                                <i class="fas fa-play"></i> Mulai Tryout
+                            </a>
+                        @endif
                     @endif
                 </div>
             </div>
