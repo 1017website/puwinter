@@ -511,35 +511,40 @@
 
         .pricing-grid {
             display: grid;
-            grid-template-columns: .9fr 1.2fr .9fr;
-            gap: 20px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
             align-items: stretch;
             margin-top: 42px
         }
 
         .pricing-card {
+            position: relative;
             background: #fff;
             color: #08111f;
-            border-radius: 34px;
-            padding: 32px;
+            border-radius: 20px;
+            padding: 18px;
             border: 1px solid rgba(255, 255, 255, .08)
         }
 
         .pricing-card.popular {
             background: linear-gradient(180deg, #5337ec, #0f172a);
-            color: white;
-            transform: scale(1.04)
+            color: white
         }
 
         .popular-tag {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 2;
             display: inline-block;
             background: #F59E0B;
             color: #111827;
-            padding: 7px 14px;
+            padding: 4px 9px;
             border-radius: 999px;
-            font-weight: 900;
-            font-size: 11px;
-            margin-bottom: 16px
+            font-weight: 800;
+            font-size: 9px;
+            letter-spacing: .3px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.18)
         }
 
         .pricing-name {
@@ -552,13 +557,13 @@
 
         .pricing-price {
             font-family: Sora;
-            font-size: 50px;
+            font-size: 34px;
             font-weight: 900;
-            margin: 12px 0
+            margin: 8px 0
         }
 
         .pricing-price sup {
-            font-size: 18px
+            font-size: 15px
         }
 
         .pricing-period,
@@ -575,14 +580,14 @@
 
         .pricing-features {
             list-style: none;
-            margin: 24px 0
+            margin: 14px 0
         }
 
         .pricing-features li {
-            padding: 10px 0;
+            padding: 6px 0;
             color: #475569;
             border-bottom: 1px solid #e2e8f0;
-            font-size: 14px
+            font-size: 12.5px
         }
 
         .popular .pricing-features li {
@@ -597,8 +602,9 @@
 
         .btn-pricing {
             width: 100%;
-            padding: 15px;
-            border: 0
+            padding: 11px;
+            border: 0;
+            font-size: 13px
         }
 
         .btn-pricing-filled {
@@ -768,6 +774,12 @@
             display: flex;
             align-items: center;
             justify-content: center
+        }
+
+        @media(max-width:1100px) {
+            .pricing-grid {
+                grid-template-columns: 1fr 1fr
+            }
         }
 
         @media(max-width:980px) {
@@ -1406,7 +1418,7 @@
             $discount = $plan->original_price > $plan->price
             ? ' · Hemat ' . $plan->discountPercentage() . '%'
             : '';
-            @endphp<div class="pricing-card {{ $plan->is_popular ? 'popular' : '' }} reveal">@if($plan->is_popular)<div class="popular-tag">PALING POPULER</div>@endif @if($plan->flyer_image)<div class="flyer-thumb" onclick="openFlyer('{{ asset('storage/'.$plan->flyer_image) }}')" style="margin:-4px 0 14px;cursor:zoom-in;border-radius:12px;overflow:hidden;border:1px solid rgba(148,163,184,.25);"><img src="{{ asset('storage/'.$plan->flyer_image) }}" alt="Pamflet {{ $plan->name }}" style="width:100%;display:block;aspect-ratio:3/4;object-fit:cover;"></div>@endif<div class="pricing-name">{{ $plan->name }}</div>@if($plan->periodLabel())<div style="font-size:12px;color:#94A3B8;font-weight:600;margin-top:2px;"><i class="far fa-calendar"></i> {{ $plan->periodLabel() }}</div>@endif
+            @endphp<div class="pricing-card {{ $plan->is_popular ? 'popular' : '' }} reveal">@if($plan->is_popular)<div class="popular-tag">PALING POPULER</div>@endif @if($plan->flyer_image)<div class="flyer-thumb" onclick="openFlyer('{{ asset('storage/'.$plan->flyer_image) }}')" style="margin:0 0 12px;cursor:zoom-in;border-radius:10px;overflow:hidden;border:1px solid rgba(148,163,184,.25);"><img src="{{ asset('storage/'.$plan->flyer_image) }}" alt="Pamflet {{ $plan->name }}" style="width:100%;display:block;height:150px;object-fit:cover;object-position:top;"></div>@endif<div class="pricing-name">{{ $plan->name }}</div>@if($plan->periodLabel())<div style="font-size:11px;color:#94A3B8;font-weight:600;margin-top:2px;"><i class="far fa-calendar"></i> {{ $plan->periodLabel() }}</div>@endif
                 <div class="pricing-price"><sup>Rp</sup>{{ $priceK }}</div>
                 <div class="pricing-period">/ {{ $plan->duration_months }} bulan</div>@if($plan->original_price > $plan->price)<div class="pricing-strike">Rp {{ number_format($plan->original_price) }}{{ $discount }}</div>@endif @if($plan->bonus)<div style="font-size:12px;color:var(--accent);font-weight:800;margin:6px 0;">🎁 {{ $plan->bonus }}</div>@endif @if($plan->features)<ul class="pricing-features">@foreach($plan->features as $f)<li><i class="fas fa-check-circle"></i> {{ $f }}</li>@endforeach</ul>@endif<a href="{{ route('register') }}" class="btn-pricing {{ $plan->is_popular ? 'btn-pricing-filled' : 'btn-pricing-outline' }}">{{ $plan->is_popular ? 'Pilih Paket Ini' : 'Mulai Sekarang' }}</a>@if(!is_null($plan->quota))<div style="font-size:11.5px;margin-top:8px;font-weight:600;color:{{ $plan->isQuotaFull() ? '#EF4444' : '#10B981' }};">@if($plan->isQuotaFull())<i class="fas fa-circle-xmark"></i> Kuota penuh@else<i class="fas fa-user-check"></i> Sisa kuota: {{ $plan->remainingQuota() }} dari {{ $plan->quota }}@endif</div>@endif
             </div>@empty<div class="pricing-card reveal" style="grid-column:1/-1;text-align:center;padding:40px;">
