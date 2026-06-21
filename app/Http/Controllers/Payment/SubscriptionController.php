@@ -45,6 +45,11 @@ class SubscriptionController extends Controller
 
         $user = $request->user();
 
+        // Cek kuota: program berkuota & sudah penuh -> tolak (kecuali user sudah berbayar di program ini).
+        if (!$user->hasPaidProgram($plan->id) && $plan->isQuotaFull()) {
+            return back()->with('error', 'Maaf, kuota peserta untuk program ' . $plan->name . ' sudah penuh.');
+        }
+
         // Batalkan subscription pending sebelumnya
         Subscription::where('user_id', $user->id)
             ->where('status', 'pending')
@@ -59,6 +64,7 @@ class SubscriptionController extends Controller
         $subscription = Subscription::create([
             'user_id'           => $user->id,
             'plan_id'           => $plan->id,
+            'tier'              => $plan->tier ?? 'regular',
             'status'            => 'pending',
             'payment_method'    => 'transfer_manual',
             'amount_paid'       => $plan->price,

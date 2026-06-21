@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class SubscriptionPlan extends Model
 {
     protected $fillable = [
-        'name', 'slug', 'duration_months', 'price', 'original_price',
+        'name', 'slug', 'tier', 'duration_months', 'start_date', 'end_date',
+        'quota', 'flyer_image', 'price', 'original_price',
         'is_popular', 'features', 'bonus', 'is_active', 'order',
     ];
 
@@ -17,6 +18,9 @@ class SubscriptionPlan extends Model
         'is_popular'      => 'boolean',
         'is_active'       => 'boolean',
         'duration_months' => 'integer',
+        'start_date'      => 'date',
+        'end_date'        => 'date',
+        'quota'           => 'integer',
         'price'           => 'integer',
         'original_price'  => 'integer',
         'order'           => 'integer',
@@ -34,6 +38,63 @@ class SubscriptionPlan extends Model
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
+
+    public function isExclusive(): bool
+    {
+        return $this->tier === 'exclusive';
+    }
+
+    /**
+     * Jumlah peserta BERBAYAR aktif pada program ini (untuk kuota).
+     */
+    public function paidCount(): int
+    {
+        if (!\Illuminate\Support\Facades\Schema::hasTable('program_enrollments')) {
+            return 0;
+        }
+        return \App\Models\ProgramEnrollment::where('plan_id', $this->id)
+            ->where('status', 'paid')
+            ->where(function ($q) {
+                $q->whereNull('paid_expires_at')->orWhere('paid_expires_at', '>', now());
+            })
+            ->count();
+    }
+
+    /**
+     * Sisa kuota. null = tanpa batas.
+     */
+    public function remainingQuota(): ?int
+    {
+        if ($this->quota === null) {
+            return null;
+        }
+        return max(0, (int) $this->quota - $this->paidCount());
+    }
+
+    /**
+     * Apakah kuota berbayar sudah penuh.
+     */
+    public function isQuotaFull(): bool
+    {
+        $remaining = $this->remainingQuota();
+        return $remaining !== null && $remaining <= 0;
+    }
+
+    /**
+     * Label periode untuk ditampilkan (mis. "Agu 2026 - Okt 2026").
+     */
+    public function periodLabel(): ?string
+    {
+        if (!$this->start_date && !$this->end_date) {
+            return null;
+        }
+        $start = $this->start_date?->translatedFormat('M Y');
+        $end   = $this->end_date?->translatedFormat('M Y');
+        if ($start && $end) {
+            return $start . ' - ' . $end;
+        }
+        return $start ?: $end;
+    }
 
     public function discountPercentage(): int
     {

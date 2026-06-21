@@ -13,6 +13,8 @@ use App\Http\Controllers\Student\LeaderboardController;
 use App\Http\Controllers\Student\LiveClassController;
 use App\Http\Controllers\Student\StudyHistoryController;
 use App\Http\Controllers\Student\TryoutController;
+use App\Http\Controllers\Student\TryoutHistoryController;
+use App\Http\Controllers\Student\ProgramController;
 use App\Http\Controllers\Student\BankSoalController;
 use App\Http\Controllers\Student\MateriPdfController;
 use App\Http\Controllers\Student\ExtraClassController;
@@ -82,6 +84,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Program (akses per-program)
+    Route::prefix('program')->name('student.program.')->group(function () {
+        Route::get('/', [ProgramController::class, 'index'])->name('index');
+        Route::get('/{planId}', [ProgramController::class, 'show'])->name('show');
+        Route::post('/{planId}/daftar', [ProgramController::class, 'enroll'])->name('enroll');
+    });
+
     // Kelas Saya
     Route::prefix('kelas')->name('student.course.')->group(function () {
         Route::get('/', [CourseController::class, 'index'])->name('index');
@@ -108,6 +117,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Tryout
     Route::prefix('tryout')->name('student.tryout.')->group(function () {
         Route::get('/', [TryoutController::class, 'index'])->name('index');
+        Route::get('/riwayat', [TryoutHistoryController::class, 'index'])->name('history');
         Route::get('/{id}/mulai', [TryoutController::class, 'start'])->name('start');
         Route::post('/attempt/{attemptId}/submit', [TryoutController::class, 'submit'])->name('submit');
         Route::get('/attempt/{attemptId}/hasil', [TryoutController::class, 'result'])->name('result');

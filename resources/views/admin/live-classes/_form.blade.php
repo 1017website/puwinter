@@ -39,6 +39,25 @@
                 @error('grade_id') <div class="text-danger" style="font-size:12px; margin-top:4px;">{{ $message }}</div> @enderror
             </div>
             <div class="form-group">
+                <label>Program <span style="color:var(--danger);">*</span></label>
+                <select name="plan_id" class="form-control">
+                    <option value="">— Pilih Program —</option>
+                    @foreach($plans as $pl)
+                        <option value="{{ $pl->id }}" {{ old('plan_id', $lc->plan_id ?? '') == $pl->id ? 'selected' : '' }}>{{ $pl->name }}</option>
+                    @endforeach
+                </select>
+                <small style="color:var(--muted); font-size:11px;">Live class ini milik program mana.</small>
+            </div>
+            <div class="form-group">
+                <label>Akses Untuk <span style="color:var(--danger);">*</span></label>
+                <select name="access_tier" class="form-control">
+                    <option value="paid" {{ old('access_tier', $lc->access_tier ?? 'paid') === 'paid' ? 'selected' : '' }}>Hanya peserta BERBAYAR</option>
+                    <option value="both" {{ old('access_tier', $lc->access_tier ?? '') === 'both' ? 'selected' : '' }}>Semua peserta program</option>
+                    <option value="free" {{ old('access_tier', $lc->access_tier ?? '') === 'free' ? 'selected' : '' }}>Hanya gratis</option>
+                </select>
+                <small style="color:var(--muted); font-size:11px;">Live class umumnya manfaat berbayar.</small>
+            </div>
+            <div class="form-group">
                 <label>Mentor <span style="color:var(--danger);">*</span></label>
                 <select name="mentor_id" class="form-control" required>
                     <option value="">-- Pilih Mentor --</option>

@@ -79,7 +79,12 @@
                             {{ ucfirst($question->difficulty) }}
                         </span>
                         <span style="font-size:11.5px; color:var(--muted);">{{ $question->subject->name ?? '' }}</span>
-                        <span style="font-size:11.5px; color:var(--muted);">· Kunci: <strong style="color:var(--success);">{{ strtoupper($question->correct_answer) }}</strong></span>
+                        @if($question->isMultiple())
+                            <span class="badge" style="background:#EEF2FF; color:#4F46E5;">Multiple</span>
+                            <span style="font-size:11.5px; color:var(--muted);">· Kunci: <strong style="color:var(--success);">{{ strtoupper(implode(', ', $question->correctKeys())) }}</strong></span>
+                        @else
+                            <span style="font-size:11.5px; color:var(--muted);">· Kunci: <strong style="color:var(--success);">{{ strtoupper($question->correct_answer) }}</strong></span>
+                        @endif
                     </div>
                     <div style="font-size:13.5px; line-height:1.6; color:var(--text-main);"
                          x-show="!open">{{ Str::limit($question->question_text, 140) }}</div>
@@ -97,12 +102,13 @@
         <div class="q-body" x-show="open" x-cloak>
             <div style="font-size:14px; line-height:1.7; color:var(--text-main); margin:14px 0 16px; white-space:pre-wrap;">{{ $question->question_text }}</div>
 
+            @php $qKeys = $question->correctKeys(); @endphp
             @foreach($opts as $key => $val)
                 @if(!is_null($val) && $val !== '')
-                <div class="opt-row {{ $question->correct_answer === $key ? 'correct' : '' }}">
+                <div class="opt-row {{ in_array($key, $qKeys) ? 'correct' : '' }}">
                     <span class="opt-key">{{ strtoupper($key) }}</span>
                     <span style="white-space:pre-wrap; flex:1;">{{ $val }}</span>
-                    @if($question->correct_answer === $key)
+                    @if(in_array($key, $qKeys))
                         <i class="fas fa-check-circle" style="color:var(--success); flex-shrink:0; margin-top:2px;"></i>
                     @endif
                 </div>
@@ -137,7 +143,13 @@
             </div>
             <div class="modal-content">
                 <form method="POST" action="{{ route('admin.tryouts.questions.store', $tryout) }}"
-                      x-data="{ correct: '{{ old('correct_answer','a') }}' }">
+                      x-data="{
+                        qtype: '{{ old('question_type','single') }}',
+                        correct: '{{ old('correct_answer','a') }}',
+                        multi: {{ collect((array) old('correct_answers', []))->map(fn($k)=>"'".$k."'")->implode(',') ? '['.collect((array) old('correct_answers', []))->map(fn($k)=>"'".$k."'")->implode(',').']' : '[]' }},
+                        toggleMulti(k){ this.multi.includes(k) ? this.multi=this.multi.filter(x=>x!==k) : this.multi.push(k) },
+                        isKey(k){ return this.qtype==='multiple' ? this.multi.includes(k) : this.correct===k }
+                      }">
                     @csrf
 
                     <div class="opt-grid" style="margin-bottom:16px;">
@@ -162,21 +174,42 @@
                     </div>
 
                     <div style="margin-bottom:16px;">
+                        <label class="field-label">Tipe Soal <span style="color:red;">*</span></label>
+                        <select name="question_type" x-model="qtype" class="field-input">
+                            <option value="single">Pilihan Ganda (1 jawaban)</option>
+                            <option value="multiple">Multiple Jawaban (beberapa benar)</option>
+                        </select>
+                        <div x-show="qtype==='multiple'" style="font-size:11.5px; color:var(--muted); margin-top:6px;">
+                            <i class="fas fa-info-circle"></i> Pilih minimal 2 kunci. Penilaian partial credit: nilai proporsional dengan kunci benar yang dipilih, dikurangi penalti tiap opsi salah.
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:16px;">
                         <label class="field-label">Teks Soal <span style="color:red;">*</span></label>
                         <textarea name="question_text" rows="4" class="field-input {{ $errors->has('question_text') ? 'is-invalid' : '' }}"
                                   placeholder="Tulis soal di sini... (boleh panjang, beberapa paragraf)">{{ old('question_text') }}</textarea>
                         @error('question_text') <div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ $message }}</div> @enderror
                     </div>
 
-                    {{-- Opsi jawaban: textarea agar muat jawaban panjang, klik kartu untuk set kunci --}}
-                    <label class="field-label">Opsi Jawaban — klik radio di kiri untuk menandai kunci</label>
+                    {{-- Opsi jawaban: radio (single) / checkbox (multiple) di kiri untuk set kunci --}}
+                    <label class="field-label">
+                        <span x-show="qtype==='single'">Opsi Jawaban — klik radio di kiri untuk menandai kunci</span>
+                        <span x-show="qtype==='multiple'" x-cloak>Opsi Jawaban — centang semua kunci yang benar (min. 2)</span>
+                    </label>
                     <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
                         @foreach(['a'=>'A','b'=>'B','c'=>'C','d'=>'D','e'=>'E (opsional)'] as $key => $label)
                         <div style="display:flex; gap:10px; align-items:flex-start; padding:10px; border:1.5px solid var(--border); border-radius:8px;"
-                             :style="correct==='{{ $key }}' ? 'border-color:var(--success); background:#ECFDF5;' : ''">
+                             :style="isKey('{{ $key }}') ? 'border-color:var(--success); background:#ECFDF5;' : ''">
                             <label style="display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding-top:2px;">
+                                {{-- single --}}
                                 <input type="radio" name="correct_answer" value="{{ $key }}" x-model="correct"
+                                       x-show="qtype==='single'"
                                        {{ old('correct_answer','a') === $key ? 'checked' : '' }} style="cursor:pointer;">
+                                {{-- multiple --}}
+                                <input type="checkbox" name="correct_answers[]" value="{{ $key }}"
+                                       x-show="qtype==='multiple'" x-cloak
+                                       :checked="multi.includes('{{ $key }}')"
+                                       @change="toggleMulti('{{ $key }}')" style="cursor:pointer;">
                                 <span style="font-size:12px; font-weight:700;">{{ strtoupper($key[0]) }}</span>
                             </label>
                             <textarea name="option_{{ $key }}" rows="1" class="field-input"
@@ -186,6 +219,7 @@
                         </div>
                         @endforeach
                     </div>
+                    @error('correct_answers') <div style="color:var(--danger); font-size:12px; margin-top:-8px; margin-bottom:12px;">{{ $message }}</div> @enderror
 
                     <div style="margin-bottom:20px;">
                         <label class="field-label">Pembahasan (opsional)</label>

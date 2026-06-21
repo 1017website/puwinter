@@ -459,7 +459,7 @@
                 <i class="fas fa-video"></i> Live Class
             </a>
             <a href="{{ route('admin.plans.index') }}" class="nav-item {{ request()->routeIs('admin.plans.*') ? 'active' : '' }}">
-                <i class="fas fa-tags"></i> Paket Harga
+                <i class="fas fa-tags"></i> Paket Program
             </a>
         </div>
 

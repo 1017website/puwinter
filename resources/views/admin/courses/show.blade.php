@@ -117,10 +117,15 @@
                             <div class="form-group" style="grid-column:span 2; margin-bottom:8px;">
                                 <input type="url" name="content_url" class="form-control" placeholder="URL konten (https://...)" style="font-size:12.5px;">
                             </div>
-                            <div style="grid-column:span 2; display:flex; align-items:center; justify-content:space-between;">
-                                <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; cursor:pointer; font-weight:400;">
-                                    <input type="checkbox" name="is_premium" value="1" style="accent-color:var(--primary);"> Premium
-                                </label>
+                            <div class="form-group" style="grid-column:span 2; margin-bottom:8px;">
+                                <select name="access_tier" class="form-control" style="font-size:12.5px;">
+                                    <option value="both">Akses: Semua peserta (gratis & berbayar)</option>
+                                    <option value="free">Akses: Hanya gratis</option>
+                                    <option value="paid">Akses: Hanya BERBAYAR</option>
+                                </select>
+                            </div>
+                            <div style="grid-column:span 2; display:flex; align-items:center; justify-content:flex-end;">
+                                <input type="hidden" name="is_premium" value="0">
                                 <button type="submit" class="btn btn-primary btn-sm">Simpan Materi</button>
                             </div>
                         </div>

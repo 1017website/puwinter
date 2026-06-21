@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Subscription extends Model
 {
     protected $fillable = [
-        'user_id', 'plan_id', 'status',
+        'user_id', 'plan_id', 'tier', 'status',
         'started_at', 'expired_at', 'payment_method',
         'midtrans_order_id', 'midtrans_snap_token', 'amount_paid',
         'unique_code', 'total_amount', 'payment_proof', 'proof_uploaded_at',

@@ -11,13 +11,31 @@ class CourseMaterial extends Model
 {
     protected $fillable = [
         'module_id', 'title', 'type', 'content_url',
-        'duration_minutes', 'is_premium', 'is_locked', 'order',
+        'duration_minutes', 'is_premium', 'access_tier', 'is_locked', 'order',
     ];
 
     protected $casts = [
         'is_premium' => 'boolean',
         'is_locked'  => 'boolean',
     ];
+
+    /**
+     * Akses materi: ikut program (plan) course induknya + access_tier materi.
+     * Jika access_tier materi null, fallback ke access_tier course.
+     */
+    public function isAccessibleBy($user): bool
+    {
+        if (!$user) return false;
+        if (in_array($user->role, ['superadmin', 'admin', 'mentor'])) return true;
+
+        $course = $this->module?->course;
+        if (!$course) {
+            return true; // materi lepas tanpa course = umum
+        }
+
+        $tier = $this->access_tier ?: ($course->access_tier ?? 'both');
+        return $user->canAccessContent($course->plan_id, $tier);
+    }
 
     // -------------------------------------------------------------------------
     // Scopes

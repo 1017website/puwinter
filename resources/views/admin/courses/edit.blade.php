@@ -58,6 +58,26 @@
                     <small style="color:#94a3b8; font-size:11px;">Kosongkan = tampil untuk semua kelas siswa.</small>
                 </div>
 
+                <div class="form-group" x-show="ctype !== 'extra'">
+                    <label>Program <span style="color:red;">*</span></label>
+                    <select name="plan_id" class="form-control">
+                        <option value="">— Pilih Program —</option>
+                        @foreach($plans as $pl)
+                        <option value="{{ $pl->id }}" {{ old('plan_id', $course->plan_id) == $pl->id ? 'selected' : '' }}>{{ $pl->name }}</option>
+                        @endforeach
+                    </select>
+                    <small style="color:#94a3b8; font-size:11px;">Kelas ini milik program mana.</small>
+                </div>
+
+                <div class="form-group" x-show="ctype !== 'extra'">
+                    <label>Akses Untuk <span style="color:red;">*</span></label>
+                    <select name="access_tier" class="form-control">
+                        <option value="both" {{ old('access_tier', $course->access_tier) == 'both' ? 'selected' : '' }}>Semua peserta program (gratis & berbayar)</option>
+                        <option value="free" {{ old('access_tier', $course->access_tier) == 'free' ? 'selected' : '' }}>Hanya tampil untuk gratis</option>
+                        <option value="paid" {{ old('access_tier', $course->access_tier) == 'paid' ? 'selected' : '' }}>Hanya peserta BERBAYAR</option>
+                    </select>
+                </div>
+
                 <div class="form-group">
                     <label>Mentor <span style="color:red;">*</span></label>
                     <select name="mentor_id" class="form-control">

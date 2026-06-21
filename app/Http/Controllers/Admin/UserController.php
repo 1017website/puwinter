@@ -169,15 +169,28 @@ class UserController extends Controller
 
         $plan = SubscriptionPlan::findOrFail($request->plan_id);
 
-        Subscription::create([
+        $subscription = Subscription::create([
             'user_id'        => $user->id,
             'plan_id'        => $plan->id,
+            'tier'           => $plan->tier ?? 'regular',
             'status'         => 'active',
             'started_at'     => now(),
             'expired_at'     => now()->addMonths((int) $plan->duration_months),
             'payment_method' => 'manual_admin',
             'amount_paid'    => 0,
         ]);
+
+        // Akses per-program: tandai enrollment program ini menjadi BERBAYAR.
+        \App\Models\ProgramEnrollment::updateOrCreate(
+            ['user_id' => $user->id, 'plan_id' => $plan->id],
+            [
+                'status'          => \App\Models\ProgramEnrollment::STATUS_PAID,
+                'subscription_id' => $subscription->id,
+                'paid_at'         => now(),
+                'paid_expires_at' => $subscription->expired_at,
+                'enrolled_at'     => now(),
+            ]
+        );
 
         return back()->with('success', "Premium {$plan->name} berhasil diberikan ke {$user->name}.");
     }

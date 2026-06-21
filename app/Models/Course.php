@@ -13,7 +13,7 @@ class Course extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'subject_id', 'grade', 'grade_id', 'course_type', 'mentor_id', 'title', 'slug', 'description',
+        'subject_id', 'grade', 'grade_id', 'course_type', 'plan_id', 'access_tier', 'mentor_id', 'title', 'slug', 'description',
         'thumbnail', 'is_premium', 'is_published', 'total_modules', 'order',
     ];
 
@@ -108,7 +108,9 @@ class Course extends Model
     }
 
     /**
-     * Cek apakah $user boleh mengakses kelas ini (grade + premium).
+     * Cek apakah $user boleh mengakses kelas ini.
+     * Mengikuti aturan akses per-program: terdaftar di program (plan_id) +
+     * access_tier konten (free/paid/both). Grade tetap dihormati utk regular.
      */
     public function isAccessibleBy($user): bool
     {
@@ -122,12 +124,18 @@ class Course extends Model
             }
         }
 
-        // Aturan premium
-        if ($this->requiresPremium() && !$user->isPremium()) {
-            return false;
+        // Extra class: bebas (lintas program, tanpa premium)
+        if ($this->isExtra()) {
+            return true;
         }
 
-        return true;
+        // Akses per-program (plan_id + access_tier)
+        return $user->canAccessContent($this->plan_id, $this->access_tier ?? 'both');
+    }
+
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(SubscriptionPlan::class, 'plan_id');
     }
 
     // -------------------------------------------------------------------------

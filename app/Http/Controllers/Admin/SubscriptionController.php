@@ -49,11 +49,33 @@ class SubscriptionController extends Controller
 
         $plan = $subscription->plan;
 
+        // Cek kuota program (peserta berbayar). Jika penuh & user ini belum terhitung, tolak.
+        if ($plan && $plan->isQuotaFull()) {
+            $alreadyPaid = \App\Models\ProgramEnrollment::where('user_id', $subscription->user_id)
+                ->where('plan_id', $plan->id)->where('status', 'paid')->exists();
+            if (!$alreadyPaid) {
+                return back()->with('error', 'Kuota peserta berbayar program ' . $plan->name . ' sudah penuh.');
+            }
+        }
+
         $subscription->update([
+            'tier'       => $plan->tier ?? $subscription->tier ?? 'regular',
             'status'     => 'active',
             'started_at' => now(),
             'expired_at' => now()->addMonths((int) $plan->duration_months),
         ]);
+
+        // Akses per-program: tandai/buat enrollment program ini menjadi BERBAYAR.
+        \App\Models\ProgramEnrollment::updateOrCreate(
+            ['user_id' => $subscription->user_id, 'plan_id' => $subscription->plan_id],
+            [
+                'status'          => \App\Models\ProgramEnrollment::STATUS_PAID,
+                'subscription_id' => $subscription->id,
+                'paid_at'         => now(),
+                'paid_expires_at' => $subscription->fresh()->expired_at,
+                'enrolled_at'     => now(),
+            ]
+        );
 
         Notification::notify(
             $subscription->user_id,

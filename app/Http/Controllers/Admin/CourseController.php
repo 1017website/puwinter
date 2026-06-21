@@ -44,7 +44,8 @@ class CourseController extends Controller
         $subjects = Subject::active()->get();
         $mentors  = User::where('role', 'mentor')->get();
         $grades   = Grade::active()->get();
-        return view('admin.courses.create', compact('subjects', 'mentors', 'grades'));
+        $plans = \App\Models\SubscriptionPlan::active()->orderBy('order')->get();
+        return view('admin.courses.create', compact('subjects', 'mentors', 'grades', 'plans'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -54,6 +55,8 @@ class CourseController extends Controller
             'subject_id' => 'required|exists:subjects,id',
             'grade_id'   => 'nullable|exists:grades,id',
             'course_type'=> 'required|in:regular,extra',
+            'plan_id'    => 'nullable|exists:subscription_plans,id',
+            'access_tier'=> 'required|in:free,paid,both',
             'mentor_id'  => 'required|exists:users,id',
             'description'=> 'nullable|string',
             'is_premium' => 'boolean',
@@ -67,6 +70,8 @@ class CourseController extends Controller
         $data['course_type'] = $request->input('course_type', 'regular');
         // Kelas EXTRA lintas kelas & non-premium.
         if ($data['course_type'] === 'extra') { $data['grade_id'] = null; $data['is_premium'] = false; }
+        $data['plan_id']     = $request->filled('plan_id') ? (int) $request->plan_id : null;
+        $data['access_tier'] = $request->input('access_tier', 'both');
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
@@ -89,7 +94,8 @@ class CourseController extends Controller
         $subjects = Subject::active()->get();
         $mentors  = User::where('role', 'mentor')->get();
         $grades   = Grade::active()->get();
-        return view('admin.courses.edit', compact('course', 'subjects', 'mentors', 'grades'));
+        $plans = \App\Models\SubscriptionPlan::active()->orderBy('order')->get();
+        return view('admin.courses.edit', compact('course', 'subjects', 'mentors', 'grades', 'plans'));
     }
 
     public function update(Request $request, Course $course): RedirectResponse
@@ -99,6 +105,8 @@ class CourseController extends Controller
             'subject_id'   => 'required|exists:subjects,id',
             'grade_id'     => 'nullable|exists:grades,id',
             'course_type'  => 'required|in:regular,extra',
+            'plan_id'      => 'nullable|exists:subscription_plans,id',
+            'access_tier'  => 'required|in:free,paid,both',
             'mentor_id'    => 'required|exists:users,id',
             'description'  => 'nullable|string',
             'is_premium'   => 'boolean',
@@ -112,6 +120,8 @@ class CourseController extends Controller
         $data['grade_id']     = $request->filled('grade_id') ? (int) $request->grade_id : null;
         $data['course_type']  = $request->input('course_type', 'regular');
         if ($data['course_type'] === 'extra') { $data['grade_id'] = null; $data['is_premium'] = false; }
+        $data['plan_id']     = $request->filled('plan_id') ? (int) $request->plan_id : null;
+        $data['access_tier'] = $request->input('access_tier', 'both');
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
@@ -173,6 +183,7 @@ class CourseController extends Controller
             'content_url'      => 'nullable|url',
             'duration_minutes' => 'nullable|integer',
             'is_premium'       => 'boolean',
+            'access_tier'      => 'required|in:free,paid,both',
         ]);
 
         $module->materials()->create([
@@ -181,6 +192,7 @@ class CourseController extends Controller
             'content_url'      => $request->content_url,
             'duration_minutes' => $request->duration_minutes,
             'is_premium'       => $request->boolean('is_premium'),
+            'access_tier'      => $request->input('access_tier', 'both'),
             'order'            => $module->materials()->max('order') + 1,
         ]);
 

@@ -12,7 +12,7 @@ class Tryout extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'slug', 'subject_id', 'grade', 'description',
+        'title', 'slug', 'subject_id', 'grade', 'grade_id', 'plan_id', 'access_tier', 'description',
         'duration_minutes', 'total_questions',
         'is_premium', 'is_published', 'series', 'order',
     ];
@@ -58,6 +58,27 @@ class Tryout extends Model
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(SubscriptionPlan::class, 'plan_id');
+    }
+
+    /**
+     * Cek akses tryout berdasarkan grade + program (plan_id) + access_tier.
+     */
+    public function isAccessibleBy($user): bool
+    {
+        if (!$user) return false;
+        if (in_array($user->role, ['superadmin', 'admin', 'mentor'])) return true;
+
+        // Grade (jika di-set)
+        if ($this->grade_id !== null && (int) $user->grade_id !== (int) $this->grade_id) {
+            return false;
+        }
+
+        return $user->canAccessContent($this->plan_id, $this->access_tier ?? 'both');
     }
 
     public function grade(): BelongsTo

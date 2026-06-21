@@ -34,7 +34,8 @@ class TryoutController extends Controller
     public function create(): View
     {
         $subjects = Subject::active()->get();
-        return view('admin.tryouts.create', compact('subjects'));
+        $plans = \App\Models\SubscriptionPlan::active()->orderBy('order')->get();
+        return view('admin.tryouts.create', compact('subjects', 'plans'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -47,6 +48,8 @@ class TryoutController extends Controller
             'duration_minutes' => 'required|integer|min:1',
             'series'           => 'nullable|string|max:100',
             'is_premium'       => 'boolean',
+            'plan_id'          => 'nullable|exists:subscription_plans,id',
+            'access_tier'      => 'required|in:free,paid,both',
         ]);
 
         $tryout = Tryout::create([
@@ -58,6 +61,8 @@ class TryoutController extends Controller
             'duration_minutes' => $request->duration_minutes,
             'series'           => $request->series,
             'is_premium'       => $request->boolean('is_premium'),
+            'plan_id'          => $request->filled('plan_id') ? (int) $request->plan_id : null,
+            'access_tier'      => $request->input('access_tier', 'both'),
             'is_published'     => false,
         ]);
 
@@ -131,30 +136,64 @@ class TryoutController extends Controller
     public function storeQuestion(Request $request, Tryout $tryout): RedirectResponse
     {
         $request->validate([
-            'question_text'  => 'required|string',
-            'option_a'       => 'required|string',
-            'option_b'       => 'required|string',
-            'option_c'       => 'required|string',
-            'option_d'       => 'required|string',
-            'option_e'       => 'nullable|string',
-            'correct_answer' => 'required|in:a,b,c,d,e',
-            'explanation'    => 'nullable|string',
-            'difficulty'     => 'required|in:mudah,sedang,sulit',
-            'subject_id'     => 'required|exists:subjects,id',
+            'question_text'    => 'required|string',
+            'question_type'    => 'required|in:single,multiple',
+            'option_a'         => 'required|string',
+            'option_b'         => 'required|string',
+            'option_c'         => 'required|string',
+            'option_d'         => 'required|string',
+            'option_e'         => 'nullable|string',
+            'correct_answer'   => 'required_if:question_type,single|nullable|in:a,b,c,d,e',
+            'correct_answers'  => 'required_if:question_type,multiple|nullable|array|min:2',
+            'correct_answers.*'=> 'in:a,b,c,d,e',
+            'explanation'      => 'nullable|string',
+            'difficulty'       => 'required|in:mudah,sedang,sulit',
+            'subject_id'       => 'required|exists:subjects,id',
         ]);
 
+        $type = $request->question_type;
+
+        // Normalisasi kunci jawaban sesuai tipe.
+        if ($type === 'multiple') {
+            $keys = collect($request->input('correct_answers', []))
+                ->map(fn($k) => strtolower((string) $k))
+                ->unique()
+                ->values()
+                ->all();
+            // Pastikan kunci yang dipilih punya opsi terisi (mis. tidak memilih 'e' jika opsi e kosong).
+            $available = array_keys(array_filter([
+                'a' => $request->option_a, 'b' => $request->option_b,
+                'c' => $request->option_c, 'd' => $request->option_d,
+                'e' => $request->option_e,
+            ]));
+            $keys = array_values(array_intersect($keys, $available));
+
+            if (count($keys) < 2) {
+                return back()->withInput()
+                    ->with('error', 'Soal multiple jawaban minimal punya 2 kunci yang valid.');
+            }
+
+            $correctAnswer  = $keys[0];   // simpan 1 nilai di kolom lama agar kompatibel
+            $correctAnswers = $keys;
+        } else {
+            $correctAnswer  = $request->correct_answer;
+            $correctAnswers = null;
+        }
+
         $tryout->questions()->create([
-            'subject_id'     => $request->subject_id,
-            'question_text'  => $request->question_text,
-            'option_a'       => $request->option_a,
-            'option_b'       => $request->option_b,
-            'option_c'       => $request->option_c,
-            'option_d'       => $request->option_d,
-            'option_e'       => $request->option_e,
-            'correct_answer' => $request->correct_answer,
-            'explanation'    => $request->explanation,
-            'difficulty'     => $request->difficulty,
-            'order'          => $tryout->questions()->max('order') + 1,
+            'subject_id'      => $request->subject_id,
+            'question_type'   => $type,
+            'question_text'   => $request->question_text,
+            'option_a'        => $request->option_a,
+            'option_b'        => $request->option_b,
+            'option_c'        => $request->option_c,
+            'option_d'        => $request->option_d,
+            'option_e'        => $request->option_e,
+            'correct_answer'  => $correctAnswer,
+            'correct_answers' => $correctAnswers,
+            'explanation'     => $request->explanation,
+            'difficulty'      => $request->difficulty,
+            'order'           => $tryout->questions()->max('order') + 1,
         ]);
 
         // Update total questions

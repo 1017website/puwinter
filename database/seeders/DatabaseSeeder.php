@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             SubscriptionPlanSeeder::class,
             AchievementSeeder::class,
             UserSeeder::class,
+            PuwinterProgramSeeder::class,
         ]);
     }
 }

@@ -24,13 +24,18 @@ class PlanController extends Controller
     {
         $request->validate([
             'name'             => 'required|string|max:100',
+            'tier'             => 'nullable|in:regular,exclusive',
             'duration_months'  => 'required|integer|min:1',
+            'start_date'       => 'nullable|date',
+            'end_date'         => 'nullable|date|after_or_equal:start_date',
+            'quota'            => 'nullable|integer|min:1',
             'price'            => 'required|integer|min:0',
             'original_price'   => 'required|integer|min:0',
             'features'         => 'nullable|string',
             'bonus'            => 'nullable|string|max:255',
             'is_popular'       => 'boolean',
             'order'            => 'nullable|integer',
+            'flyer_image'      => 'nullable|image|max:4096',
         ]);
 
         // Parse fitur dari textarea (satu baris = satu fitur)
@@ -39,10 +44,20 @@ class PlanController extends Controller
             fn($f) => $f !== ''
         );
 
+        $flyerPath = null;
+        if ($request->hasFile('flyer_image')) {
+            $flyerPath = $request->file('flyer_image')->store('flyers', 'public');
+        }
+
         SubscriptionPlan::create([
             'name'            => $request->name,
             'slug'            => Str::slug($request->name) . '-' . $request->duration_months . 'bln',
+            'tier'            => $request->input('tier', 'regular'),
             'duration_months' => $request->duration_months,
+            'start_date'      => $request->start_date,
+            'end_date'        => $request->end_date,
+            'quota'           => $request->filled('quota') ? (int) $request->quota : null,
+            'flyer_image'     => $flyerPath,
             'price'           => $request->price,
             'original_price'  => $request->original_price,
             'features'        => array_values($features),
@@ -52,14 +67,18 @@ class PlanController extends Controller
             'order'           => $request->input('order', SubscriptionPlan::max('order') + 1),
         ]);
 
-        return back()->with('success', 'Paket berhasil ditambahkan.');
+        return back()->with('success', 'Program berhasil ditambahkan.');
     }
 
     public function update(Request $request, SubscriptionPlan $plan): RedirectResponse
     {
         $request->validate([
             'name'            => 'required|string|max:100',
+            'tier'            => 'nullable|in:regular,exclusive',
             'duration_months' => 'required|integer|min:1',
+            'start_date'      => 'nullable|date',
+            'end_date'        => 'nullable|date|after_or_equal:start_date',
+            'quota'           => 'nullable|integer|min:1',
             'price'           => 'required|integer|min:0',
             'original_price'  => 'required|integer|min:0',
             'features'        => 'nullable|string',
@@ -67,6 +86,7 @@ class PlanController extends Controller
             'is_popular'      => 'boolean',
             'is_active'       => 'boolean',
             'order'           => 'nullable|integer',
+            'flyer_image'     => 'nullable|image|max:4096',
         ]);
 
         $features = array_filter(
@@ -74,9 +94,13 @@ class PlanController extends Controller
             fn($f) => $f !== ''
         );
 
-        $plan->update([
+        $data = [
             'name'            => $request->name,
+            'tier'            => $request->input('tier', $plan->tier ?? 'regular'),
             'duration_months' => $request->duration_months,
+            'start_date'      => $request->start_date,
+            'end_date'        => $request->end_date,
+            'quota'           => $request->filled('quota') ? (int) $request->quota : null,
             'price'           => $request->price,
             'original_price'  => $request->original_price,
             'features'        => array_values($features),
@@ -84,9 +108,19 @@ class PlanController extends Controller
             'is_popular'      => $request->boolean('is_popular'),
             'is_active'       => $request->boolean('is_active'),
             'order'           => $request->input('order', $plan->order),
-        ]);
+        ];
 
-        return back()->with('success', 'Paket berhasil diperbarui.');
+        if ($request->hasFile('flyer_image')) {
+            // hapus flyer lama bila ada
+            if ($plan->flyer_image) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($plan->flyer_image);
+            }
+            $data['flyer_image'] = $request->file('flyer_image')->store('flyers', 'public');
+        }
+
+        $plan->update($data);
+
+        return back()->with('success', 'Program berhasil diperbarui.');
     }
 
     public function destroy(SubscriptionPlan $plan): RedirectResponse

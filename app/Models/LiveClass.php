@@ -12,7 +12,7 @@ class LiveClass extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'course_id', 'mentor_id', 'subject_id', 'grade', 'grade_id', 'class_type', 'title', 'description',
+        'course_id', 'mentor_id', 'subject_id', 'grade', 'grade_id', 'class_type', 'plan_id', 'access_tier', 'title', 'description',
         'scheduled_at', 'duration_minutes', 'zoom_link', 'zoom_meeting_id',
         'is_premium', 'status', 'recording_url', 'total_participants',
     ];
@@ -104,12 +104,23 @@ class LiveClass extends Model
             return false;
         }
 
-        // Premium
-        if ($this->requiresPremium() && !$user->isPremium()) {
+        // Akses per-program (plan_id + access_tier).
+        // Live class biasanya tier 'paid' (manfaat utama membayar program).
+        if (!$user->canAccessContent($this->plan_id, $this->access_tier ?? 'paid')) {
             return false;
         }
 
+        // Live class private/exclusive: tetap wajib premium tier EXCLUSIVE.
+        if ($this->isPrivate()) {
+            return $user->isExclusive();
+        }
+
         return true;
+    }
+
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(SubscriptionPlan::class, 'plan_id');
     }
 
     // -------------------------------------------------------------------------

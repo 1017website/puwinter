@@ -1406,9 +1406,9 @@
             $discount = $plan->original_price > $plan->price
             ? ' · Hemat ' . $plan->discountPercentage() . '%'
             : '';
-            @endphp<div class="pricing-card {{ $plan->is_popular ? 'popular' : '' }} reveal">@if($plan->is_popular)<div class="popular-tag">PALING POPULER</div>@endif<div class="pricing-name">{{ $plan->name }}</div>
+            @endphp<div class="pricing-card {{ $plan->is_popular ? 'popular' : '' }} reveal">@if($plan->is_popular)<div class="popular-tag">PALING POPULER</div>@endif @if($plan->flyer_image)<div class="flyer-thumb" onclick="openFlyer('{{ asset('storage/'.$plan->flyer_image) }}')" style="margin:-4px 0 14px;cursor:zoom-in;border-radius:12px;overflow:hidden;border:1px solid rgba(148,163,184,.25);"><img src="{{ asset('storage/'.$plan->flyer_image) }}" alt="Pamflet {{ $plan->name }}" style="width:100%;display:block;aspect-ratio:3/4;object-fit:cover;"></div>@endif<div class="pricing-name">{{ $plan->name }}</div>@if($plan->periodLabel())<div style="font-size:12px;color:#94A3B8;font-weight:600;margin-top:2px;"><i class="far fa-calendar"></i> {{ $plan->periodLabel() }}</div>@endif
                 <div class="pricing-price"><sup>Rp</sup>{{ $priceK }}</div>
-                <div class="pricing-period">/ {{ $plan->duration_months }} bulan</div>@if($plan->original_price > $plan->price)<div class="pricing-strike">Rp {{ number_format($plan->original_price) }}{{ $discount }}</div>@endif @if($plan->bonus)<div style="font-size:12px;color:var(--accent);font-weight:800;margin:6px 0;">🎁 {{ $plan->bonus }}</div>@endif @if($plan->features)<ul class="pricing-features">@foreach($plan->features as $f)<li><i class="fas fa-check-circle"></i> {{ $f }}</li>@endforeach</ul>@endif<a href="{{ route('register') }}" class="btn-pricing {{ $plan->is_popular ? 'btn-pricing-filled' : 'btn-pricing-outline' }}">{{ $plan->is_popular ? 'Pilih Paket Ini' : 'Mulai Sekarang' }}</a>
+                <div class="pricing-period">/ {{ $plan->duration_months }} bulan</div>@if($plan->original_price > $plan->price)<div class="pricing-strike">Rp {{ number_format($plan->original_price) }}{{ $discount }}</div>@endif @if($plan->bonus)<div style="font-size:12px;color:var(--accent);font-weight:800;margin:6px 0;">🎁 {{ $plan->bonus }}</div>@endif @if($plan->features)<ul class="pricing-features">@foreach($plan->features as $f)<li><i class="fas fa-check-circle"></i> {{ $f }}</li>@endforeach</ul>@endif<a href="{{ route('register') }}" class="btn-pricing {{ $plan->is_popular ? 'btn-pricing-filled' : 'btn-pricing-outline' }}">{{ $plan->is_popular ? 'Pilih Paket Ini' : 'Mulai Sekarang' }}</a>@if(!is_null($plan->quota))<div style="font-size:11.5px;margin-top:8px;font-weight:600;color:{{ $plan->isQuotaFull() ? '#EF4444' : '#10B981' }};">@if($plan->isQuotaFull())<i class="fas fa-circle-xmark"></i> Kuota penuh@else<i class="fas fa-user-check"></i> Sisa kuota: {{ $plan->remainingQuota() }} dari {{ $plan->quota }}@endif</div>@endif
             </div>@empty<div class="pricing-card reveal" style="grid-column:1/-1;text-align:center;padding:40px;">
                 <p style="color:#94A3B8;">Paket harga belum tersedia. Hubungi admin.</p>
             </div>@endforelse</div>
@@ -1480,6 +1480,15 @@
         });
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     </script>
+<div id="flyerLightbox" onclick="closeFlyer()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:24px;cursor:zoom-out;">
+    <span style="position:absolute;top:18px;right:26px;color:#fff;font-size:34px;line-height:1;cursor:pointer;font-weight:300;">&times;</span>
+    <img id="flyerLightboxImg" src="" alt="Pamflet" style="max-width:92vw;max-height:90vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);">
+</div>
+<script>
+    function openFlyer(src){var b=document.getElementById('flyerLightbox');document.getElementById('flyerLightboxImg').src=src;b.style.display='flex';document.body.style.overflow='hidden';}
+    function closeFlyer(){document.getElementById('flyerLightbox').style.display='none';document.body.style.overflow='';}
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeFlyer();});
+</script>
 </body>
 
 </html>

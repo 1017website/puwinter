@@ -767,13 +767,21 @@
             <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <i class="fas fa-home"></i> Dashboard
             </a>
+            <a href="{{ route('student.program.index') }}"
+                class="nav-item {{ request()->routeIs('student.program.*') ? 'active' : '' }}">
+                <i class="fas fa-layer-group"></i> Program
+            </a>
             <a href="{{ route('student.course.index') }}"
                 class="nav-item {{ request()->routeIs('student.course.*') ? 'active' : '' }}">
                 <i class="fas fa-book-open"></i> Kelas Saya
             </a>
             <a href="{{ route('student.tryout.index') }}"
-                class="nav-item {{ request()->routeIs('student.tryout.*') ? 'active' : '' }}">
+                class="nav-item {{ request()->routeIs('student.tryout.index') || request()->routeIs('student.tryout.start') || request()->routeIs('student.tryout.result') ? 'active' : '' }}">
                 <i class="fas fa-bullseye"></i> Tryout
+            </a>
+            <a href="{{ route('student.tryout.history') }}"
+                class="nav-item {{ request()->routeIs('student.tryout.history') ? 'active' : '' }}">
+                <i class="fas fa-clipboard-list"></i> Riwayat Tryout
             </a>
             {{-- Bank Soal disembunyikan sementara (uncomment untuk mengaktifkan kembali)
             <a href="{{ route('student.bank.index') }}" class="nav-item {{ request()->routeIs('student.bank.*') ? 'active' : '' }}">

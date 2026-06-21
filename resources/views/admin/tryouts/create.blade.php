@@ -60,14 +60,23 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Tipe</label>
-                    <div style="display:flex; gap:16px; padding-top:8px;">
-                        <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; cursor:pointer; font-weight:400;">
-                            <input type="checkbox" name="is_premium" value="1" {{ old('is_premium') ? 'checked' : '' }}
-                                   style="width:16px; height:16px; accent-color:var(--primary);">
-                            Konten Premium
-                        </label>
-                    </div>
+                    <label>Program <span style="color:red;">*</span></label>
+                    <select name="plan_id" class="form-control">
+                        <option value="">— Pilih Program —</option>
+                        @foreach($plans as $pl)
+                        <option value="{{ $pl->id }}" {{ old('plan_id') == $pl->id ? 'selected' : '' }}>{{ $pl->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Akses Untuk <span style="color:red;">*</span></label>
+                    <select name="access_tier" class="form-control">
+                        <option value="both" {{ old('access_tier','both') == 'both' ? 'selected' : '' }}>Semua peserta program</option>
+                        <option value="free" {{ old('access_tier') == 'free' ? 'selected' : '' }}>Hanya gratis</option>
+                        <option value="paid" {{ old('access_tier') == 'paid' ? 'selected' : '' }}>Hanya BERBAYAR</option>
+                    </select>
+                    <input type="hidden" name="is_premium" value="0">
                 </div>
 
                 <div class="form-group" style="grid-column:span 2;">

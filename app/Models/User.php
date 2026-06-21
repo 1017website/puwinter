@@ -81,6 +81,88 @@ class User extends Authenticatable implements MustVerifyEmail
             ->first();
     }
 
+    /**
+     * Tier premium aktif: 'exclusive' | 'regular' | null (free).
+     * Staff (admin/mentor/superadmin) dianggap 'exclusive'.
+     */
+    public function premiumTier(): ?string
+    {
+        if (in_array($this->role, ['superadmin', 'admin', 'mentor'])) {
+            return 'exclusive';
+        }
+        $sub = $this->activeSubscription();
+        return $sub?->tier;
+    }
+
+    /**
+     * Apakah user punya akses Exclusive (boleh ikut live class private/exclusive).
+     */
+    public function isExclusive(): bool
+    {
+        return $this->premiumTier() === 'exclusive';
+    }
+
+    // -------------------------------------------------------------------------
+    // Program Access (akses per-program)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Apakah user TERDAFTAR pada sebuah program (plan), berapa pun statusnya.
+     */
+    public function isEnrolledInProgram(?int $planId): bool
+    {
+        if (in_array($this->role, ['superadmin', 'admin', 'mentor'])) {
+            return true;
+        }
+        if ($planId === null) {
+            return true; // konten tanpa program = umum
+        }
+        return $this->programEnrollments()->where('plan_id', $planId)->exists();
+    }
+
+    /**
+     * Apakah user adalah peserta BERBAYAR aktif pada program (plan) tertentu.
+     */
+    public function hasPaidProgram(?int $planId): bool
+    {
+        if (in_array($this->role, ['superadmin', 'admin', 'mentor'])) {
+            return true;
+        }
+        if ($planId === null) {
+            return true;
+        }
+        $enr = $this->programEnrollments()->where('plan_id', $planId)->first();
+        return $enr ? $enr->isPaidActive() : false;
+    }
+
+    /**
+     * Cek akses konten berdasarkan program (plan_id) + access_tier konten.
+     *
+     * Aturan:
+     * - Staff: selalu boleh.
+     * - Konten tanpa plan_id: terbuka untuk umum (mengikuti aturan lama).
+     * - Harus terdaftar di program-nya.
+     * - access_tier 'free'/'both' : cukup terdaftar (free atau paid).
+     * - access_tier 'paid'        : harus berbayar aktif.
+     */
+    public function canAccessContent(?int $planId, string $accessTier = 'both'): bool
+    {
+        if (in_array($this->role, ['superadmin', 'admin', 'mentor'])) {
+            return true;
+        }
+        if ($planId === null) {
+            return true;
+        }
+        if (!$this->isEnrolledInProgram($planId)) {
+            return false;
+        }
+        if ($accessTier === 'paid') {
+            return $this->hasPaidProgram($planId);
+        }
+        // free / both
+        return true;
+    }
+
     public function hasAccessTo(Course $course): bool
     {
         return $course->isAccessibleBy($this);
@@ -161,6 +243,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    public function programEnrollments(): HasMany
+    {
+        return $this->hasMany(ProgramEnrollment::class);
     }
 
     public function grade(): \Illuminate\Database\Eloquent\Relations\BelongsTo

@@ -39,7 +39,8 @@ class LiveClassController extends Controller
         $courses  = Course::published()->with('subject')->get();
         $grades   = Grade::active()->get();
 
-        return view('admin.live-classes.create', compact('subjects', 'mentors', 'courses', 'grades'));
+        $plans = \App\Models\SubscriptionPlan::active()->orderBy('order')->get();
+        return view('admin.live-classes.create', compact('subjects', 'mentors', 'courses', 'grades', 'plans'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -57,6 +58,8 @@ class LiveClassController extends Controller
             'zoom_link'        => 'nullable|url',
             'zoom_meeting_id'  => 'nullable|string|max:100',
             'is_premium'       => 'boolean',
+            'plan_id'          => 'nullable|exists:subscription_plans,id',
+            'access_tier'      => 'required|in:free,paid,both',
         ]);
 
         $classType = $request->input('class_type', 'regular');
@@ -75,6 +78,8 @@ class LiveClassController extends Controller
             'zoom_link'        => $request->zoom_link,
             'zoom_meeting_id'  => $request->zoom_meeting_id,
             'is_premium'       => $isPremium,
+            'plan_id'          => $request->filled('plan_id') ? (int) $request->plan_id : null,
+            'access_tier'      => $request->input('access_tier', 'paid'),
             'status'           => 'scheduled',
         ]);
 
@@ -89,7 +94,8 @@ class LiveClassController extends Controller
         $courses  = Course::published()->with('subject')->get();
         $grades   = Grade::active()->get();
 
-        return view('admin.live-classes.edit', compact('liveClass', 'subjects', 'mentors', 'courses', 'grades'));
+        $plans = \App\Models\SubscriptionPlan::active()->orderBy('order')->get();
+        return view('admin.live-classes.edit', compact('liveClass', 'subjects', 'mentors', 'courses', 'grades', 'plans'));
     }
 
     public function update(Request $request, LiveClass $liveClass): RedirectResponse
@@ -109,6 +115,8 @@ class LiveClassController extends Controller
             'recording_url'    => 'nullable|url',
             'status'           => 'required|in:scheduled,live,ended,cancelled',
             'is_premium'       => 'boolean',
+            'plan_id'          => 'nullable|exists:subscription_plans,id',
+            'access_tier'      => 'required|in:free,paid,both',
         ]);
 
         $classType = $request->input('class_type', 'regular');
@@ -129,6 +137,8 @@ class LiveClassController extends Controller
             'recording_url'    => $request->recording_url,
             'status'           => $request->status,
             'is_premium'       => $isPremium,
+            'plan_id'          => $request->filled('plan_id') ? (int) $request->plan_id : null,
+            'access_tier'      => $request->input('access_tier', 'paid'),
         ]);
 
         return back()->with('success', 'Live class berhasil diperbarui.');

@@ -79,22 +79,27 @@ class CourseController extends Controller
     }
 
     // Detail kelas: daftar modul + materi
-    public function show(Request $request, string $slug): View
+    public function show(Request $request, string $slug): View|RedirectResponse
     {
         $user   = $request->user();
         $course = Course::published()->where('slug', $slug)
             ->with(['subject', 'mentor', 'modules.materials'])
             ->firstOrFail();
 
-        // Cek akses kelas (grade + tipe + premium) dalam satu pintu.
+        // Cek akses kelas (grade + program + access_tier) dalam satu pintu.
         if (!$course->isAccessibleBy($user)) {
-            if ($course->requiresPremium() && !$user->isPremium()) {
-                abort(403, 'Kelas ini hanya tersedia untuk member Premium.');
+            // Belum terdaftar di program -> arahkan daftar program dulu.
+            if ($course->plan_id && !$user->isEnrolledInProgram($course->plan_id)) {
+                return redirect()->route('student.program.show', $course->plan_id)
+                    ->with('error', 'Daftar dulu ke program ini untuk mengakses kelasnya.');
+            }
+            if ($course->plan_id && $course->access_tier === 'paid' && !$user->hasPaidProgram($course->plan_id)) {
+                abort(403, 'Kelas ini hanya untuk peserta berbayar di program ini.');
             }
             abort(403, 'Kelas ini tidak tersedia untuk kelas kamu.');
         }
 
-        // Auto-enroll jika belum
+        // Catat enrollment course (progress tracking) — hanya jika sudah berhak akses.
         $enrollment = UserCourseEnrollment::firstOrCreate(
             ['user_id' => $user->id, 'course_id' => $course->id],
             ['enrolled_at' => now(), 'last_accessed_at' => now()]
@@ -126,17 +131,21 @@ class CourseController extends Controller
     }
 
     // Buka detail materi (video / pdf / quiz)
-    public function showMaterial(Request $request, string $slug, int $materialId): View
+    public function showMaterial(Request $request, string $slug, int $materialId): View|RedirectResponse
     {
         $user   = $request->user();
         $course = Course::published()->where('slug', $slug)
             ->with(['subject', 'mentor', 'modules.materials'])
             ->firstOrFail();
 
-        // Cek akses kelas (grade + tipe + premium) dalam satu pintu.
+        // Cek akses kelas (grade + program + access_tier) dalam satu pintu.
         if (!$course->isAccessibleBy($user)) {
-            if ($course->requiresPremium() && !$user->isPremium()) {
-                abort(403, 'Kelas ini hanya tersedia untuk member Premium.');
+            if ($course->plan_id && !$user->isEnrolledInProgram($course->plan_id)) {
+                return redirect()->route('student.program.show', $course->plan_id)
+                    ->with('error', 'Daftar dulu ke program ini untuk mengakses kelasnya.');
+            }
+            if ($course->plan_id && $course->access_tier === 'paid' && !$user->hasPaidProgram($course->plan_id)) {
+                abort(403, 'Kelas ini hanya untuk peserta berbayar di program ini.');
             }
             abort(403, 'Kelas ini tidak tersedia untuk kelas kamu.');
         }
@@ -144,8 +153,11 @@ class CourseController extends Controller
         $material = CourseMaterial::whereHas('module', fn($q) => $q->where('course_id', $course->id))
             ->findOrFail($materialId);
 
-        // Lock check: materi premium untuk non-premium user
-        $isLocked = ($material->is_locked || $material->is_premium) && !$user->isPremium();
+        // Lock check: materi 'paid' untuk peserta yang belum berbayar di program ini.
+        $materialTier = $material->access_tier ?: ($course->access_tier ?? 'both');
+        $isLocked = ($materialTier === 'paid')
+            && !$user->hasPaidProgram($course->plan_id)
+            && !in_array($user->role, ['superadmin', 'admin', 'mentor']);
 
         // Enrollment
         $enrollment = UserCourseEnrollment::firstOrCreate(

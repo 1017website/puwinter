@@ -436,14 +436,25 @@
             </div>
 
             {{-- Question Text --}}
-            <div class="question-text">{!! nl2br(e($question->question_text)) !!}</div>
+            <div class="question-text">
+                @if($question->isMultiple())
+                    <span style="display:inline-block; background:#EEF2FF; color:#4F46E5; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; margin-bottom:8px;">
+                        <i class="fas fa-list-check"></i> Pilih beberapa jawaban
+                    </span><br>
+                @endif
+                {!! nl2br(e($question->question_text)) !!}
+            </div>
 
             {{-- Options --}}
             <div class="options-list">
                 @foreach($question->options() as $key => $text)
                 <label class="option-item" id="opt-{{ $question->id }}-{{ $key }}"
-                       onclick="selectAnswer({{ $question->id }}, '{{ $key }}', this)">
-                    <input type="radio" name="answer_{{ $question->id }}" value="{{ $key }}">
+                       onclick="selectAnswer({{ $question->id }}, '{{ $key }}', this, {{ $question->isMultiple() ? 'true' : 'false' }})">
+                    @if($question->isMultiple())
+                        <input type="checkbox" name="answer_{{ $question->id }}[]" value="{{ $key }}" style="display:none;">
+                    @else
+                        <input type="radio" name="answer_{{ $question->id }}" value="{{ $key }}">
+                    @endif
                     <div class="option-key">{{ strtoupper($key) }}</div>
                     <div class="option-text">{{ $text }}</div>
                 </label>
@@ -581,8 +592,11 @@
 
     const questions = @json($tryout->questions->pluck('id')->values());
 
+    // Peta tipe soal: { questionId: true } jika multiple jawaban.
+    const isMultiQ = @json($tryout->questions->mapWithKeys(fn($q) => [$q->id => $q->isMultiple()]));
+
     let currentIndex = 0;
-    let answers  = {}; // { questionId: 'a'|'b'|... }
+    let answers  = {}; // single: { qId: 'a' }  |  multiple: { qId: ['a','c'] }
     let flagged  = {}; // { questionId: true }
     let timeLeft = DURATION;
     let leaveCount = 0; // jumlah kali meninggalkan jendela tryout
@@ -604,9 +618,13 @@
 
         // Restore UI
         Object.entries(answers).forEach(([qId, val]) => {
-            const opt = document.getElementById(`opt-${qId}-${val}`);
-            if (opt) opt.classList.add('selected');
-            document.getElementById(`num-${qId}`)?.classList.add('answered');
+            const vals = Array.isArray(val) ? val : [val];
+            vals.forEach(v => {
+                document.getElementById(`opt-${qId}-${v}`)?.classList.add('selected');
+            });
+            if (vals.length > 0) {
+                document.getElementById(`num-${qId}`)?.classList.add('answered');
+            }
         });
 
         Object.keys(flagged).forEach(qId => {
@@ -650,19 +668,36 @@
     // =========================================================================
     // SELECT ANSWER
     // =========================================================================
-    function selectAnswer(qId, val, el) {
-        // Remove previous selection
-        ['a','b','c','d','e'].forEach(k => {
-            document.getElementById(`opt-${qId}-${k}`)?.classList.remove('selected');
-        });
-
-        el.classList.add('selected');
-        answers[qId] = val;
+    function selectAnswer(qId, val, el, multi) {
+        if (multi) {
+            // toggle pilihan
+            let arr = Array.isArray(answers[qId]) ? answers[qId] : [];
+            if (arr.includes(val)) {
+                arr = arr.filter(v => v !== val);
+                el.classList.remove('selected');
+            } else {
+                arr.push(val);
+                el.classList.add('selected');
+            }
+            if (arr.length > 0) {
+                answers[qId] = arr;
+            } else {
+                delete answers[qId];
+            }
+        } else {
+            // single: ganti pilihan
+            ['a','b','c','d','e'].forEach(k => {
+                document.getElementById(`opt-${qId}-${k}`)?.classList.remove('selected');
+            });
+            el.classList.add('selected');
+            answers[qId] = val;
+        }
 
         const numBtn = document.getElementById(`num-${qId}`);
+        const hasAns = Array.isArray(answers[qId]) ? answers[qId].length > 0 : !!answers[qId];
         if (numBtn && !flagged[qId]) {
             numBtn.classList.remove('flagged');
-            numBtn.classList.add('answered');
+            numBtn.classList.toggle('answered', hasAns);
         }
 
         saveState();
@@ -763,11 +798,22 @@
         inputs.innerHTML = '';
 
         Object.entries(answers).forEach(([qId, val]) => {
-            const input = document.createElement('input');
-            input.type  = 'hidden';
-            input.name  = `answers[${qId}]`;
-            input.value = val;
-            inputs.appendChild(input);
+            if (Array.isArray(val)) {
+                // multiple: kirim answers[qId][] = a, c, ...
+                val.forEach(v => {
+                    const input = document.createElement('input');
+                    input.type  = 'hidden';
+                    input.name  = `answers[${qId}][]`;
+                    input.value = v;
+                    inputs.appendChild(input);
+                });
+            } else {
+                const input = document.createElement('input');
+                input.type  = 'hidden';
+                input.name  = `answers[${qId}]`;
+                input.value = val;
+                inputs.appendChild(input);
+            }
         });
 
         // sertakan jumlah pelanggaran meninggalkan jendela
