@@ -68,21 +68,23 @@
 
         nav {
             position: fixed;
-            top: 18px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: min(1180px, 92%);
+            top: 0;
+            left: 0;
+            right: 0;
+            transform: none;
+            width: 100%;
             height: 74px;
-            background: rgba(8, 11, 22, .78);
+            background: rgba(8, 11, 22, .94);
             backdrop-filter: blur(22px);
-            border: 1px solid rgba(255, 255, 255, .11);
-            border-radius: 26px;
+            border: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .11);
+            border-radius: 0;
             z-index: 80;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 14px 0 24px;
-            box-shadow: 0 24px 80px rgba(0, 0, 0, .28)
+            padding: 0 max(24px, calc((100vw - 1180px) / 2));
+            box-shadow: 0 12px 40px rgba(0, 0, 0, .28)
         }
 
         nav.scrolled {
@@ -784,11 +786,13 @@
 
         @media(max-width:980px) {
             nav {
+                top: 0;
                 left: 0;
                 right: 0;
                 bottom: auto;
-                width: auto;
+                width: 100%;
                 height: 72px;
+                border-radius: 0;
                 flex-direction: row
             }
 
@@ -1010,15 +1014,15 @@
     body { overflow-x: hidden; }
 
     nav {
-        top: 8px;
-        left: 12px;
-        right: 12px;
+        top: 0;
+        left: 0;
+        right: 0;
         transform: none;
-        width: auto;
+        width: 100%;
         height: auto;
         min-height: 62px;
-        padding: 10px 12px;
-        border-radius: 18px;
+        padding: 10px 14px;
+        border-radius: 0;
         gap: 10px;
     }
 
@@ -1297,7 +1301,7 @@
 }
 
 @media (max-width: 380px) {
-    nav { left: 10px; right: 10px; }
+    nav { left: 0; right: 0; }
     .nav-logo img { width: 108px !important; }
     .btn-primary { padding: 9px 10px; font-size: 11px; }
     .hero-left,
@@ -1334,9 +1338,9 @@
     <main>
         <section class="hero">
             <div class="hero-left">
-                <div class="hero-badge"><span class="dot"></span>The #1 English Online Tutoring Platform in Indonesia</div>
-                <h1>Master English with Indonesia’s <br> <span class="highlight">#1 Online Tutoring Platform</span></h1>
-                <p>We guide students in mastering English based on their individual learning needs.</p>
+                <div class="hero-badge"><span class="dot"></span>Platform Bimbingan Bahasa Inggris Online Terpercaya di Indonesia</div>
+                <h1>Kuasai Grammar, Pahami Teks, <br> <span class="highlight">Raih Prestasi</span></h1>
+                <p>Program Bahasa Inggris Online yang Berfokus pada Basic Grammar & Reading Text, TKA Bahasa Inggris, dan Literasi Bahasa Inggris UTBK SNBT untuk Membantu Siswa Meraih Hasil Terbaik di Sekolah maupun Seleksi Perguruan Tinggi.</p>
                 <div class="hero-actions"><a href="{{ route('register') }}" class="btn-hero">Mulai Belajar Gratis <i class="fas fa-arrow-right"></i></a><a href="#fitur" class="btn-hero-ghost"><i class="fas fa-play-circle"></i> Lihat Fitur</a></div>
                 <div class="hero-trust">
                     <div class="trust-avatars"><span>A</span><span>R</span><span>D</span><span>N</span><span style="background:#5337ec;">+</span></div>
@@ -1346,17 +1350,17 @@
             <div class="hero-right">
                 <div class="hero-stack">
                     <div class="float-card">
-                        <div class="float-title">Live Class Berlangsung</div>
-                        <p>142 peserta online</p><strong>English Grammar — Tenses & Speaking Practice</strong>
+                        <div class="float-title">Kelas Live Berlangsung</div>
+                        <p>142 peserta online</p><strong>Grammar Bahasa Inggris — Tenses & Latihan Berbicara</strong>
                     </div>
                     <div class="float-card">
-                        <div class="float-title">Progress Belajar Minggu Ini <span style="float:right;color:#10B981;">+36%</span></div>
+                        <div class="float-title">Progres Belajar Minggu Ini <span style="float:right;color:#10B981;">+36%</span></div>
                         <div class="progress"><span></span></div>
                         <p>Peringkat: <strong>128</strong> dari {{ number_format($stats['total_students']) }} peserta</p>
                     </div>
                     <div class="float-card">
                         <div class="float-title">Pencapaian Baru!</div>
-                        <p>Rising Star 🌟</p><strong>Naik 100 peringkat hari ini</strong>
+                        <p>Bintang Baru 🌟</p><strong>Naik 100 peringkat hari ini</strong>
                     </div>
                 </div>
             </div>
@@ -1373,7 +1377,7 @@
         </div>
         <div class="stat-item reveal">
             <div class="stat-number">{{ $displayMateri }}</div>
-            <div class="stat-desc">Materi English premium</div>
+            <div class="stat-desc">Materi Bahasa Inggris premium</div>
         </div>
         <div class="stat-item reveal">
             <div class="stat-number">{{ $displayKelas }}<span></span></div>
@@ -1381,15 +1385,15 @@
         </div>
     </div>
     <div id="fitur" class="section">
-        <div class="section-label">Featured Programs</div>
-        <h2 class="section-title">Everything You Need to Learn English, <br> <span class="highlight">All in One Place.</span></h2>
-        <p class="section-desc">Dari live class interaktif hingga analisis belajar detail — semua tersedia dalam satu platform.</p>
+        <div class="section-label">Program Unggulan</div>
+        <h2 class="section-title">Semua yang Kamu Butuhkan untuk Belajar Bahasa Inggris, <br> <span class="highlight">dalam Satu Platform.</span></h2>
+        <p class="section-desc">Dari kelas live interaktif hingga analisis belajar detail — semua tersedia dalam satu platform.</p>
         <div class="feature-grid">@foreach([
-            ['icon'=>'fa-video','color'=>'rgba(83,55,236,0.15)','icolor'=>'#9f91ff','title'=>'Live Class Interaktif','desc'=>'Belajar langsung bersama mentor terbaik via Zoom. Tanya jawab real-time dan rekaman tersedia setelahnya.'],
-            ['icon'=>'fa-bullseye','color'=>'rgba(239,68,68,0.15)','icolor'=>'#F87171','title'=>'English Literacy Practice Test','desc'=>'Simulasi latihan bahasa Inggris dengan timer, navigasi soal, dan hasil skor instan setelah submit.'],
+            ['icon'=>'fa-video','color'=>'rgba(83,55,236,0.15)','icolor'=>'#9f91ff','title'=>'Kelas Live Interaktif','desc'=>'Belajar langsung bersama mentor terbaik via Zoom. Tanya jawab langsung dan rekaman tersedia setelahnya.'],
+            ['icon'=>'fa-bullseye','color'=>'rgba(239,68,68,0.15)','icolor'=>'#F87171','title'=>'Latihan Literasi Bahasa Inggris','desc'=>'Simulasi latihan bahasa Inggris dengan timer, navigasi soal, dan hasil skor langsung setelah dikirim.'],
             ['icon'=>'fa-lightbulb','color'=>'rgba(245,158,11,0.15)','icolor'=>'#FBBF24','title'=>'Pembahasan Lengkap','desc'=>'Setiap latihan ada pembahasan teks dan video tutor. Pahami konsep bahasa Inggris, bukan hanya hafal jawaban.'],
-            ['icon'=>'fa-file-pdf','color'=>'rgba(16,185,129,0.15)','icolor'=>'#34D399','title'=>'English PDF Materials Premium','desc'=>'245+ dokumen belajar ringkas dan terstruktur. Download dan belajar kapan saja, di mana saja.'],
-            ['icon'=>'fa-chart-bar','color'=>'rgba(83,55,236,0.15)','icolor'=>'#9f91ff','title'=>'Leaderboard & Ranking','desc'=>'Pantau progresmu di antara ribuan siswa bahasa Inggris lain. Filter per sekolah, kota, atau provinsi.'],
+            ['icon'=>'fa-file-pdf','color'=>'rgba(16,185,129,0.15)','icolor'=>'#34D399','title'=>'Materi PDF Bahasa Inggris Premium','desc'=>'245+ dokumen belajar ringkas dan terstruktur. Unduh dan belajar kapan saja, di mana saja.'],
+            ['icon'=>'fa-chart-bar','color'=>'rgba(83,55,236,0.15)','icolor'=>'#9f91ff','title'=>'Papan Peringkat','desc'=>'Pantau progresmu di antara ribuan siswa bahasa Inggris lain. Saring per sekolah, kota, atau provinsi.'],
             ['icon'=>'fa-chart-line','color'=>'rgba(139,124,246,0.15)','icolor'=>'#8b7cf6','title'=>'Analisis Belajar Detail','desc'=>'Lihat grafik progres dan distribusi waktu belajar secara visual untuk memantau perkembangan dan konsistensi belajar siswa.'],
             ] as $f)<div class="feature-card reveal">
                 <div class="feature-icon" style="background:{{ $f['color'] }};"><i class="fas {{ $f['icon'] }}" style="color:{{ $f['icolor'] }};"></i></div>
@@ -1400,7 +1404,7 @@
     <div id="cara-kerja" class="steps-section">
         <div class="section-label">Cara Kerja</div>
         <h2 class="section-title">Mulai dalam <span class="highlight">4 langkah mudah</span></h2>
-        <div class="steps-grid">@foreach([['n'=>'1','title'=>'Daftar Gratis','desc'=>'Buat akun dalam 30 detik. Tidak perlu kartu kredit.'],['n'=>'2','title'=>'Pilih Materi','desc'=>'Akses ratusan materi dan latihan bahasa Inggris sesuai kebutuhan belajarmu.'],['n'=>'3','title'=>'Ikuti Live Class','desc'=>'Bergabung ke live class dan tanya langsung ke mentor.'],['n'=>'4','title'=>'Pantau Progress','desc'=>'Cek leaderboard dan analisis belajarmu secara berkala.']] as $s)<div class="step-item reveal">
+        <div class="steps-grid">@foreach([['n'=>'1','title'=>'Daftar Gratis','desc'=>'Buat akun dalam 30 detik. Tidak perlu kartu kredit.'],['n'=>'2','title'=>'Pilih Materi','desc'=>'Akses ratusan materi dan latihan bahasa Inggris sesuai kebutuhan belajarmu.'],['n'=>'3','title'=>'Ikuti Kelas Live','desc'=>'Bergabung ke kelas live dan tanya langsung ke mentor.'],['n'=>'4','title'=>'Pantau Progres','desc'=>'Cek papan peringkat dan analisis belajarmu secara berkala.']] as $s)<div class="step-item reveal">
                 <div class="step-number">{{ $s['n'] }}</div>
                 <h3>{{ $s['title'] }}</h3>
                 <p>{{ $s['desc'] }}</p>
@@ -1409,7 +1413,7 @@
     <div id="harga" class="pricing-section">
         <div class="section-label">Harga</div>
         <h2 class="section-title">Investasi terbaik untuk <span class="highlight">masa depanmu</span></h2>
-        <p class="section-desc">Mulai gratis, upgrade kapan saja. Garansi uang kembali 7 hari.</p>
+        <p class="section-desc">Mulai gratis, tingkatkan paket kapan saja. Garansi uang kembali 7 hari.</p>
         <div class="pricing-grid">@forelse($plans as $plan)
             @php
             $priceK = $plan->price >= 1000
@@ -1418,7 +1422,7 @@
             $discount = $plan->original_price > $plan->price
             ? ' · Hemat ' . $plan->discountPercentage() . '%'
             : '';
-            @endphp<div class="pricing-card {{ $plan->is_popular ? 'popular' : '' }} reveal">@if($plan->is_popular)<div class="popular-tag">PALING POPULER</div>@endif @if($plan->flyer_image)<div class="flyer-thumb" onclick="openFlyer('{{ asset('storage/'.$plan->flyer_image) }}')" style="margin:0 0 12px;cursor:zoom-in;border-radius:10px;overflow:hidden;border:1px solid rgba(148,163,184,.25);"><img src="{{ asset('storage/'.$plan->flyer_image) }}" alt="Pamflet {{ $plan->name }}" style="width:100%;display:block;height:150px;object-fit:cover;object-position:top;"></div>@endif<div class="pricing-name">{{ $plan->name }}</div>@if($plan->periodLabel())<div style="font-size:11px;color:#94A3B8;font-weight:600;margin-top:2px;"><i class="far fa-calendar"></i> {{ $plan->periodLabel() }}</div>@endif
+            @endphp<div class="pricing-card {{ $plan->is_popular ? 'popular' : '' }} reveal">@if($plan->is_popular)<div class="popular-tag">PALING POPULER</div>@endif @if($plan->flyer_image)<div class="flyer-thumb" onclick="openFlyer('{{ asset('storage/'.$plan->flyer_image) }}')" style="margin:0 0 12px;cursor:zoom-in;border-radius:10px;overflow:hidden;border:1px solid rgba(148,163,184,.25);"><img src="{{ asset('storage/'.$plan->flyer_image) }}" alt="Pamflet {{ $plan->name }}" style="width:100%;display:block;height:275px;object-fit:cover;object-position:top;"></div>@endif<div class="pricing-name">{{ $plan->name }}</div>@if($plan->periodLabel())<div style="font-size:11px;color:#94A3B8;font-weight:600;margin-top:2px;"><i class="far fa-calendar"></i> {{ $plan->periodLabel() }}</div>@endif
                 <div class="pricing-price"><sup>Rp</sup>{{ $priceK }}</div>
                 <div class="pricing-period">/ {{ $plan->duration_months }} bulan</div>@if($plan->original_price > $plan->price)<div class="pricing-strike">Rp {{ number_format($plan->original_price) }}{{ $discount }}</div>@endif @if($plan->bonus)<div style="font-size:12px;color:var(--accent);font-weight:800;margin:6px 0;">🎁 {{ $plan->bonus }}</div>@endif @if($plan->features)<ul class="pricing-features">@foreach($plan->features as $f)<li><i class="fas fa-check-circle"></i> {{ $f }}</li>@endforeach</ul>@endif<a href="{{ route('register') }}" class="btn-pricing {{ $plan->is_popular ? 'btn-pricing-filled' : 'btn-pricing-outline' }}">{{ $plan->is_popular ? 'Pilih Paket Ini' : 'Mulai Sekarang' }}</a>@if(!is_null($plan->quota))<div style="font-size:11.5px;margin-top:8px;font-weight:600;color:{{ $plan->isQuotaFull() ? '#EF4444' : '#10B981' }};">@if($plan->isQuotaFull())<i class="fas fa-circle-xmark"></i> Kuota penuh@else<i class="fas fa-user-check"></i> Sisa kuota: {{ $plan->remainingQuota() }} dari {{ $plan->quota }}@endif</div>@endif
             </div>@empty<div class="pricing-card reveal" style="grid-column:1/-1;text-align:center;padding:40px;">
@@ -1430,12 +1434,12 @@
         <div class="section-label">Testimoni</div>
         <h2 class="section-title">Kata mereka yang sudah <span class="highlight">berhasil</span></h2>
         <div class="testi-grid">@foreach([
-            ['initial'=>'A','name'=>'Aditya Pratama','info'=>'Diterima UI Teknik Informatika 2024','color'=>'#5337ec','text'=>'"Puwinter benar-benar game changer. Live class-nya interaktif banget, bisa langsung tanya kalau ada yang gak ngerti. Skor tryout saya naik 120 poin dalam 2 bulan!"'],
+            ['initial'=>'A','name'=>'Aditya Pratama','info'=>'Diterima UI Teknik Informatika 2024','color'=>'#5337ec','text'=>'"Puwinter benar-benar membantu banget. Kelas live-nya interaktif banget, bisa langsung tanya kalau ada yang gak ngerti. Skor tryout saya naik 120 poin dalam 2 bulan!"'],
             ['initial'=>'S','name'=>'Siti Rahayu','info'=>'Diterima ITB Teknik Kimia 2024','color'=>'#5337ec','text'=>'"Awalnya ragu karena harganya murah, tapi kualitasnya melebihi ekspektasi. Pembahasannya detail dan tutor-nya sabar banget neranginnya."'],
-            ['initial'=>'R','name'=>'Rafi Ahmad','info'=>'Diterima Unpad Kedokteran 2024','color'=>'#059669','text'=>'"Yang bikin beda dari platform lain adalah analisis belajarnya. Saya tau persis bagian mana yang masih lemah dan harus diperkuat. Highly recommended!"'],
-            ['initial'=>'N','name'=>'Nadia Putri','info'=>'Diterima UGM Akuntansi 2024','color'=>'#DC2626','text'=>'"Fitur leaderboard-nya bikin semangat belajar. Seru aja ngeliat nama sendiri naik terus. Plus materi bahasa Inggris PDF-nya lengkap dan mudah dipahami."'],
-            ['initial'=>'D','name'=>'Dimas Kurniawan','info'=>'Diterima ITS Teknik Sipil 2024','color'=>'#0891B2','text'=>'"Practice test-nya mirip banget dengan format latihan bahasa Inggris intensif. Saat evaluasi akhir, saya lebih siap karena sudah terbiasa dengan format soal dan manajemen waktu."'],
-            ['initial'=>'F','name'=>'Farah Nabila','info'=>'Diterima Unair Psikologi 2024','color'=>'#D97706','text'=>'"Support tim-nya responsif dan ramah. Pernah ada masalah teknis, langsung dibantu dalam hitungan menit. Pengalaman belajarnya nyaman banget."'],
+            ['initial'=>'R','name'=>'Rafi Ahmad','info'=>'Diterima Unpad Kedokteran 2024','color'=>'#059669','text'=>'"Yang bikin beda dari platform lain adalah analisis belajarnya. Saya tau persis bagian mana yang masih lemah dan harus diperkuat. Sangat direkomendasikan!"'],
+            ['initial'=>'N','name'=>'Nadia Putri','info'=>'Diterima UGM Akuntansi 2024','color'=>'#DC2626','text'=>'"Fitur papan peringkatnya bikin semangat belajar. Seru aja ngeliat nama sendiri naik terus. Plus materi bahasa Inggris PDF-nya lengkap dan mudah dipahami."'],
+            ['initial'=>'D','name'=>'Dimas Kurniawan','info'=>'Diterima ITS Teknik Sipil 2024','color'=>'#0891B2','text'=>'"Latihannya mirip banget dengan format latihan bahasa Inggris intensif. Saat evaluasi akhir, saya lebih siap karena sudah terbiasa dengan format soal dan manajemen waktu."'],
+            ['initial'=>'F','name'=>'Farah Nabila','info'=>'Diterima Unair Psikologi 2024','color'=>'#D97706','text'=>'"Tim dukungannya responsif dan ramah. Pernah ada masalah teknis, langsung dibantu dalam hitungan menit. Pengalaman belajarnya nyaman banget."'],
             ] as $t)<div class="testi-card reveal">
                 <div class="testi-stars">@for($i=0;$i<5;$i++)<i class="fas fa-star"></i>@endfor</div>
                 <p class="testi-text">{{ $t['text'] }}</p>
@@ -1464,16 +1468,16 @@
         </div>
         <div class="footer-links">
             <div>
-                <h4>Platform</h4><a href="#">Live Class</a><a href="#">Tryout</a><a href="#">Practice Bank</a><a href="#">English PDF Materials</a><a href="#">Leaderboard</a>
+                <h4>Platform</h4><a href="#">Kelas Live</a><a href="#">Tryout</a><a href="#">Bank Latihan</a><a href="#">Materi PDF Bahasa Inggris</a><a href="#">Papan Peringkat</a>
             </div>
             <div>
                 <h4>Perusahaan</h4><a href="#">Tentang Kami</a><a href="#">Blog</a><a href="#">Karir</a><a href="#">Hubungi Kami</a>
             </div>
             <div>
-                <h4>Legal</h4><a href="#">Syarat & Ketentuan</a><a href="#">Kebijakan Privasi</a><a href="#">Kebijakan Refund</a>
+                <h4>Legal</h4><a href="#">Syarat & Ketentuan</a><a href="#">Kebijakan Privasi</a><a href="#">Kebijakan Pengembalian Dana</a>
             </div>
         </div>
-        <div class="footer-bottom"><span>© {{ date('Y') }} Puwinter. All rights reserved.</span>
+        <div class="footer-bottom"><span>© {{ date('Y') }} Puwinter. Seluruh hak cipta dilindungi.</span>
             <div class="social-links"><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-tiktok"></i></a><a href="#"><i class="fab fa-youtube"></i></a><a href="#"><i class="fab fa-twitter"></i></a></div>
         </div>
     </footer>

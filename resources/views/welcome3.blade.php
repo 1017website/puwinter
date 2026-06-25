@@ -1318,15 +1318,15 @@
     <div class="hero-content">
         <div class="hero-badge">
             <span class="dot"></span>
-            The #1 English Online Tutoring Platform in Indonesia
+            Platform Bimbingan Bahasa Inggris Online Terpercaya di Indonesia
         </div>
 
         <h1>
-            Master English with Indonesia’s <br> <span class="highlight">#1 Online Tutoring Platform</span>
+            Kuasai Grammar, Pahami Teks, <br> <span class="highlight">Raih Prestasi</span>
         </h1>
 
         <p>
-            We guide students in mastering English based on their individual learning needs.
+            Program Bahasa Inggris Online yang Berfokus pada Basic Grammar & Reading Text, TKA Bahasa Inggris, dan Literasi Bahasa Inggris UTBK SNBT untuk Membantu Siswa Meraih Hasil Terbaik di Sekolah maupun Seleksi Perguruan Tinggi.
         </p>
 
         <div class="hero-actions">

@@ -1171,9 +1171,9 @@
     <section class="hero">
         <div class="hero-shell">
             <div class="hero-content">
-                <div class="hero-badge"><span class="dot"></span>The #1 English Online Tutoring Platform in Indonesia</div>
-                <h1>Master English with Indonesia’s <br> <span class="highlight">#1 Online Tutoring Platform</span></h1>
-                <p>We guide students in mastering English based on their individual learning needs.</p>
+                <div class="hero-badge"><span class="dot"></span>Platform Bimbingan Bahasa Inggris Online Terpercaya di Indonesia</div>
+                <h1>Kuasai Grammar, Pahami Teks, <br> <span class="highlight">Raih Prestasi</span></h1>
+                <p>Program Bahasa Inggris Online yang Berfokus pada Basic Grammar & Reading Text, TKA Bahasa Inggris, dan Literasi Bahasa Inggris UTBK SNBT untuk Membantu Siswa Meraih Hasil Terbaik di Sekolah maupun Seleksi Perguruan Tinggi.</p>
                 <div class="hero-actions"><a href="{{ route('register') }}" class="btn-hero">Mulai Belajar Gratis <i class="fas fa-arrow-right"></i></a><a href="#fitur" class="btn-hero-ghost"><i class="fas fa-play-circle"></i> Lihat Fitur</a></div>
                 <div class="hero-trust">
                     <div class="trust-avatars"><span>A</span><span>R</span><span>D</span><span>N</span><span style="background:#7C3AED;">+</span></div>
