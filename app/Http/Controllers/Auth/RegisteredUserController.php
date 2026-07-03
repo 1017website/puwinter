@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -46,7 +47,10 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
-        $user->forceFill(['active_session_id' => $request->session()->getId()])->save();
+
+        if (Schema::hasColumn('users', 'active_session_id')) {
+            $user->forceFill(['active_session_id' => $request->session()->getId()])->save();
+        }
 
         return redirect(route('dashboard', absolute: false));
     }

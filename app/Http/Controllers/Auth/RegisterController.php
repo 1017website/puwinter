@@ -10,6 +10,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use App\Models\Grade;
@@ -53,7 +54,10 @@ class RegisterController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
-        $user->forceFill(['active_session_id' => $request->session()->getId()])->save();
+
+        if (Schema::hasColumn('users', 'active_session_id')) {
+            $user->forceFill(['active_session_id' => $request->session()->getId()])->save();
+        }
 
         return redirect()->route('verification.notice')
             ->with('success', 'Registrasi berhasil! Cek email kamu untuk verifikasi.');

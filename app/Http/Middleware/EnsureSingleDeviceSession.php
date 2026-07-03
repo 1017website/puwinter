@@ -7,14 +7,23 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class EnsureSingleDeviceSession
 {
+    private static ?bool $hasActiveSessionColumn = null;
+
     public function handle(Request $request, Closure $next): Response|RedirectResponse
     {
         $user = $request->user();
 
         if (!$user) {
+            return $next($request);
+        }
+
+        // Hotfix: jangan paksa cek single device sebelum migration active_session_id dijalankan.
+        // Ini membuat halaman admin/artisan tetap bisa dibuka untuk menjalankan migration.
+        if (!$this->usersTableHasActiveSessionColumn()) {
             return $next($request);
         }
 
@@ -43,5 +52,18 @@ class EnsureSingleDeviceSession
         }
 
         return $next($request);
+    }
+
+    private function usersTableHasActiveSessionColumn(): bool
+    {
+        if (self::$hasActiveSessionColumn !== null) {
+            return self::$hasActiveSessionColumn;
+        }
+
+        try {
+            return self::$hasActiveSessionColumn = Schema::hasColumn('users', 'active_session_id');
+        } catch (\Throwable) {
+            return self::$hasActiveSessionColumn = false;
+        }
     }
 }

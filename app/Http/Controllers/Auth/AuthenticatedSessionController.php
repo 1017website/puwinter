@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -61,7 +62,7 @@ class AuthenticatedSessionController extends Controller
         $user = $request->user();
         $wasStaff = $user && in_array($user->role, ['superadmin', 'admin', 'mentor']);
 
-        if ($user && hash_equals((string) $user->active_session_id, (string) $request->session()->getId())) {
+        if ($user && $this->usersTableHasActiveSessionColumn() && hash_equals((string) $user->active_session_id, (string) $request->session()->getId())) {
             $user->forceFill(['active_session_id' => null])->save();
         }
 
@@ -84,10 +85,24 @@ class AuthenticatedSessionController extends Controller
             return;
         }
 
-        $request->user()->forceFill([
-            'active_session_id' => $request->session()->getId(),
-            'last_login_at'     => now(),
-        ])->save();
+        $payload = [
+            'last_login_at' => now(),
+        ];
+
+        if ($this->usersTableHasActiveSessionColumn()) {
+            $payload['active_session_id'] = $request->session()->getId();
+        }
+
+        $request->user()->forceFill($payload)->save();
+    }
+
+    private function usersTableHasActiveSessionColumn(): bool
+    {
+        try {
+            return Schema::hasColumn('users', 'active_session_id');
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     // =========================================================================
