@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
-@section('title', 'Paket Program')
+@section('title', 'Program')
 
 @section('content')
 
 <div class="page-header">
     <div>
-        <h2>Paket Program</h2>
+        <h2>Program</h2>
         <p>Kelola program belajar yang ditawarkan ke siswa.</p>
     </div>
 </div>
@@ -222,7 +222,7 @@
                 </div>
                 <div class="form-group">
                     <label>Fitur <span style="font-size:11px; color:var(--muted); font-weight:400;">(1 baris = 1 fitur)</span></label>
-                    <textarea name="features" class="form-control" rows="5" style="resize:vertical;" placeholder="24 kali pertemuan&#10;Live class tiap pekan&#10;Materi PDF">{{ old('features') }}</textarea>
+                    <textarea name="features" class="form-control" rows="5" style="resize:vertical;" placeholder="24 kali pertemuan&#10;Kelas online tiap pekan&#10;Materi PDF">{{ old('features') }}</textarea>
                 </div>
                 <div class="form-group">
                     <label>Bonus <span style="font-size:11px; color:var(--muted); font-weight:400;">(opsional)</span></label>

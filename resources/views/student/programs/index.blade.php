@@ -5,11 +5,28 @@
 
 @section('content')
 
-<div style="margin-bottom:24px;">
+<div style="margin-bottom:18px;">
     <h2 style="font-size:22px; font-weight:800;">Program Belajar</h2>
-    <p style="font-size:13px; color:var(--text-muted); margin-top:2px;">
-        Daftar gratis ke program mana pun. Untuk akses penuh (live class, materi premium, tryout berbayar), upgrade ke berbayar.
+    <p style="font-size:13px; color:var(--text-muted); margin-top:2px; line-height:1.7;">
+        Mulai belajar tanpa ragu. Daftar gratis ke program pilihanmu, tonton video gratis sebagai pemanasan, lalu lanjut upgrade saat kamu sudah siap mendapatkan kelas online, materi premium, dan tryout berbayar.
     </p>
+</div>
+
+<div class="card" style="margin-bottom:22px; background:linear-gradient(135deg,#EFF6FF,#F5F3FF); border:1px solid #BFDBFE; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+    <div style="display:flex; gap:14px; align-items:flex-start; flex:1; min-width:240px;">
+        <div style="width:44px; height:44px; border-radius:12px; background:#2563EB; color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <i class="fas fa-play"></i>
+        </div>
+        <div>
+            <div style="font-size:15px; font-weight:800; color:var(--text-main);">Coba dulu lewat video gratis</div>
+            <div style="font-size:13px; color:var(--text-muted); margin-top:4px; line-height:1.6;">
+                Pilih program yang paling cocok, akses video pengantar gratis, dan rasakan cara belajar Puwinter sebelum mengambil akses berbayar penuh.
+            </div>
+        </div>
+    </div>
+    <div style="background:#D1FAE5; color:#065F46; font-size:12px; font-weight:800; padding:8px 12px; border-radius:999px; white-space:nowrap;">
+        <i class="fas fa-gift"></i> Video Gratis Tersedia
+    </div>
 </div>
 
 @if(session('success'))

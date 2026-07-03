@@ -590,7 +590,7 @@
         --}}
         <a href="{{ route('student.live.index') }}"
            class="nav-item {{ request()->routeIs('student.live.*') ? 'active' : '' }}">
-            <i class="fas fa-video"></i> Live Class
+            <i class="fas fa-video"></i> Kelas Online
         </a>
         <a href="#"
            class="nav-item {{ request()->routeIs('student.pdf.*') ? 'active' : '' }}">
@@ -622,7 +622,7 @@
                 <div class="upgrade-title">Upgrade ke Premium</div>
                 <div class="upgrade-sub">Buka semua fitur belajar</div>
                 <ul>
-                    <li>Akses semua live class</li>
+                    <li>Akses semua kelas online</li>
                     <li>Rekaman tanpa batas</li>
                     <li>Materi premium</li>
                     <li>Tanya tutor prioritas</li>

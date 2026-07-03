@@ -46,7 +46,7 @@ class ProgramController extends Controller
     }
 
     /**
-     * Detail satu program: tampilkan course/tryout/live class di dalamnya.
+     * Detail satu program: tampilkan course/tryout/kelas online di dalamnya.
      */
     public function show(Request $request, int $planId): View
     {

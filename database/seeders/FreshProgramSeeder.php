@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
  *  - User default (superadmin, admin, mentor, student)
  *  - Grades 10/11/12
  *  - Subject Bahasa Inggris
- *  - 4 program Puwinter (course + paket harga) sesuai pamflet
+ *  - 4 program Puwinter (course + program) sesuai pamflet
  *
  * TIDAK mengikutkan data demo lama (subject TPS, plan 1/6/12 bulan, achievement).
  * Idempotent: aman dijalankan berulang (updateOrInsert by unique key).
@@ -95,10 +95,10 @@ class FreshProgramSeeder extends Seeder
                 'desc' => 'Program bimbel online Basic Grammar & Reading Text untuk Kelas 10. '
                         . 'Menguatkan Materi Bahasa Inggris Sekolah agar siswa lebih SIAP menghadapi Ulangan, Asesmen, dan Ujian.',
                 'features' => [
-                    'Paket Semester 1: Agustus-Desember 2026',
-                    'Paket Semester 2: Januari-Mei 2027',
+                    'Program Semester 1: Agustus-Desember 2026',
+                    'Program Semester 2: Januari-Mei 2027',
                     '20 kali pertemuan per semester',
-                    'Live class tiap pekan (1x), durasi 60 menit',
+                    'Kelas online tiap pekan (1x), durasi 60 menit',
                     'Rekaman + link video tiap pertemuan',
                     'Materi PDF tiap selesai kelas',
                     'Online via Zoom Premium',
@@ -114,10 +114,10 @@ class FreshProgramSeeder extends Seeder
                 'desc' => 'Program bimbel online Basic Grammar & Reading Text untuk Kelas 11. '
                         . 'Menguatkan Materi Bahasa Inggris Sekolah agar siswa lebih SIAP menghadapi Ulangan, Asesmen, dan Ujian.',
                 'features' => [
-                    'Paket Semester 1: Agustus-Desember 2026',
-                    'Paket Semester 2: Januari-Mei 2027',
+                    'Program Semester 1: Agustus-Desember 2026',
+                    'Program Semester 2: Januari-Mei 2027',
                     '20 kali pertemuan per semester',
-                    'Live class tiap pekan (1x), durasi 60 menit',
+                    'Kelas online tiap pekan (1x), durasi 60 menit',
                     'Rekaman + link video tiap pertemuan',
                     'Materi PDF tiap selesai kelas',
                     'Online via Zoom Premium',
@@ -135,7 +135,7 @@ class FreshProgramSeeder extends Seeder
                 'features' => [
                     'Periode: Agustus-Oktober 2026',
                     '24 kali pertemuan',
-                    'Live class tiap pekan (1x), durasi 60 menit',
+                    'Kelas online tiap pekan (1x), durasi 60 menit',
                     'Rekaman + link video tiap pertemuan',
                     'Materi PDF tiap selesai kelas',
                     'Online via Zoom Premium',
@@ -154,7 +154,7 @@ class FreshProgramSeeder extends Seeder
                 'features' => [
                     'Periode: Agustus 2026-April 2027',
                     '36 kali pertemuan',
-                    'Live class tiap pekan (1x), durasi 60 menit',
+                    'Kelas online tiap pekan (1x), durasi 60 menit',
                     'Rekaman + link video tiap pertemuan',
                     'Materi PDF tiap selesai kelas',
                     'Online via Zoom Premium',

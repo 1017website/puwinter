@@ -8,7 +8,7 @@
             Informasi Dasar
         </div>
         <div class="form-group">
-            <label>Judul Live Class <span style="color:var(--danger);">*</span></label>
+            <label>Judul Kelas Online <span style="color:var(--danger);">*</span></label>
             <input type="text" name="title" class="form-control" value="{{ old('title', $lc->title ?? '') }}"
                    placeholder="Contoh: Pembahasan TPS Penalaran Umum #3" required>
             @error('title') <div class="text-danger" style="font-size:12px; margin-top:4px;">{{ $message }}</div> @enderror
@@ -46,7 +46,7 @@
                         <option value="{{ $pl->id }}" {{ old('plan_id', $lc->plan_id ?? '') == $pl->id ? 'selected' : '' }}>{{ $pl->name }}</option>
                     @endforeach
                 </select>
-                <small style="color:var(--muted); font-size:11px;">Live class ini milik program mana.</small>
+                <small style="color:var(--muted); font-size:11px;">Kelas online ini milik program mana.</small>
             </div>
             <div class="form-group">
                 <label>Akses Untuk <span style="color:var(--danger);">*</span></label>
@@ -55,7 +55,7 @@
                     <option value="both" {{ old('access_tier', $lc->access_tier ?? '') === 'both' ? 'selected' : '' }}>Semua peserta program</option>
                     <option value="free" {{ old('access_tier', $lc->access_tier ?? '') === 'free' ? 'selected' : '' }}>Hanya gratis</option>
                 </select>
-                <small style="color:var(--muted); font-size:11px;">Live class umumnya manfaat berbayar.</small>
+                <small style="color:var(--muted); font-size:11px;">Kelas online umumnya manfaat berbayar.</small>
             </div>
             <div class="form-group">
                 <label>Mentor <span style="color:var(--danger);">*</span></label>
@@ -158,9 +158,9 @@
             Pengaturan
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
-            {{-- Tipe Live Class --}}
+            {{-- Tipe Kelas Online --}}
             <div class="form-group">
-                <label>Tipe Live Class <span style="color:var(--danger);">*</span></label>
+                <label>Tipe Kelas Online <span style="color:var(--danger);">*</span></label>
                 <select name="class_type" class="form-control" x-model="ctype">
                     <option value="regular" {{ old('class_type', $lc->class_type ?? 'regular') === 'regular' ? 'selected' : '' }}>Reguler</option>
                     <option value="private" {{ old('class_type', $lc->class_type ?? '') === 'private' ? 'selected' : '' }}>Private / Eksklusif — wajib premium</option>

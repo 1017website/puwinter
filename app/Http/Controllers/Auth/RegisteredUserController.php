@@ -45,6 +45,8 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+        $request->session()->regenerate();
+        $user->forceFill(['active_session_id' => $request->session()->getId()])->save();
 
         return redirect(route('dashboard', absolute: false));
     }

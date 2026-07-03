@@ -99,7 +99,7 @@
                         $typeConfig = match($activity->activity_type) {
                             'material'   => ['icon'=>'fa-play-circle',       'color'=>'#2563EB', 'bg'=>'#EFF6FF', 'label'=>'Video/Materi'],
                             'tryout'     => ['icon'=>'fa-bullseye',          'color'=>'#7C3AED', 'bg'=>'#F5F3FF', 'label'=>'Tryout'],
-                            'live_class' => ['icon'=>'fa-video',             'color'=>'#059669', 'bg'=>'#ECFDF5', 'label'=>'Live Class'],
+                            'live_class' => ['icon'=>'fa-video',             'color'=>'#059669', 'bg'=>'#ECFDF5', 'label'=>'Kelas Online'],
                             'pdf'        => ['icon'=>'fa-file-pdf',          'color'=>'#DC2626', 'bg'=>'#FEF2F2', 'label'=>'PDF'],
                             'pembahasan' => ['icon'=>'fa-lightbulb',         'color'=>'#D97706', 'bg'=>'#FFFBEB', 'label'=>'Pembahasan'],
                             default      => ['icon'=>'fa-book',              'color'=>'#64748B', 'bg'=>'#F1F5F9', 'label'=>'Aktivitas'],

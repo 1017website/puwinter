@@ -15,7 +15,7 @@
 {{-- Stats --}}
 <div class="stats-row cols-4" style="margin-bottom:28px;">
     <x-stat-card icon="fa-file-circle-check" color="blue"   :value="number_format($stats['total_soal'])"    label="Total Soal"         suffix=" soal" />
-    <x-stat-card icon="fa-bullseye"          color="purple" :value="number_format($stats['total_tryout'])"  label="Paket Tryout"       suffix=" paket" />
+    <x-stat-card icon="fa-bullseye"          color="purple" :value="number_format($stats['total_tryout'])"  label="Program Tryout"       suffix=" program" />
     <x-stat-card icon="fa-users"             color="green"  :value="number_format($stats['total_peserta'])" label="Total Peserta"      suffix=" siswa" />
     <x-stat-card icon="fa-pen-to-square"     color="yellow" :value="number_format($stats['soal_dijawab'])"  label="Soal Kamu Kerjakan" suffix=" soal" />
 </div>

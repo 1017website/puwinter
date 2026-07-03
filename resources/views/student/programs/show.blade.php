@@ -58,8 +58,14 @@
     </div>
 
     @if($isEnrolled && !$isPaid)
-    <div style="margin-top:14px; background:#FEF3C7; border:1px solid #FCD34D; border-radius:8px; padding:12px 14px; font-size:13px; color:#92400E;">
-        <i class="fas fa-info-circle"></i> Kamu terdaftar gratis. Beberapa konten (ditandai <strong>Berbayar</strong>) hanya bisa diakses setelah upgrade.
+    <div style="margin-top:14px; background:#FEF3C7; border:1px solid #FCD34D; border-radius:8px; padding:12px 14px; font-size:13px; color:#92400E; line-height:1.6;">
+        <i class="fas fa-info-circle"></i> Kamu sudah terdaftar gratis. Mulai dari video gratis dan materi pembuka terlebih dahulu; upgrade kapan saja untuk membuka kelas online, tryout, dan seluruh materi premium.
+    </div>
+    @endif
+
+    @if(!$isPaid)
+    <div style="margin-top:12px; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:8px; padding:12px 14px; font-size:13px; color:#1E40AF; line-height:1.6;">
+        <strong><i class="fas fa-play-circle"></i> Video gratis bisa langsung dicoba.</strong> Gunakan kesempatan ini untuk mengenal metode belajar Puwinter sebelum mengambil akses berbayar penuh.
     </div>
     @endif
 </div>
@@ -111,9 +117,9 @@
     @endforelse
 </div>
 
-{{-- LIVE CLASS --}}
+{{-- KELAS ONLINE --}}
 <div class="card">
-    <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;"><i class="fas fa-video"></i> Live Class</h3>
+    <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;"><i class="fas fa-video"></i> Kelas Online</h3>
     @forelse($liveClasses as $lc)
     <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); gap:10px;">
         <div>
@@ -126,7 +132,7 @@
         </div>
     </div>
     @empty
-    <p style="font-size:13px; color:var(--text-muted);">Belum ada live class di program ini.</p>
+    <p style="font-size:13px; color:var(--text-muted);">Belum ada kelas online di program ini.</p>
     @endforelse
 </div>
 

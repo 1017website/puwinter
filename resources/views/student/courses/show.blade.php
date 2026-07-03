@@ -117,7 +117,7 @@
                             'video'      => 'Video',
                             'pdf'        => 'PDF',
                             'quiz'       => 'Quiz',
-                            'live_class' => 'Live Class',
+                            'live_class' => 'Kelas Online',
                             default      => 'Materi',
                         };
                     @endphp

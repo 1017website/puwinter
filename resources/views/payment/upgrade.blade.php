@@ -37,7 +37,7 @@
             <i class="fas fa-tag" style="font-size:18px;"></i>
             <div>
                 <div style="font-size:14px; font-weight:700;">Diskon Spesial Terbatas!</div>
-                <div style="font-size:12px; opacity:0.8;">Upgrade sekarang dan hemat hingga 50% untuk semua paket.</div>
+                <div style="font-size:12px; opacity:0.8;">Upgrade sekarang dan hemat hingga 50% untuk semua program.</div>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
@@ -122,7 +122,7 @@
         <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;">
             @foreach([
                 ['icon'=>'fa-graduation-cap','title'=>'Akses Semua Kelas','desc'=>'Akses seluruh kelas premium tanpa batasan setiap minggu.'],
-                ['icon'=>'fa-video','title'=>'Live Class Eksklusif','desc'=>'Ikuti live class bersama tutor terbaik kapan saja.'],
+                ['icon'=>'fa-video','title'=>'Kelas Online Eksklusif','desc'=>'Ikuti kelas online bersama tutor terbaik kapan saja.'],
                 ['icon'=>'fa-bullseye','title'=>'Tryout Tanpa Batas','desc'=>'Kerjakan tryout sebanyak mungkin kapan saja.'],
                 ['icon'=>'fa-book','title'=>'Materi Premium','desc'=>'Materi lengkap, ringkas, dan selalu diupdate.'],
                 ['icon'=>'fa-play-circle','title'=>'Pembahasan Video Tutor','desc'=>'Pembahasan mendalam oleh tutor berpengalaman.'],

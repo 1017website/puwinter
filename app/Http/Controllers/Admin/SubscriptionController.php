@@ -34,7 +34,9 @@ class SubscriptionController extends Controller
             'total'   => Subscription::count(),
             'active'  => Subscription::where('status','active')->where('expired_at','>',now())->count(),
             'pending' => Subscription::where('status','pending')->count(),
-            'revenue' => Subscription::where('status','active')->sum('amount_paid'),
+            'revenue' => (int) Subscription::where('status','active')
+                ->selectRaw('COALESCE(SUM(COALESCE(total_amount, amount_paid, 0)), 0) as total')
+                ->value('total'),
         ];
 
         return view('admin.subscriptions.index', compact('subscriptions', 'stats'));

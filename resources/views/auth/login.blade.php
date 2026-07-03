@@ -318,7 +318,7 @@
 
     <div class="left-hero">
         <h1>Belajar Lebih <span>Cerdas</span>, Lolos Lebih Pasti</h1>
-        <p>Platform persiapan UTBK terlengkap dengan live class, tryout, dan pembahasan soal bersama tutor terbaik.</p>
+        <p>Platform persiapan UTBK terlengkap dengan kelas online, tryout, dan pembahasan soal bersama tutor terbaik.</p>
 
         <div class="stat-pills">
             <div class="stat-pill">
@@ -345,7 +345,7 @@
                 </div>
                 <div>
                     <div class="stat-pill-val">245+</div>
-                    <div class="stat-pill-label">Materi & live class tersedia</div>
+                    <div class="stat-pill-label">Materi & kelas online tersedia</div>
                 </div>
             </div>
         </div>

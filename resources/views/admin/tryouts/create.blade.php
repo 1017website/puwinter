@@ -56,7 +56,7 @@
 
                 <div class="form-group">
                     <label>Seri / Gelombang</label>
-                    <input type="text" name="series" value="{{ old('series') }}" class="form-control" placeholder="Gelombang 1, Paket A, dll">
+                    <input type="text" name="series" value="{{ old('series') }}" class="form-control" placeholder="Gelombang 1, Program A, dll">
                 </div>
 
                 <div class="form-group">

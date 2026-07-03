@@ -11,7 +11,7 @@ class SubscriptionPlanSeeder extends Seeder
     {
         $features = [
             'Akses semua kelas',
-            'Live class eksklusif',
+            'Kelas online eksklusif',
             'Tryout tanpa batas',
             'Materi premium',
             'Pembahasan video tutor',
@@ -21,7 +21,7 @@ class SubscriptionPlanSeeder extends Seeder
 
         $plans = [
             [
-                'name'           => 'Paket 1 Bulan',
+                'name'           => 'Program 1 Bulan',
                 'slug'           => '1-bulan',
                 'duration_months'=> 1,
                 'price'          => 89000,
@@ -31,7 +31,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'order'          => 1,
             ],
             [
-                'name'           => 'Paket 6 Bulan',
+                'name'           => 'Program 6 Bulan',
                 'slug'           => '6-bulan',
                 'duration_months'=> 6,
                 'price'          => 249000,
@@ -41,7 +41,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'order'          => 2,
             ],
             [
-                'name'           => 'Paket 12 Bulan',
+                'name'           => 'Program 12 Bulan',
                 'slug'           => '12-bulan',
                 'duration_months'=> 12,
                 'price'          => 399000,

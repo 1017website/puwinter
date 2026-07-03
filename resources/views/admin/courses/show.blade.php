@@ -108,7 +108,7 @@
                                     <option value="video">Video</option>
                                     <option value="pdf">PDF</option>
                                     <option value="quiz">Quiz</option>
-                                    <option value="live_class">Live Class</option>
+                                    <option value="live_class">Kelas Online</option>
                                 </select>
                             </div>
                             <div class="form-group" style="margin-bottom:8px;">

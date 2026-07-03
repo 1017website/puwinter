@@ -22,12 +22,12 @@
 
         <div style="display:flex; flex-direction:column; gap:10px;">
             <div style="display:flex; justify-content:space-between; font-size:13.5px;">
-                <span style="color:var(--text-muted);">Paket</span>
+                <span style="color:var(--text-muted);">Program</span>
                 <strong>{{ $subscription->plan->name }}</strong>
             </div>
             <div style="display:flex; justify-content:space-between; font-size:13.5px;">
                 <span style="color:var(--text-muted);">Total Bayar</span>
-                <strong>Rp {{ number_format($subscription->amount_paid, 0, ',', '.') }}</strong>
+                <strong>Rp {{ number_format($subscription->total_amount ?? $subscription->amount_paid, 0, ',', '.') }}</strong>
             </div>
             <div style="display:flex; justify-content:space-between; font-size:13.5px;">
                 <span style="color:var(--text-muted);">Metode</span>

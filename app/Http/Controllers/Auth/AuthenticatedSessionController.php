@@ -27,6 +27,7 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate(['student']);
 
         $request->session()->regenerate();
+        $this->setActiveSession($request);
 
         return $this->redirectByRole($request->user());
     }
@@ -46,6 +47,7 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate(['superadmin', 'admin', 'mentor']);
 
         $request->session()->regenerate();
+        $this->setActiveSession($request);
 
         return $this->redirectByRole($request->user());
     }
@@ -56,8 +58,12 @@ class AuthenticatedSessionController extends Controller
 
     public function destroy(Request $request): RedirectResponse
     {
-        $wasStaff = $request->user()
-            && in_array($request->user()->role, ['superadmin', 'admin', 'mentor']);
+        $user = $request->user();
+        $wasStaff = $user && in_array($user->role, ['superadmin', 'admin', 'mentor']);
+
+        if ($user && hash_equals((string) $user->active_session_id, (string) $request->session()->getId())) {
+            $user->forceFill(['active_session_id' => null])->save();
+        }
 
         Auth::guard('web')->logout();
 
@@ -66,6 +72,22 @@ class AuthenticatedSessionController extends Controller
 
         // Kembalikan ke halaman login yang sesuai.
         return redirect()->route($wasStaff ? 'staff.login' : 'login');
+    }
+
+    // =========================================================================
+    // Helper session aktif
+    // =========================================================================
+
+    private function setActiveSession(Request $request): void
+    {
+        if (!$request->user()) {
+            return;
+        }
+
+        $request->user()->forceFill([
+            'active_session_id' => $request->session()->getId(),
+            'last_login_at'     => now(),
+        ])->save();
     }
 
     // =========================================================================

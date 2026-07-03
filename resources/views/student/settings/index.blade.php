@@ -283,7 +283,7 @@
                         <i class="fas fa-crown" style="color:#F59E0B; font-size:20px;"></i>
                     </div>
                     <p style="font-size:12px; color:#64748B; margin-bottom:14px; line-height:1.5;">
-                        Upgrade Premium untuk akses semua kelas, tryout, dan live class tanpa batas.
+                        Upgrade Premium untuk akses semua kelas, tryout, dan kelas online tanpa batas.
                     </p>
                     <a href="{{ route('upgrade.index') }}"
                        style="display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; background:linear-gradient(135deg,#F59E0B,#EF4444); color:#fff; border-radius:8px; font-size:12px; font-weight:700; text-decoration:none;">

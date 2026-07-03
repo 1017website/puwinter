@@ -26,7 +26,7 @@
     <div style="text-align:center; margin-bottom:24px;">
         <h2 style="font-size:24px; font-weight:800;">Selesaikan Pembayaran</h2>
         <p style="font-size:13.5px; color:var(--text-muted); margin-top:6px;">
-            Paket <strong>{{ $subscription->plan->name ?? '-' }}</strong> · Transfer Bank Manual
+            Program <strong>{{ $subscription->plan->name ?? '-' }}</strong> · Transfer Bank Manual
         </p>
     </div>
 
@@ -54,7 +54,7 @@
             Rp {{ number_format($subscription->total_amount, 0, ',', '.') }}
         </div>
         <div style="font-size:12px; color:var(--text-muted); margin-top:8px; line-height:1.6;">
-            Harga paket Rp {{ number_format($subscription->amount_paid, 0, ',', '.') }}
+            Harga program Rp {{ number_format($subscription->amount_paid, 0, ',', '.') }}
             + <strong>kode unik {{ $subscription->unique_code }}</strong>.<br>
             Transfer <u>tepat</u> hingga 3 digit terakhir agar mudah diverifikasi otomatis.
         </div>

@@ -126,10 +126,10 @@ class PlanController extends Controller
     public function destroy(SubscriptionPlan $plan): RedirectResponse
     {
         if ($plan->subscriptions()->whereIn('status', ['active', 'pending'])->exists()) {
-            return back()->with('error', 'Tidak bisa menghapus paket yang masih memiliki subscriber aktif.');
+            return back()->with('error', 'Tidak bisa menghapus program yang masih memiliki subscriber aktif.');
         }
 
         $plan->delete();
-        return back()->with('success', 'Paket berhasil dihapus.');
+        return back()->with('success', 'Program berhasil dihapus.');
     }
 }

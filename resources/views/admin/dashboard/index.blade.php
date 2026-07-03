@@ -72,7 +72,7 @@
                     <thead>
                         <tr>
                             <th>User</th>
-                            <th>Paket</th>
+                            <th>Program</th>
                             <th>Nominal</th>
                             <th>Status</th>
                             <th>Tanggal</th>

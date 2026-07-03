@@ -25,7 +25,7 @@ class LiveClassController extends Controller
 
         $live = $base()->where('status', 'live')->get();
 
-        // Rekaman: live class yang sudah selesai dan punya recording_url
+        // Rekaman: kelas online yang sudah selesai dan punya recording_url
         $recordings = $base()->where('status', 'ended')
             ->whereNotNull('recording_url')
             ->latest('scheduled_at')
@@ -50,16 +50,16 @@ class LiveClassController extends Controller
                 return redirect()->route('upgrade.index')
                     ->with('error', $liveClass->isPrivate()
                         ? 'Private class hanya tersedia untuk member Premium.'
-                        : 'Live class ini hanya tersedia untuk member Premium.');
+                        : 'Kelas online ini hanya tersedia untuk member Premium.');
             }
             return redirect()->route('student.live.index')
-                ->with('error', 'Live class ini tidak tersedia untuk kelasmu.');
+                ->with('error', 'Kelas online ini tidak tersedia untuk kelasmu.');
         }
 
-        // Batas live class gratis: user free hanya boleh 1 live class seumur hidup.
+        // Batas kelas online gratis: user free hanya boleh 1 kelas online seumur hidup.
         if (!$user->isPremium() && !$user->canJoinFreeLiveClass($liveClass->id)) {
             return redirect()->route('upgrade.index')
-                ->with('error', 'Pengguna gratis hanya dapat mengikuti 1 live class. Upgrade ke Premium untuk akses tanpa batas.');
+                ->with('error', 'Pengguna gratis hanya dapat mengikuti 1 kelas online. Upgrade ke Premium untuk akses tanpa batas.');
         }
 
         // Catat kehadiran jika live
@@ -90,15 +90,15 @@ class LiveClassController extends Controller
                 return redirect()->route('upgrade.index')
                     ->with('error', $liveClass->isPrivate()
                         ? 'Private class hanya untuk member Premium.'
-                        : 'Live class ini hanya untuk member Premium.');
+                        : 'Kelas online ini hanya untuk member Premium.');
             }
-            abort(403, 'Live class ini bukan untuk kelasmu.');
+            abort(403, 'Kelas online ini bukan untuk kelasmu.');
         }
 
-        // Batas live class gratis: user free hanya boleh 1 live class seumur hidup.
+        // Batas kelas online gratis: user free hanya boleh 1 kelas online seumur hidup.
         if (!$user->isPremium() && !$user->canJoinFreeLiveClass($liveClass->id)) {
             return redirect()->route('upgrade.index')
-                ->with('error', 'Pengguna gratis hanya dapat mengikuti 1 live class. Upgrade ke Premium untuk akses tanpa batas.');
+                ->with('error', 'Pengguna gratis hanya dapat mengikuti 1 kelas online. Upgrade ke Premium untuk akses tanpa batas.');
         }
 
         // Hanya boleh join saat status live

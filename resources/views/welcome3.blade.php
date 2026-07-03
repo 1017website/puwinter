@@ -6,7 +6,7 @@
     <link rel="shortcut icon" href="{{ asset('images/favicon.png') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Puwinter — Platform UTBK Terbaik Indonesia</title>
-    <meta name="description" content="Belajar UTBK lebih cerdas bersama Puwinter. Live class, tryout, dan pembahasan soal bersama tutor terbaik.">
+    <meta name="description" content="Belajar UTBK lebih cerdas bersama Puwinter. Kelas online, tryout, dan pembahasan soal bersama tutor terbaik.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -1356,7 +1356,7 @@
                     <i class="fas fa-video" style="color:#60A5FA;"></i>
                 </div>
                 <div>
-                    <div style="font-size:12px; font-weight:700; color:#fff;">Live Class Berlangsung</div>
+                    <div style="font-size:12px; font-weight:700; color:#fff;">Kelas Online Berlangsung</div>
                     <div style="font-size:11px; color:#64748B;">142 peserta online</div>
                 </div>
                 <span style="background:#EF4444; color:#fff; font-size:9px; font-weight:700; padding:2px 7px; border-radius:99px; margin-left:auto;">LIVE</span>
@@ -1434,11 +1434,11 @@
 <div class="section">
     <div class="section-label">Featured Programs</div>
     <h2 class="section-title">Everything You Need to Learn English, <br> <span class="hl">All in One Place.</span></h2>
-    <p class="section-desc">Dari live class interaktif hingga analisis belajar detail — semua tersedia dalam satu platform.</p>
+    <p class="section-desc">Dari kelas online interaktif hingga analisis belajar detail — semua tersedia dalam satu platform.</p>
 
     <div class="feature-grid">
         @foreach([
-            ['icon'=>'fa-video','color'=>'rgba(37,99,235,0.15)','icolor'=>'#60A5FA','title'=>'Live Class Interaktif','desc'=>'Belajar langsung bersama mentor terbaik via Zoom. Tanya jawab real-time dan rekaman tersedia setelahnya.'],
+            ['icon'=>'fa-video','color'=>'rgba(37,99,235,0.15)','icolor'=>'#60A5FA','title'=>'Kelas Online Interaktif','desc'=>'Belajar langsung bersama mentor terbaik via Zoom. Tanya jawab real-time dan rekaman tersedia setelahnya.'],
             ['icon'=>'fa-bullseye','color'=>'rgba(239,68,68,0.15)','icolor'=>'#F87171','title'=>'Tryout Literasi dalam Bahasa Inggris UTBK SNBT','desc'=>'Simulasi ujian persis seperti UTBK asli. Timer, navigasi soal, dan hasil skor instan setelah submit.'],
             ['icon'=>'fa-lightbulb','color'=>'rgba(245,158,11,0.15)','icolor'=>'#FBBF24','title'=>'Pembahasan Lengkap','desc'=>'Setiap soal ada pembahasan teks dan video tutor. Pahami konsep, bukan hanya hafal jawaban.'],
             ['icon'=>'fa-file-pdf','color'=>'rgba(16,185,129,0.15)','icolor'=>'#34D399','title'=>'Materi PDF Premium','desc'=>'245+ dokumen materi ringkas dan terstruktur. Download dan belajar kapan saja, di mana saja.'],
@@ -1471,7 +1471,7 @@
             @foreach([
                 ['n'=>'1','title'=>'Daftar Gratis','desc'=>'Buat akun dalam 30 detik. Tidak perlu kartu kredit.'],
                 ['n'=>'2','title'=>'Pilih Materi','desc'=>'Akses ratusan materi dan soal sesuai kebutuhan belajarmu.'],
-                ['n'=>'3','title'=>'Ikuti Live Class','desc'=>'Bergabung ke live class dan tanya langsung ke mentor.'],
+                ['n'=>'3','title'=>'Ikuti Kelas Online','desc'=>'Bergabung ke kelas online dan tanya langsung ke mentor.'],
                 ['n'=>'4','title'=>'Pantau Progress','desc'=>'Cek leaderboard dan analisis belajarmu secara berkala.'],
             ] as $s)
             <div class="step-item reveal">
@@ -1526,13 +1526,13 @@
             @endif
             <a href="{{ route('register') }}"
                class="btn-pricing {{ $plan->is_popular ? 'btn-pricing-filled' : 'btn-pricing-outline' }}">
-                {{ $plan->is_popular ? 'Pilih Paket Ini' : 'Mulai Sekarang' }}
+                {{ $plan->is_popular ? 'Pilih Program Ini' : 'Mulai Sekarang' }}
             </a>
         </div>
         @empty
-        {{-- Fallback jika belum ada paket di DB --}}
+        {{-- Fallback jika belum ada program di DB --}}
         <div class="pricing-card reveal" style="grid-column:1/-1; text-align:center; padding:40px;">
-            <p style="color:#94A3B8;">Paket harga belum tersedia. Hubungi admin.</p>
+            <p style="color:#94A3B8;">Program belum tersedia. Hubungi admin.</p>
         </div>
         @endforelse
     </div>
@@ -1556,7 +1556,7 @@
 
         <div class="testi-grid">
             @foreach([
-                ['initial'=>'A','name'=>'Aditya Pratama','info'=>'Diterima UI Teknik Informatika 2024','color'=>'#2563EB','text'=>'"Puwinter benar-benar game changer. Live class-nya interaktif banget, bisa langsung tanya kalau ada yang gak ngerti. Skor tryout saya naik 120 poin dalam 2 bulan!"'],
+                ['initial'=>'A','name'=>'Aditya Pratama','info'=>'Diterima UI Teknik Informatika 2024','color'=>'#2563EB','text'=>'"Puwinter benar-benar game changer. Kelas online-nya interaktif banget, bisa langsung tanya kalau ada yang gak ngerti. Skor tryout saya naik 120 poin dalam 2 bulan!"'],
                 ['initial'=>'S','name'=>'Siti Rahayu','info'=>'Diterima ITB Teknik Kimia 2024','color'=>'#7C3AED','text'=>'"Awalnya ragu karena harganya murah, tapi kualitasnya melebihi ekspektasi. Pembahasannya detail dan tutor-nya sabar banget neranginnya."'],
                 ['initial'=>'R','name'=>'Rafi Ahmad','info'=>'Diterima Unpad Kedokteran 2024','color'=>'#059669','text'=>'"Yang bikin beda dari platform lain adalah analisis belajarnya. Saya tau persis bagian mana yang masih lemah dan harus diperkuat. Highly recommended!"'],
                 ['initial'=>'N','name'=>'Nadia Putri','info'=>'Diterima UGM Akuntansi 2024','color'=>'#DC2626','text'=>'"Fitur leaderboard-nya bikin semangat belajar. Seru aja ngeliat nama sendiri naik terus. Plus materi PDF-nya lengkap dan mudah dipahami."'],
@@ -1616,7 +1616,7 @@
             <div class="footer-col">
                 <h4>Platform</h4>
                 <ul>
-                    <li><a href="#">Live Class</a></li>
+                    <li><a href="#">Kelas Online</a></li>
                     <li><a href="#">Tryout</a></li>
                     <li><a href="#">Bank Soal</a></li>
                     <li><a href="#">Materi PDF</a></li>

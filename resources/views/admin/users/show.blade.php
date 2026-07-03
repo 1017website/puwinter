@@ -115,7 +115,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Paket</th>
+                            <th>Program</th>
                             <th>Nominal</th>
                             <th>Metode</th>
                             <th>Status</th>

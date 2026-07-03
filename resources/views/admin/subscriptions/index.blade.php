@@ -57,7 +57,7 @@
             <thead>
                 <tr>
                     <th>User</th>
-                    <th>Paket</th>
+                    <th>Program</th>
                     <th>Nominal</th>
                     <th>Metode</th>
                     <th>Status</th>
@@ -74,7 +74,14 @@
                         <div style="font-size:11.5px; color:var(--muted);">{{ $sub->user->email ?? '' }}</div>
                     </td>
                     <td style="font-size:13px; font-weight:600;">{{ $sub->plan->name ?? '-' }}</td>
-                    <td style="font-weight:700;">Rp {{ number_format($sub->amount_paid, 0, ',', '.') }}</td>
+                    <td>
+                        <div style="font-weight:700;">Rp {{ number_format($sub->total_amount ?? $sub->amount_paid, 0, ',', '.') }}</div>
+                        @if($sub->unique_code)
+                            <div style="font-size:11.5px; color:var(--muted); margin-top:2px;">
+                                Harga program Rp {{ number_format($sub->amount_paid, 0, ',', '.') }} + kode unik {{ $sub->unique_code }}
+                            </div>
+                        @endif
+                    </td>
                     <td style="font-size:12px; text-transform:uppercase; color:var(--muted);">
                         {{ str_replace('_', ' ', $sub->payment_method ?? '-') }}
                     </td>

@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'premium' => \App\Http\Middleware\CheckPremiumAccess::class,
         ]);
 
+        $middleware->web(append: [
+            \App\Http\Middleware\EnsureSingleDeviceSession::class,
+        ]);
+
         // Guest yang mengakses area staff diarahkan ke login staff,
         // selain itu ke login siswa.
         $middleware->redirectGuestsTo(function (\Illuminate\Http\Request $request) {
