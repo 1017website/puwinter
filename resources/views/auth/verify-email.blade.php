@@ -27,7 +27,18 @@
             text-align: center;
             box-shadow: 0 22px 60px rgba(15, 23, 42, 0.09);
         }
-        .logo { width: 150px; height: auto; margin: 0 auto 24px; display: block; }
+        .brand-logo-wrap {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0F172A, #1E3A8A);
+            border-radius: 999px;
+            padding: 10px 18px;
+            margin: 0 auto 26px;
+            border: 1px solid rgba(37, 99, 235, 0.24);
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.14);
+        }
+        .logo { width: 152px; height: auto; display: block; }
         .icon-wrap {
             width: 70px;
             height: 70px;
@@ -96,7 +107,9 @@
 </head>
 <body>
     <div class="card">
-        <img src="{{ asset('images/logo.png') }}" alt="Puwinter" class="logo">
+        <div class="brand-logo-wrap" aria-label="Puwinter">
+            <img src="{{ asset('images/logo.png') }}" alt="Puwinter" class="logo">
+        </div>
 
         <div class="icon-wrap">
             <i class="fas fa-envelope-open-text" style="font-size:29px; color:#2563EB;"></i>

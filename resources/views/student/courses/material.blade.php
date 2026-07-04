@@ -9,8 +9,7 @@
     /* Video player container */
     .video-wrapper {
         position: relative;
-        padding-bottom: 56.25%;
-        height: 0;
+        aspect-ratio: 16 / 9;
         overflow: hidden;
         border-radius: 12px;
         background: #000;
@@ -18,31 +17,60 @@
     .video-wrapper iframe,
     .video-wrapper video {
         position: absolute;
-        /* Perbesar iframe keluar container untuk memotong title bar atas & bar bawah */
-        top: -40px;
-        left: 0;
+        inset: 0;
         width: 100%;
-        height: calc(100% + 80px);
+        height: 100%;
         border: none;
-    }
-    /* Tutup title bar YouTube di atas */
-    .video-wrapper::after {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 44px;
+        border-radius: 12px;
         background: #000;
-        z-index: 2;
     }
-    /* Tutup info bar YouTube di bawah (share, watch on youtube, channel) */
-    .video-wrapper::before {
-        content: '';
+    .youtube-clean-player .youtube-mask-top {
         position: absolute;
-        bottom: 0; left: 0; right: 0;
-        height: 44px;
-        background: #000;
-        z-index: 2;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 58px;
+        z-index: 5;
+        pointer-events: auto;
+        background: linear-gradient(180deg, rgba(0,0,0,.78), rgba(0,0,0,.20), rgba(0,0,0,0));
     }
+    .youtube-clean-player .youtube-mask-corner {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 190px;
+        height: 58px;
+        z-index: 5;
+        pointer-events: auto;
+        background: linear-gradient(270deg, rgba(0,0,0,.88), rgba(0,0,0,.35), rgba(0,0,0,0));
+    }
+    .player-expand-btn {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        z-index: 6;
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, .88);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 8px 20px rgba(0,0,0,.22);
+    }
+    .player-expand-btn:hover { background: rgba(37, 99, 235, .95); }
+    .video-wrapper:fullscreen {
+        width: 100vw;
+        height: 100vh;
+        aspect-ratio: auto;
+        border-radius: 0;
+        background: #000;
+    }
+    .video-wrapper:fullscreen iframe,
+    .video-wrapper:fullscreen video { border-radius: 0; }
     .material-sidebar {
         width: 320px;
         flex-shrink: 0;
@@ -112,8 +140,8 @@
                     $isYoutube  = preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $videoUrl, $ytMatch);
                     $embedUrl   = $isYoutube
                         ? 'https://www.youtube-nocookie.com/embed/' . $ytMatch[1]
-                          . '?rel=0&modestbranding=1&iv_load_policy=3&fs=1'
-                          . '&disablekb=0&color=white&showinfo=0&controls=1'
+                          . '?rel=0&modestbranding=1&iv_load_policy=3&fs=0'
+                          . '&disablekb=1&color=white&controls=1'
                           . '&playsinline=1&enablejsapi=0'
                         : null;
                     $isDirectVideo = !$isYoutube && preg_match('/\.(mp4|webm|ogg)(\?.*)?$/i', $videoUrl);
@@ -121,10 +149,14 @@
 
                 <div class="card" style="padding:0; overflow:hidden; margin-bottom:20px;">
                     @if($isYoutube)
-                        <div class="video-wrapper">
+                        <div class="video-wrapper youtube-clean-player" oncontextmenu="return false;">
                             <iframe src="{{ $embedUrl }}"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen></iframe>
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                            <div class="youtube-mask-top" title="Area YouTube disembunyikan"></div>
+                            <div class="youtube-mask-corner" title="Tombol share/buka YouTube disembunyikan"></div>
+                            <button type="button" class="player-expand-btn" onclick="puwinterTogglePlayerFullscreen(this)" aria-label="Perbesar video">
+                                <i class="fas fa-expand"></i>
+                            </button>
                         </div>
                     @elseif($isDirectVideo)
                         <div class="video-wrapper">
@@ -335,3 +367,20 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+    window.puwinterTogglePlayerFullscreen = window.puwinterTogglePlayerFullscreen || function(button) {
+        const wrapper = button.closest('.video-wrapper');
+        if (!wrapper) return;
+
+        if (!document.fullscreenElement) {
+            if (wrapper.requestFullscreen) {
+                wrapper.requestFullscreen();
+            }
+        } else if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    };
+</script>
+@endpush

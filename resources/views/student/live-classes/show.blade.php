@@ -51,28 +51,25 @@
             @php
                 $isYoutube = preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $liveClass->recording_url, $ytMatch);
                 $embedUrl  = $isYoutube
-                    ? 'https://www.youtube-nocookie.com/embed/' . $ytMatch[1] . '?rel=0&modestbranding=1&controls=1&fs=0&disablekb=1&iv_load_policy=3'
+                    ? 'https://www.youtube-nocookie.com/embed/' . $ytMatch[1] . '?rel=0&modestbranding=1&controls=1&fs=0&disablekb=1&iv_load_policy=3&playsinline=1&enablejsapi=0'
                     : null;
                 $isDirectVideo = !$isYoutube && preg_match('/\.(mp4|webm|ogg)(\?.*)?$/i', $liveClass->recording_url);
             @endphp
 
             <div class="card" style="padding:0; overflow:hidden; margin-bottom:20px;">
-                <div style="position:relative; padding-bottom:56.25%; height:0; background:#000; border-radius:12px;">
+                <div class="youtube-clean-player" oncontextmenu="return false;">
                     @if($isYoutube)
-                        {{-- iframe YouTube di-hardening: nocookie, tanpa fullscreen, overlay penutup --}}
+                        {{-- YouTube iframe dibatasi: tanpa native fullscreen + area title/share ditutup overlay --}}
                         <iframe src="{{ $embedUrl }}"
                                 oncontextmenu="return false;"
-                                style="position:absolute; inset:0; width:100%; height:100%; border:none; border-radius:12px; pointer-events:auto;"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
-                        {{-- Penutup area judul YouTube (kiri-atas) agar klik judul/logo → YouTube terblok --}}
-                        <div style="position:absolute; top:0; left:0; right:0; height:64px; z-index:5; cursor:default;"
-                             oncontextmenu="return false;"></div>
-                        {{-- Penutup seluruh bar kanan-bawah (tombol share, watch later, watch on youtube) --}}
-                        <div style="position:absolute; bottom:0; right:0; width:200px; height:48px; z-index:5; cursor:default;"
-                             oncontextmenu="return false;"></div>
+                        <div class="youtube-mask-top" title="Area YouTube disembunyikan"></div>
+                        <div class="youtube-mask-corner" title="Tombol share/buka YouTube disembunyikan"></div>
+                        <button type="button" class="player-expand-btn" onclick="puwinterTogglePlayerFullscreen(this)" aria-label="Perbesar video">
+                            <i class="fas fa-expand"></i>
+                        </button>
                     @elseif($isDirectVideo)
-                        <video controls controlslist="nodownload"
-                               style="position:absolute; inset:0; width:100%; height:100%; border-radius:12px; background:#000;">
+                        <video controls controlslist="nodownload">
                             <source src="{{ $liveClass->recording_url }}" type="video/mp4">
                         </video>
                     @else
@@ -207,9 +204,90 @@
 
 @push('styles')
 <style>
+.youtube-clean-player {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+}
+.youtube-clean-player iframe,
+.youtube-clean-player video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 12px;
+    background: #000;
+}
+.youtube-mask-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 58px;
+    z-index: 5;
+    pointer-events: auto;
+    background: linear-gradient(180deg, rgba(0,0,0,.78), rgba(0,0,0,.20), rgba(0,0,0,0));
+}
+.youtube-mask-corner {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 190px;
+    height: 58px;
+    z-index: 5;
+    pointer-events: auto;
+    background: linear-gradient(270deg, rgba(0,0,0,.88), rgba(0,0,0,.35), rgba(0,0,0,0));
+}
+.player-expand-btn {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 6;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 10px;
+    background: rgba(15, 23, 42, .88);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0,0,0,.22);
+}
+.player-expand-btn:hover { background: rgba(37, 99, 235, .95); }
+.youtube-clean-player:fullscreen {
+    width: 100vw;
+    height: 100vh;
+    padding-bottom: 0;
+    border-radius: 0;
+}
+.youtube-clean-player:fullscreen iframe,
+.youtube-clean-player:fullscreen video { border-radius: 0; }
 @keyframes pulse {
     0%, 100% { opacity:1; }
     50% { opacity:0.4; }
 }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    window.puwinterTogglePlayerFullscreen = window.puwinterTogglePlayerFullscreen || function(button) {
+        const wrapper = button.closest('.youtube-clean-player, .video-wrapper');
+        if (!wrapper) return;
+
+        if (!document.fullscreenElement) {
+            if (wrapper.requestFullscreen) {
+                wrapper.requestFullscreen();
+            }
+        } else if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    };
+</script>
 @endpush

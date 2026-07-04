@@ -18,7 +18,13 @@
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px; width:100%;">
                     <tr>
                         <td align="center" style="padding:0 0 18px;">
-                            <img src="{{ $logoUrl ?? asset('images/logo.png') }}" width="148" alt="Puwinter" style="display:block; max-width:148px; height:auto; border:0; outline:none; text-decoration:none;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin:0 auto;">
+                                <tr>
+                                    <td bgcolor="#0F172A" style="background:#0F172A; border:1px solid #1E3A8A; border-radius:999px; padding:10px 18px; text-align:center; box-shadow:0 10px 24px rgba(15, 23, 42, 0.10);">
+                                        <img src="{{ $logoUrl ?? asset('images/logo.png') }}" width="150" alt="Puwinter" style="display:block; width:150px; max-width:150px; height:auto; border:0; outline:none; text-decoration:none;">
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
                     </tr>
 
