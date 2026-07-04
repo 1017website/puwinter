@@ -253,7 +253,7 @@
                 <div style="font-size:22px; font-weight:800; letter-spacing:1px; color:#1E293B;">{{ $user->affiliate_code ?: $user->ensureAffiliateCode() }}</div>
             </div>
             <p style="font-size:11.5px; color:#64748B; line-height:1.6; margin-bottom:10px;">
-                Bagikan kode ini ke siswa lain. Mereka bisa mengisi kode saat daftar dan mendapat potongan harga sesuai pengaturan admin.
+                Bagikan kode ini ke siswa lain. Saat mereka daftar memakai kode kamu dan pembayarannya divalidasi, benefit/reward untuk kamu akan dicatat sesuai pengaturan admin.
             </p>
             <button type="button" onclick="navigator.clipboard.writeText('{{ $user->affiliate_code }}'); alert('Kode affiliate disalin: {{ $user->affiliate_code }}')"
                     style="width:100%; padding:9px; background:#fff; color:#475569; border:1.5px solid #E2E8F0; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;">

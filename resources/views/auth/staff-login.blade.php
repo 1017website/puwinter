@@ -427,43 +427,6 @@
             </button>
         </form>
 
-        <div class="divider">atau</div>
-
-        {{-- Quick Login Demo Accounts --}}
-        <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:14px; margin-bottom:16px;">
-            <div style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-                <i class="fas fa-bolt" style="color:#F59E0B;"></i> Akun Demo — Klik untuk mengisi otomatis
-            </div>
-            <div style="display:flex; flex-direction:column; gap:6px;">
-                @foreach([
-                    ['role'=>'superadmin', 'label'=>'Super Admin','email'=>'superadmin@puwinter.com', 'icon'=>'fa-shield-halved', 'color'=>'#EF4444', 'bg'=>'#FEF2F2'],
-                    ['role'=>'admin',      'label'=>'Admin',      'email'=>'admin@puwinter.com',      'icon'=>'fa-user-gear',      'color'=>'#2563EB', 'bg'=>'#EFF6FF'],
-                    ['role'=>'mentor',     'label'=>'Mentor',     'email'=>'mentor@puwinter.com',     'icon'=>'fa-chalkboard-user','color'=>'#7C3AED', 'bg'=>'#F5F3FF'],
-                ] as $account)
-                <button type="button"
-                        onclick="fillLogin('{{ $account['email'] }}')"
-                        style="display:flex; align-items:center; gap:10px; padding:9px 12px; background:{{ $account['bg'] }}; border:1px solid {{ $account['color'] }}22; border-radius:8px; cursor:pointer; text-align:left; width:100%; transition:all 0.15s; font-family:inherit;"
-                        onmouseover="this.style.background='{{ $account['color'] }}18'; this.style.borderColor='{{ $account['color'] }}55';"
-                        onmouseout="this.style.background='{{ $account['bg'] }}'; this.style.borderColor='{{ $account['color'] }}22';">
-                    <div style="width:30px; height:30px; border-radius:7px; background:{{ $account['color'] }}20; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                        <i class="fas {{ $account['icon'] }}" style="font-size:13px; color:{{ $account['color'] }};"></i>
-                    </div>
-                    <div style="flex:1; min-width:0;">
-                        <div style="font-size:12px; font-weight:700; color:#1E293B;">{{ $account['label'] }}</div>
-                        <div style="font-size:11px; color:#64748B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $account['email'] }}</div>
-                    </div>
-                    <div style="font-size:10px; color:{{ $account['color'] }}; font-weight:600; flex-shrink:0;">
-                        Pilih <i class="fas fa-chevron-right" style="font-size:9px;"></i>
-                    </div>
-                </button>
-                @endforeach
-            </div>
-            <div style="margin-top:10px; padding-top:8px; border-top:1px solid #E2E8F0; font-size:11px; color:#94A3B8; display:flex; align-items:center; gap:5px;">
-                <i class="fas fa-key" style="font-size:10px;"></i>
-                Password semua akun: <code style="background:#E2E8F0; padding:1px 6px; border-radius:4px; font-size:11px; color:#475569;">password</code>
-            </div>
-        </div>
-
         <div style="text-align:center; font-size:12.5px; color:#94A3B8;">
             Kamu siswa?
             <a href="{{ route('login') }}" style="color:#2563EB; font-weight:600; text-decoration:none;">Masuk lewat Login Siswa</a>
@@ -472,25 +435,6 @@
     </div>
 </div>
 
-<script>
-function fillLogin(email) {
-    document.querySelector('input[name="email"]').value = email;
-    document.querySelector('input[name="password"]').value = 'password';
-    // Highlight fields sebentar
-    ['email', 'password'].forEach(name => {
-        const el = document.querySelector(`input[name="${name}"]`);
-        el.style.transition = 'border-color 0.3s, box-shadow 0.3s';
-        el.style.borderColor = '#2563EB';
-        el.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.15)';
-        setTimeout(() => {
-            el.style.borderColor = '';
-            el.style.boxShadow = '';
-        }, 1200);
-    });
-    // Focus ke tombol submit
-    document.querySelector('.btn-submit').focus();
-}
-</script>
 
 </body>
 </html>

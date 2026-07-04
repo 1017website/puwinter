@@ -122,21 +122,15 @@
                 <i class="fas fa-handshake" style="color:var(--primary);"></i> Pengaturan Affiliate
             </div>
             <p style="font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.6;">
-                Atur nominal potongan untuk siswa yang memakai kode affiliate dan reward untuk pemilik kode saat pembayaran sudah divalidasi admin.
+                Atur benefit/reward untuk pemilik kode affiliate. Siswa yang memakai kode hanya mencatat referrer; benefit diberikan kepada orang yang mengajak saat pembayaran divalidasi admin.
             </p>
             <form method="POST" action="{{ route('admin.settings.affiliate') }}">
                 @csrf
-                <div style="margin-bottom:12px;">
-                    <label style="font-size:12px; font-weight:600; display:block; margin-bottom:5px;">Potongan Harga Siswa (Rp)</label>
-                    <input type="number" name="affiliate_discount_amount" value="{{ old('affiliate_discount_amount', $affiliate['affiliate_discount_amount'] ?? 0) }}" min="0" placeholder="mis. 25000"
-                           class="form-control" style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; outline:none;">
-                    <div style="font-size:11px; color:var(--muted); margin-top:4px;">Dipakai otomatis saat siswa yang direferensikan checkout program.</div>
-                </div>
                 <div style="margin-bottom:14px;">
-                    <label style="font-size:12px; font-weight:600; display:block; margin-bottom:5px;">Reward Pemilik Kode (Rp)</label>
+                    <label style="font-size:12px; font-weight:600; display:block; margin-bottom:5px;">Benefit / Reward Pemilik Kode (Rp)</label>
                     <input type="number" name="affiliate_reward_amount" value="{{ old('affiliate_reward_amount', $affiliate['affiliate_reward_amount'] ?? 0) }}" min="0" placeholder="mis. 10000"
                            class="form-control" style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; outline:none;">
-                    <div style="font-size:11px; color:var(--muted); margin-top:4px;">Reward dicatat ketika admin mengaktifkan pembayaran.</div>
+                    <div style="font-size:11px; color:var(--muted); margin-top:4px;">Benefit ini dicatat untuk pemilik kode ketika admin mengaktifkan pembayaran siswa yang memakai kode tersebut.</div>
                 </div>
                 <button type="submit" class="btn btn-primary btn-sm" style="width:100%; justify-content:center;">
                     <i class="fas fa-save"></i> Simpan Affiliate

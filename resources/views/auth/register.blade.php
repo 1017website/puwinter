@@ -475,7 +475,7 @@
                     <div class="invalid-feedback"><i class="fas fa-circle-exclamation"></i> {{ $message }}</div>
                 @enderror
                 <small class="optional" style="display:block;margin-top:6px;line-height:1.5;">
-                    Jika memakai kode affiliate, potongan harga akan diterapkan saat checkout program berbayar.
+                    Kode affiliate dipakai untuk mencatat siapa yang mengajak kamu. Benefit/reward akan diberikan kepada pemilik kode sesuai pengaturan admin.
                 </small>
             </div>
 

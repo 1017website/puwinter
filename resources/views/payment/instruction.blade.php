@@ -54,15 +54,8 @@
             Rp {{ number_format($subscription->total_amount ?? $subscription->amount_paid, 0, ',', '.') }}
         </div>
         <div style="font-size:12px; color:var(--text-muted); margin-top:8px; line-height:1.6;">
-            @if(($subscription->affiliate_discount_amount ?? 0) > 0)
-                Harga program Rp {{ number_format($subscription->affiliate_original_amount ?? ($subscription->amount_paid + $subscription->affiliate_discount_amount), 0, ',', '.') }}
-                - <strong>potongan affiliate Rp {{ number_format($subscription->affiliate_discount_amount, 0, ',', '.') }}</strong><br>
-                Subtotal Rp {{ number_format($subscription->amount_paid, 0, ',', '.') }}
-                + <strong>kode unik {{ $subscription->unique_code }}</strong>.<br>
-            @else
-                Harga program Rp {{ number_format($subscription->amount_paid, 0, ',', '.') }}
-                + <strong>kode unik {{ $subscription->unique_code }}</strong>.<br>
-            @endif
+            Harga program Rp {{ number_format($subscription->amount_paid, 0, ',', '.') }}
+            + <strong>kode unik {{ $subscription->unique_code }}</strong>.<br>
             Transfer <u>tepat</u> hingga 3 digit terakhir agar mudah diverifikasi otomatis.
         </div>
     </div>

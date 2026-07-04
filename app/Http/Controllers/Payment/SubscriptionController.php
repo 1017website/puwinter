@@ -66,9 +66,11 @@ class SubscriptionController extends Controller
         $affiliate = AppSetting::affiliateInfo();
         $referrer = $user->referredBy;
         $originalAmount = (int) $plan->price;
-        $discountAmount = $referrer ? min((int) $affiliate['affiliate_discount_amount'], $originalAmount) : 0;
+        // Affiliate tidak memberi potongan ke siswa yang memakai kode.
+        // Benefit/reward hanya dicatat untuk pemilik kode sesuai pengaturan admin.
+        $discountAmount = 0;
         $rewardAmount   = $referrer ? (int) $affiliate['affiliate_reward_amount'] : 0;
-        $payableAmount  = max(0, $originalAmount - $discountAmount);
+        $payableAmount  = $originalAmount;
 
         // Kode unik 3 digit (100-999) agar nominal transfer mudah dicocokkan
         $uniqueCode  = random_int(100, 999);
@@ -97,7 +99,7 @@ class SubscriptionController extends Controller
             'subscription_id' => $subscription->id,
             'user_id'         => $user->id,
             'event_type'      => 'order.created',
-            'payload'         => ['order_id' => $orderId, 'total' => $totalAmount, 'affiliate_discount' => $discountAmount, 'affiliate_reward' => $rewardAmount],
+            'payload'         => ['order_id' => $orderId, 'total' => $totalAmount, 'affiliate_reward' => $rewardAmount],
             'status'          => 'pending',
         ]);
 

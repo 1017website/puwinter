@@ -38,13 +38,13 @@ class AppSetting extends Model
 
     /**
      * Konfigurasi affiliate/referral.
-     * - discount_amount: potongan harga untuk siswa yang memakai kode affiliate.
-     * - reward_amount: nominal reward untuk pemilik kode ketika pembayaran divalidasi.
+     * Benefit affiliate diberikan kepada pemilik kode/referrer ketika pembayaran divalidasi admin.
+     * Key affiliate_discount_amount tetap dikembalikan 0 untuk kompatibilitas data lama.
      */
     public static function affiliateInfo(): array
     {
         return [
-            'affiliate_discount_amount' => (int) static::get('affiliate_discount_amount', 0),
+            'affiliate_discount_amount' => 0,
             'affiliate_reward_amount'   => (int) static::get('affiliate_reward_amount', 0),
         ];
     }

@@ -30,19 +30,6 @@
         <p style="font-size:14px; color:var(--text-muted); margin-top:6px;">Dapatkan akses penuh ke semua fitur premium dan tingkatkan peluangmu lolos UTBK!</p>
     </div>
 
-
-
-    @if(($hasAffiliate ?? false) && (($affiliate['affiliate_discount_amount'] ?? 0) > 0))
-        <div style="background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46; border-radius:10px; padding:14px 18px; margin-bottom:20px; font-size:13.5px; display:flex; align-items:center; gap:10px;">
-            <i class="fas fa-ticket"></i>
-            <div>
-                Kode affiliate dari temanmu aktif. Kamu mendapat potongan
-                <strong>Rp {{ number_format($affiliate['affiliate_discount_amount'], 0, ',', '.') }}</strong>
-                saat checkout program berbayar.
-            </div>
-        </div>
-    @endif
-
     {{-- Diskon banner dengan countdown --}}
     <div style="background:linear-gradient(135deg,#1D4ED8,#7C3AED); border-radius:12px; padding:16px 24px; display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; color:#fff;"
          x-data="countdown({{ now()->addDays(2)->timestamp }})">
@@ -67,12 +54,6 @@
     {{-- Pricing cards --}}
     <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; margin-bottom:40px;">
         @foreach($plans as $plan)
-        @php
-            $affiliateDiscount = (($hasAffiliate ?? false) && (($affiliate['affiliate_discount_amount'] ?? 0) > 0))
-                ? min((int) $affiliate['affiliate_discount_amount'], (int) $plan->price)
-                : 0;
-            $affiliatePrice = max(0, (int) $plan->price - $affiliateDiscount);
-        @endphp
         <div style="background:#fff; border-radius:14px; padding:28px 24px; position:relative; border:2px solid {{ $plan->is_popular ? 'var(--primary)' : 'var(--border)' }};">
             @if($plan->is_popular)
             <div style="position:absolute; top:-14px; left:50%; transform:translateX(-50%); background:var(--primary); color:#fff; font-size:11px; font-weight:700; padding:4px 16px; border-radius:20px; white-space:nowrap;">
@@ -93,7 +74,7 @@
             <div style="margin-bottom:16px;">
                 <div style="display:flex; align-items:baseline; gap:8px;">
                     <span style="font-size:26px; font-weight:800; color:var(--text-main);">
-                        Rp {{ number_format($affiliatePrice ?? $plan->price, 0, ',', '.') }}
+                        Rp {{ number_format($plan->price, 0, ',', '.') }}
                     </span>
                     <span style="font-size:11px; color:var(--text-muted);">
                         @if($plan->duration_months > 1) / {{ $plan->duration_months }} bulan @else / bulan @endif
@@ -107,12 +88,6 @@
                         Hemat {{ $plan->discountPercentage() }}%
                     </span>
                 </div>
-                @if(($affiliateDiscount ?? 0) > 0)
-                    <div style="font-size:12px; color:#059669; font-weight:700; margin-top:7px;">
-                        <i class="fas fa-ticket"></i> Potongan affiliate Rp {{ number_format($affiliateDiscount, 0, ',', '.') }}
-                    </div>
-                    <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">Harga normal program: Rp {{ number_format($plan->price, 0, ',', '.') }}</div>
-                @endif
             </div>
 
             <ul style="list-style:none; margin-bottom:20px;">

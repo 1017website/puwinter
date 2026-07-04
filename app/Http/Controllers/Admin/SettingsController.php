@@ -56,11 +56,10 @@ class SettingsController extends Controller
     public function updateAffiliate(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'affiliate_discount_amount' => 'nullable|integer|min:0',
             'affiliate_reward_amount'   => 'nullable|integer|min:0',
         ]);
-
-        AppSetting::set('affiliate_discount_amount', (int) ($data['affiliate_discount_amount'] ?? 0));
+        // Benefit affiliate hanya untuk pemilik kode/referrer, bukan potongan untuk pendaftar.
+        AppSetting::set('affiliate_discount_amount', 0);
         AppSetting::set('affiliate_reward_amount', (int) ($data['affiliate_reward_amount'] ?? 0));
 
         return back()->with('success', 'Pengaturan affiliate berhasil disimpan.');
