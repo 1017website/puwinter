@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class SubscriptionPlan extends Model
 {
     protected $fillable = [
-        'name', 'slug', 'tier', 'duration_months', 'start_date', 'end_date',
+        'name', 'slug', 'tier', 'grade_id', 'duration_months', 'start_date', 'end_date',
         'quota', 'flyer_image', 'price', 'original_price',
         'is_popular', 'features', 'bonus', 'is_active', 'order',
     ];
@@ -18,6 +18,7 @@ class SubscriptionPlan extends Model
         'is_popular'      => 'boolean',
         'is_active'       => 'boolean',
         'duration_months' => 'integer',
+        'grade_id'        => 'integer',
         'start_date'      => 'date',
         'end_date'        => 'date',
         'quota'           => 'integer',
@@ -33,6 +34,17 @@ class SubscriptionPlan extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true)->orderBy('order');
+    }
+
+
+    public function scopeForGrade($query, ?int $gradeId)
+    {
+        return $query->where(function ($q) use ($gradeId) {
+            $q->whereNull('grade_id');
+            if (!empty($gradeId)) {
+                $q->orWhere('grade_id', $gradeId);
+            }
+        });
     }
 
     // -------------------------------------------------------------------------
@@ -106,9 +118,19 @@ class SubscriptionPlan extends Model
         return (int) round($this->price / $this->duration_months);
     }
 
+    public function appliesToGrade(?int $gradeId): bool
+    {
+        return $this->grade_id === null || empty($gradeId) || (int) $this->grade_id === (int) $gradeId;
+    }
+
     // -------------------------------------------------------------------------
     // Relationships
     // -------------------------------------------------------------------------
+
+    public function grade(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Grade::class);
+    }
 
     public function subscriptions(): HasMany
     {

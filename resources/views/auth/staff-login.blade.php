@@ -339,7 +339,7 @@
                 </div>
                 <div>
                     <div class="stat-pill-val">Mentor</div>
-                    <div class="stat-pill-label">Live class & materi</div>
+                    <div class="stat-pill-label">Kelas online & materi</div>
                 </div>
             </div>
             <div class="stat-pill">

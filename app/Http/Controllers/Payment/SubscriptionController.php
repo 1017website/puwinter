@@ -20,7 +20,7 @@ class SubscriptionController extends Controller
 
     public function index(Request $request): View
     {
-        $plans              = SubscriptionPlan::active()->get();
+        $plans              = SubscriptionPlan::active()->forGrade($request->user()->grade_id)->get();
         $activeSubscription = $request->user()->activeSubscription();
 
         // Subscription pending milik user (untuk lanjut bayar / upload bukti)
@@ -30,7 +30,10 @@ class SubscriptionController extends Controller
             ->latest()
             ->first();
 
-        return view('payment.upgrade', compact('plans', 'activeSubscription', 'pending'));
+        $affiliate = AppSetting::affiliateInfo();
+        $hasAffiliate = !is_null($request->user()->referred_by_user_id);
+
+        return view('payment.upgrade', compact('plans', 'activeSubscription', 'pending', 'affiliate', 'hasAffiliate'));
     }
 
     // =========================================================================
@@ -45,6 +48,11 @@ class SubscriptionController extends Controller
 
         $user = $request->user();
 
+        if (!$plan->appliesToGrade($user->grade_id)) {
+            return redirect()->route('student.program.index')
+                ->with('error', 'Program ini tidak tersedia untuk kelasmu.');
+        }
+
         // Cek kuota: program berkuota & sudah penuh -> tolak (kecuali user sudah berbayar di program ini).
         if (!$user->hasPaidProgram($plan->id) && $plan->isQuotaFull()) {
             return back()->with('error', 'Maaf, kuota peserta untuk program ' . $plan->name . ' sudah penuh.');
@@ -55,9 +63,16 @@ class SubscriptionController extends Controller
             ->where('status', 'pending')
             ->update(['status' => 'cancelled']);
 
+        $affiliate = AppSetting::affiliateInfo();
+        $referrer = $user->referredBy;
+        $originalAmount = (int) $plan->price;
+        $discountAmount = $referrer ? min((int) $affiliate['affiliate_discount_amount'], $originalAmount) : 0;
+        $rewardAmount   = $referrer ? (int) $affiliate['affiliate_reward_amount'] : 0;
+        $payableAmount  = max(0, $originalAmount - $discountAmount);
+
         // Kode unik 3 digit (100-999) agar nominal transfer mudah dicocokkan
         $uniqueCode  = random_int(100, 999);
-        $totalAmount = (int) $plan->price + $uniqueCode;
+        $totalAmount = $payableAmount + $uniqueCode;
 
         $orderId = 'PWR-' . $user->id . '-' . time();
 
@@ -65,11 +80,16 @@ class SubscriptionController extends Controller
             'user_id'           => $user->id,
             'plan_id'           => $plan->id,
             'tier'              => $plan->tier ?? 'regular',
+            'affiliate_referrer_id' => $referrer?->id,
+            'affiliate_code'        => $referrer?->affiliate_code,
             'status'            => 'pending',
             'payment_method'    => 'transfer_manual',
-            'amount_paid'       => $plan->price,
+            'amount_paid'       => $payableAmount,
             'unique_code'       => $uniqueCode,
             'total_amount'      => $totalAmount,
+            'affiliate_original_amount' => $originalAmount,
+            'affiliate_discount_amount' => $discountAmount,
+            'affiliate_reward_amount'   => $rewardAmount,
             'midtrans_order_id' => $orderId,
         ]);
 
@@ -77,7 +97,7 @@ class SubscriptionController extends Controller
             'subscription_id' => $subscription->id,
             'user_id'         => $user->id,
             'event_type'      => 'order.created',
-            'payload'         => ['order_id' => $orderId, 'total' => $totalAmount],
+            'payload'         => ['order_id' => $orderId, 'total' => $totalAmount, 'affiliate_discount' => $discountAmount, 'affiliate_reward' => $rewardAmount],
             'status'          => 'pending',
         ]);
 

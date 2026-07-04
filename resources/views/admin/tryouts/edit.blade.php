@@ -58,7 +58,7 @@
                 <div class="form-group">
                     <label>Seri / Gelombang</label>
                     <input type="text" name="series" value="{{ old('series', $tryout->series) }}"
-                           class="form-control" placeholder="Gelombang 1, Paket A, dll">
+                           class="form-control" placeholder="Gelombang 1, Program A, dll">
                 </div>
 
                 <div class="form-group">
@@ -80,11 +80,11 @@
                 <div class="form-group" style="grid-column:span 2;">
                     <label>Mode Penilaian <span style="color:red;">*</span></label>
                     <select name="scoring_mode" class="form-control">
-                        <option value="regular" {{ old('scoring_mode', $tryout->scoring_mode ?? 'regular') == 'regular' ? 'selected' : '' }}>Regular (benar +4 / salah -1)</option>
+                        <option value="regular" {{ old('scoring_mode', $tryout->scoring_mode ?? 'regular') == 'regular' ? 'selected' : '' }}>Regular (bobot nilai per soal)</option>
                         <option value="irt" {{ old('scoring_mode', $tryout->scoring_mode ?? '') == 'irt' ? 'selected' : '' }}>IRT (bobot kesulitan, ala UTBK)</option>
                     </select>
                     <small style="color:var(--text-muted); font-size:12px;">
-                        Mengubah mode akan mereset status kalibrasi.
+                        Regular: skor mengikuti bobot nilai tiap soal. Mengubah mode akan mereset status kalibrasi.
                         @if($tryout->irt_calibrated ?? false) <span style="color:#059669;">Sudah dikalibrasi.</span> @endif
                     </small>
                 </div>

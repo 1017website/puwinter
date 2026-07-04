@@ -72,7 +72,7 @@
                     <thead>
                         <tr>
                             <th>User</th>
-                            <th>Paket</th>
+                            <th>Program</th>
                             <th>Nominal</th>
                             <th>Status</th>
                             <th>Tanggal</th>
@@ -86,7 +86,12 @@
                                 <div style="font-size:11px; color:var(--muted);">{{ $sub->user->email ?? '' }}</div>
                             </td>
                             <td>{{ $sub->plan->name ?? '-' }}</td>
-                            <td style="font-weight:700;">Rp {{ number_format($sub->amount_paid, 0, ',', '.') }}</td>
+                            <td>
+                                <div style="font-weight:700;">Rp {{ number_format($sub->total_amount ?? $sub->amount_paid, 0, ',', '.') }}</div>
+                                @if($sub->unique_code)
+                                    <div style="font-size:10.5px; color:var(--muted);">Kode {{ $sub->unique_code }}</div>
+                                @endif
+                            </td>
                             <td>
                                 <span class="badge {{ match($sub->status) { 'active'=>'badge-success', 'pending'=>'badge-warning', default=>'badge-danger' } }}">
                                     {{ ucfirst($sub->status) }}

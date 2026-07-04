@@ -13,11 +13,12 @@ class TryoutQuestion extends Model
         'tryout_id', 'subject_id', 'question_type', 'question_text', 'question_image',
         'option_a', 'option_b', 'option_c', 'option_d', 'option_e',
         'correct_answer', 'correct_answers', 'explanation', 'explanation_video_url',
-        'difficulty', 'order', 'correct_rate', 'answered_count',
+        'difficulty', 'score_weight', 'order', 'correct_rate', 'answered_count',
     ];
 
     protected $casts = [
         'correct_answers' => 'array',
+        'score_weight'    => 'float',
     ];
 
     // Tipe soal
@@ -79,6 +80,12 @@ class TryoutQuestion extends Model
         return strtolower($answer) === $this->correct_answer;
     }
 
+    public function scoreWeight(): float
+    {
+        $weight = (float) ($this->score_weight ?? 1);
+        return $weight > 0 ? $weight : 1.0;
+    }
+
     /**
      * Penilaian satu soal, mendukung single & multiple (partial credit).
      *
@@ -87,15 +94,17 @@ class TryoutQuestion extends Model
      *   - multiple : array ['a','c'] atau null/[]
      *
      * Rumus partial credit (multiple):
-     *   skor = max(0, (benar_dipilih / total_kunci) * bobot_penuh
-     *               - (salah_dipilih * penalti_per_salah))
+     *   skor = benar_dipilih / total_kunci
+     *
+     * Contoh: kunci benar 4 opsi, siswa memilih 2 opsi benar => 0.5 poin.
+     * Opsi salah tidak mengurangi poin, hanya tidak menambah nilai.
      *
      * @return array{status:string, earned:float, max:float}
      *   status: 'correct' | 'partial' | 'wrong' | 'empty'
      *   earned: poin yang diraih (skala bobot_penuh)
      *   max   : poin maksimum soal (selalu = bobot_penuh)
      */
-    public function grade(mixed $userAnswer, float $fullPoint = 4.0, float $penaltyPerWrong = 1.0): array
+    public function grade(mixed $userAnswer, float $fullPoint = 1.0, float $penaltyPerWrong = 0.0): array
     {
         $keys = $this->correctKeys();
         $totalKeys = max(1, count($keys));
@@ -110,7 +119,7 @@ class TryoutQuestion extends Model
             if (in_array($ans, $keys, true)) {
                 return ['status' => 'correct', 'earned' => $fullPoint, 'max' => $fullPoint];
             }
-            // salah: penalti seperti aturan lama (benar*4 - salah*1) ditangani di controller
+            // Salah/kosong tidak mengurangi nilai.
             return ['status' => 'wrong', 'earned' => 0.0, 'max' => $fullPoint];
         }
 
@@ -129,8 +138,13 @@ class TryoutQuestion extends Model
         $rightPicked = count(array_intersect($picked, $keys)); // opsi benar yang dipilih
         $wrongPicked = count(array_diff($picked, $keys));       // opsi salah yang dipilih
 
-        $earned = ($rightPicked / $totalKeys) * $fullPoint - ($wrongPicked * $penaltyPerWrong);
-        $earned = max(0.0, round($earned, 2));
+        $earned = ($rightPicked / $totalKeys) * $fullPoint;
+
+        if ($penaltyPerWrong > 0) {
+            $earned -= ($wrongPicked * $penaltyPerWrong);
+        }
+
+        $earned = max(0.0, min($fullPoint, round($earned, 2)));
 
         // status untuk statistik
         if ($rightPicked === $totalKeys && $wrongPicked === 0) {

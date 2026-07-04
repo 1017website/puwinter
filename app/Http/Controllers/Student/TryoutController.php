@@ -115,19 +115,20 @@ class TryoutController extends Controller
         $empty = 0;
         $partial = 0;
 
-        // Akumulator skor utama (mendukung partial credit untuk soal multiple).
-        // Skala per soal: benar penuh = +4, partial = pecahan 0..4, salah = 0 lalu
-        // dikenai penalti -1 (mengikuti aturan lama benar*4 - salah*1).
+        // Akumulator skor utama regular.
+        // Skala per soal mengikuti bobot nilai yang diatur admin.
+        // Single: benar = bobot, salah/kosong = 0.
+        // Multiple: partial proporsional dari bobot soal.
         $rawScore = 0.0;
 
         // Akumulator skor berbobot kesulitan (info tambahan).
         $weightedRaw = 0.0;
         $weightedMax = 0.0;
 
-        $fullPoint  = 4.0;
-        $penaltyPer = 1.0;
+        $penaltyPer = 0.0;
 
         foreach ($tryout->questions as $question) {
+            $fullPoint = $question->scoreWeight();
             $userAnswer = $answers[$question->id] ?? null;
 
             // bobot kesulitan soal saat ini (sebelum statistik diperbarui)
@@ -143,16 +144,16 @@ class TryoutController extends Controller
                 $empty++;
             } elseif ($status === 'correct') {
                 $correct++;
-                $rawScore   += $earned;                     // +4
+                $rawScore   += $earned;                     // +bobot soal
                 $weightedRaw += $weight;                    // bobot penuh
             } elseif ($status === 'partial') {
                 $partial++;
-                $rawScore   += $earned;                     // pecahan 0..4
+                $rawScore   += $earned;                     // pecahan 0..1
                 // bobot proporsional terhadap perolehan poin
                 $weightedRaw += $weight * ($earned / $fullPoint);
             } else { // wrong
                 $wrong++;
-                $rawScore   -= $penaltyPer;                 // -1
+                $rawScore   -= $penaltyPer;                 // 0, tidak ada penalti
             }
 
             // --- Perbarui statistik global soal (rolling, hanya yang dijawab) ---
@@ -178,7 +179,7 @@ class TryoutController extends Controller
             }
         }
 
-        // Skor regular (penentu ranking mode regular). Tidak boleh negatif.
+        // Skor regular (penentu ranking mode regular). Skor = total poin per soal.
         $score = max(0, round($rawScore, 2));
 
         // Skor berbobot kesulitan (skala 0..100). Info saja, tidak untuk ranking.

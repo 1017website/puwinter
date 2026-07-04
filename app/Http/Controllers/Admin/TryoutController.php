@@ -8,6 +8,7 @@ use App\Models\Tryout;
 use App\Models\TryoutQuestion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -182,8 +183,9 @@ class TryoutController extends Controller
             'correct_answers'  => 'required_if:question_type,multiple|nullable|array|min:2',
             'correct_answers.*'=> 'in:a,b,c,d,e',
             'explanation'      => 'nullable|string',
-            'difficulty'       => 'required|in:mudah,sedang,sulit',
+            'score_weight'     => 'required|numeric|min:0.01|max:9999',
             'subject_id'       => 'required|exists:subjects,id',
+            'order'            => 'required|integer|min:1',
         ]);
 
         $type = $request->question_type;
@@ -215,24 +217,35 @@ class TryoutController extends Controller
             $correctAnswers = null;
         }
 
-        $tryout->questions()->create([
-            'subject_id'      => $request->subject_id,
-            'question_type'   => $type,
-            'question_text'   => $request->question_text,
-            'option_a'        => $request->option_a,
-            'option_b'        => $request->option_b,
-            'option_c'        => $request->option_c,
-            'option_d'        => $request->option_d,
-            'option_e'        => $request->option_e,
-            'correct_answer'  => $correctAnswer,
-            'correct_answers' => $correctAnswers,
-            'explanation'     => $request->explanation,
-            'difficulty'      => $request->difficulty,
-            'order'           => $tryout->questions()->max('order') + 1,
-        ]);
+        $maxOrder = (int) $tryout->questions()->max('order');
+        $order = min((int) $request->input('order', $maxOrder + 1), $maxOrder + 1);
 
-        // Update total questions
-        $tryout->update(['total_questions' => $tryout->questions()->count()]);
+        DB::transaction(function () use ($tryout, $request, $type, $correctAnswer, $correctAnswers, $order) {
+            // Jika nomor disisipkan di tengah, geser soal setelahnya agar urutan tetap rapi.
+            $tryout->questions()
+                ->where('order', '>=', $order)
+                ->increment('order');
+
+            $tryout->questions()->create([
+                'subject_id'      => $request->subject_id,
+                'question_type'   => $type,
+                'question_text'   => $request->question_text,
+                'option_a'        => $request->option_a,
+                'option_b'        => $request->option_b,
+                'option_c'        => $request->option_c,
+                'option_d'        => $request->option_d,
+                'option_e'        => $request->option_e,
+                'correct_answer'  => $correctAnswer,
+                'correct_answers' => $correctAnswers,
+                'explanation'     => $request->explanation,
+                'difficulty'      => 'sedang',
+                'score_weight'    => (float) $request->score_weight,
+                'order'           => $order,
+            ]);
+
+            // Update total questions
+            $tryout->update(['total_questions' => $tryout->questions()->count()]);
+        });
 
         return back()->with('success', 'Soal berhasil ditambahkan.');
     }
@@ -242,9 +255,14 @@ class TryoutController extends Controller
         $tryoutId = $question->tryout_id;
         $question->delete();
 
-        // Update total
+        // Update total dan rapikan kembali nomor soal agar berurutan.
         $tryout = Tryout::find($tryoutId);
-        $tryout?->update(['total_questions' => $tryout->questions()->count()]);
+        if ($tryout) {
+            $tryout->questions()->orderBy('order')->get()->values()->each(function (TryoutQuestion $item, int $index) {
+                $item->update(['order' => $index + 1]);
+            });
+            $tryout->update(['total_questions' => $tryout->questions()->count()]);
+        }
 
         return redirect()->route('admin.tryouts.show', $tryoutId)
             ->with('success', 'Soal berhasil dihapus.');

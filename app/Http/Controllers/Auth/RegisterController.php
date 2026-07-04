@@ -26,6 +26,12 @@ class RegisterController extends Controller
     {
         // Ambil code grade untuk mengisi kolom string `grade` (backward-compat).
         $grade = Grade::find($request->grade_id);
+        $referrer = null;
+        if ($request->filled('affiliate_code')) {
+            $referrer = User::where('affiliate_code', strtoupper(trim((string) $request->affiliate_code)))
+                ->where('role', 'student')
+                ->first();
+        }
 
         $user = User::create([
             'name'         => $request->name,
@@ -37,6 +43,7 @@ class RegisterController extends Controller
             'grade_id'     => $request->grade_id,
             'grade'        => $grade?->code,   // jaga kompatibilitas kolom lama
             'grade_locked' => true,            // dikunci; ganti kelas harus via request admin
+            'referred_by_user_id' => $referrer?->id,
         ]);
 
         // Buat token verifikasi email custom

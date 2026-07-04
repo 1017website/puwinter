@@ -27,8 +27,9 @@ class SettingsController extends Controller
         ];
 
         $bank = AppSetting::bankInfo();
+        $affiliate = AppSetting::affiliateInfo();
 
-        return view('admin.settings.index', compact('sysInfo', 'bank'));
+        return view('admin.settings.index', compact('sysInfo', 'bank', 'affiliate'));
     }
 
     // =========================================================================
@@ -49,6 +50,20 @@ class SettingsController extends Controller
         }
 
         return back()->with('success', 'Informasi rekening berhasil disimpan.');
+    }
+
+
+    public function updateAffiliate(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'affiliate_discount_amount' => 'nullable|integer|min:0',
+            'affiliate_reward_amount'   => 'nullable|integer|min:0',
+        ]);
+
+        AppSetting::set('affiliate_discount_amount', (int) ($data['affiliate_discount_amount'] ?? 0));
+        AppSetting::set('affiliate_reward_amount', (int) ($data['affiliate_reward_amount'] ?? 0));
+
+        return back()->with('success', 'Pengaturan affiliate berhasil disimpan.');
     }
 
     public function uploadLogo(Request $request): RedirectResponse

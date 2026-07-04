@@ -18,7 +18,10 @@ class ProgramController extends Controller
     {
         $user = $request->user();
 
-        $programs = SubscriptionPlan::active()->orderBy('order')->get();
+        $programs = SubscriptionPlan::active()
+            ->forGrade($user->grade_id)
+            ->orderBy('order')
+            ->get();
 
         // status enrollment user per plan_id: 'free' | 'paid' | null (belum daftar)
         $enrollments = $user->programEnrollments()
@@ -36,6 +39,11 @@ class ProgramController extends Controller
         $user = $request->user();
         $plan = SubscriptionPlan::active()->findOrFail($planId);
 
+        if (!$plan->appliesToGrade($user->grade_id)) {
+            return redirect()->route('student.program.index')
+                ->with('error', 'Program ini tidak tersedia untuk kelasmu.');
+        }
+
         ProgramEnrollment::firstOrCreate(
             ['user_id' => $user->id, 'plan_id' => $plan->id],
             ['status' => ProgramEnrollment::STATUS_FREE, 'enrolled_at' => now()]
@@ -46,12 +54,16 @@ class ProgramController extends Controller
     }
 
     /**
-     * Detail satu program: tampilkan course/tryout/live class di dalamnya.
+     * Detail satu program: tampilkan course/tryout/kelas online di dalamnya.
      */
     public function show(Request $request, int $planId): View
     {
         $user = $request->user();
         $plan = SubscriptionPlan::active()->findOrFail($planId);
+
+        if (!$plan->appliesToGrade($user->grade_id)) {
+            abort(403, 'Program ini tidak tersedia untuk kelasmu.');
+        }
 
         $enrollment = $user->programEnrollments()->where('plan_id', $plan->id)->first();
         $isEnrolled = $enrollment !== null;

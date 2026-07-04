@@ -21,9 +21,10 @@ class DashboardController extends Controller
                                         ->where('expired_at', '>', now())->count(),
             'total_courses'       => Course::count(),
             'total_tryouts'       => Tryout::count(),
-            'revenue_month'       => Subscription::where('status', 'active')
+            'revenue_month'       => (int) Subscription::where('status', 'active')
                                         ->whereMonth('started_at', now()->month)
-                                        ->sum('amount_paid'),
+                                        ->selectRaw('COALESCE(SUM(COALESCE(total_amount, amount_paid)), 0) as total')
+                                        ->value('total'),
             'new_users_today'     => User::whereDate('created_at', today())->count(),
             'active_attempts'     => UserTryoutAttempt::whereNull('submitted_at')->count(),
             'pending_payments'    => Subscription::where('status', 'pending')->count(),
@@ -41,7 +42,7 @@ class DashboardController extends Controller
         // Revenue 7 hari terakhir (untuk chart)
         $revenueChart = Subscription::where('status', 'active')
             ->where('started_at', '>=', now()->subDays(6))
-            ->selectRaw('DATE(started_at) as date, SUM(amount_paid) as total')
+            ->selectRaw('DATE(started_at) as date, SUM(COALESCE(total_amount, amount_paid)) as total')
             ->groupBy('date')
             ->orderBy('date')
             ->get()

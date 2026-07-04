@@ -459,10 +459,10 @@
                 <i class="fas fa-layer-group"></i> Master Kelas
             </a>
             <a href="{{ route('admin.live-classes.index') }}" class="nav-item {{ request()->routeIs('admin.live-classes.*') ? 'active' : '' }}">
-                <i class="fas fa-video"></i> Live Class
+                <i class="fas fa-video"></i> Kelas Online
             </a>
             <a href="{{ route('admin.plans.index') }}" class="nav-item {{ request()->routeIs('admin.plans.*') ? 'active' : '' }}">
-                <i class="fas fa-tags"></i> Paket Program
+                <i class="fas fa-tags"></i> Program
             </a>
         </div>
 

@@ -84,7 +84,7 @@ class LiveClassController extends Controller
         ]);
 
         return redirect()->route('admin.live-classes.index')
-            ->with('success', 'Live class berhasil dibuat.');
+            ->with('success', 'Kelas online berhasil dibuat.');
     }
 
     public function edit(LiveClass $liveClass): View
@@ -141,14 +141,14 @@ class LiveClassController extends Controller
             'access_tier'      => $request->input('access_tier', 'paid'),
         ]);
 
-        return back()->with('success', 'Live class berhasil diperbarui.');
+        return back()->with('success', 'Kelas online berhasil diperbarui.');
     }
 
     public function destroy(LiveClass $liveClass): RedirectResponse
     {
         $liveClass->delete();
         return redirect()->route('admin.live-classes.index')
-            ->with('success', 'Live class berhasil dihapus.');
+            ->with('success', 'Kelas online berhasil dihapus.');
     }
 
     // Set status langsung (go live / end)
@@ -164,6 +164,6 @@ class LiveClassController extends Controller
             default     => 'dijadwalkan ulang',
         };
 
-        return back()->with('success', "Live class berhasil $label.");
+        return back()->with('success', "Kelas online berhasil $label.");
     }
 }

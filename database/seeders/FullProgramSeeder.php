@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Schema;
  * Tiap program (subscription_plan) berisi:
  *  - 1 course + 2 modul + materi (campur free & paid)
  *  - 1 tryout + beberapa soal (single & multiple)
- *  - 1 live class (paid)
+ *  - 1 kelas online (paid)
  *
  * Plus user default & student contoh yang terdaftar di beberapa program
  * (sebagian free, sebagian sudah paid).
@@ -113,7 +113,7 @@ class FullProgramSeeder extends Seeder
                 'price' => $p['price'], 'original_price' => $p['price'],
                 'is_popular' => false, 'features' => json_encode([
                     $p['pertemuan'] . ' kali pertemuan',
-                    'Live class tiap pekan (1x), 60 menit',
+                    'Kelas online tiap pekan (1x), 60 menit',
                     'Rekaman + link video tiap pertemuan',
                     'Materi PDF tiap selesai kelas',
                     'Online via Zoom Premium',
@@ -208,7 +208,7 @@ class FullProgramSeeder extends Seeder
                     'course_id' => $courseId, 'mentor_id' => $mentorId, 'subject_id' => $subjectId,
                     'grade' => $p['grade'], 'grade_id' => $gradeId[$p['grade']] ?? null,
                     'class_type' => 'regular', 'plan_id' => $planId, 'access_tier' => 'paid',
-                    'title' => 'Live Class Pekan 1 — ' . $p['name'],
+                    'title' => 'Kelas Online Pekan 1 — ' . $p['name'],
                     'description' => 'Sesi live perdana program ' . $p['name'] . '.',
                     'scheduled_at' => now()->addDays(7)->setTime(19, 0),
                     'duration_minutes' => 60, 'zoom_link' => 'https://zoom.us/j/000000000',
@@ -264,7 +264,7 @@ class FullProgramSeeder extends Seeder
             );
         }
 
-        $this->command?->info('FullProgramSeeder: user + 4 program lengkap (course/modul/materi/tryout/live class) berhasil di-seed.');
+        $this->command?->info('FullProgramSeeder: user + 4 program lengkap (course/modul/materi/tryout/kelas online) berhasil di-seed.');
     }
 
     // -------------------------------------------------------------------------

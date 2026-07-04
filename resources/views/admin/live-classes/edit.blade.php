@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
-@section('title', 'Edit Live Class')
+@section('title', 'Edit Kelas Online')
 
 @section('content')
 
 <div class="page-header">
     <div>
-        <h2>Edit Live Class</h2>
+        <h2>Edit Kelas Online</h2>
         <p>{{ $liveClass->title }}</p>
     </div>
     <div style="display:flex; gap:8px;">

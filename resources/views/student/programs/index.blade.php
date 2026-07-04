@@ -8,8 +8,25 @@
 <div style="margin-bottom:24px;">
     <h2 style="font-size:22px; font-weight:800;">Program Belajar</h2>
     <p style="font-size:13px; color:var(--text-muted); margin-top:2px;">
-        Daftar gratis ke program mana pun. Untuk akses penuh (live class, materi premium, tryout berbayar), upgrade ke berbayar.
+        Daftar gratis ke program mana pun. Untuk akses penuh (kelas online, materi premium, tryout berbayar), upgrade ke berbayar.
     </p>
+</div>
+
+<div class="card" style="margin-bottom:20px; border:1px solid #BFDBFE; background:linear-gradient(135deg,#EFF6FF,#F8FAFC);">
+    <div style="display:flex; align-items:flex-start; gap:14px;">
+        <div style="width:42px; height:42px; border-radius:12px; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <i class="fas fa-play"></i>
+        </div>
+        <div style="flex:1;">
+            <div style="font-size:16px; font-weight:800; color:var(--text-main); margin-bottom:4px;">
+                Coba dulu video gratis sebelum memilih program berbayar
+            </div>
+            <p style="font-size:13px; color:var(--text-muted); line-height:1.7; margin:0;">
+                Masuk ke program yang kamu minati, tonton materi video gratis, lalu lanjut upgrade ketika sudah yakin dengan metode belajar Puwinter.
+                Belajar jadi lebih aman, terarah, dan kamu bisa melihat kualitas materinya sejak awal.
+            </p>
+        </div>
+    </div>
 </div>
 
 @if(session('success'))
@@ -42,6 +59,7 @@
                     <span class="badge" style="background:#DBEAFE; color:#1E40AF; flex-shrink:0;">Terdaftar</span>
                 @endif
             </div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i class="fas fa-graduation-cap"></i> {{ $plan->grade->name ?? 'Semua Kelas' }}</div>
             @if($plan->periodLabel())
             <div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i class="far fa-calendar"></i> {{ $plan->periodLabel() }}</div>
             @endif
@@ -86,7 +104,7 @@
     </div>
     @empty
     <div class="card" style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">
-        Belum ada program tersedia.
+        Belum ada program tersedia untuk kelasmu saat ini.
     </div>
     @endforelse
 </div>

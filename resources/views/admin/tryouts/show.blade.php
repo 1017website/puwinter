@@ -14,17 +14,33 @@
     .opt-key{width:24px; height:24px; border-radius:6px; background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;}
     .opt-row.correct .opt-key{background:var(--success); color:#fff;}
     /* Modal */
-    .modal-overlay{position:fixed; inset:0; background:rgba(15,23,42,0.5); z-index:1000; display:flex; align-items:flex-start; justify-content:center; padding:32px 16px; overflow-y:auto;}
-    .modal-box{background:#fff; border-radius:14px; width:100%; max-width:820px; box-shadow:0 16px 50px rgba(0,0,0,0.25);}
-    .modal-head{padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;}
+    .modal-overlay{position:fixed; inset:0; background:rgba(15,23,42,0.5); z-index:1000; display:flex; align-items:flex-start; justify-content:center; padding:24px 16px; overflow-y:auto;}
+    .modal-box{background:#fff; border-radius:14px; width:100%; max-width:1180px; box-shadow:0 16px 50px rgba(0,0,0,0.25);}
+    .modal-head{padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:16px;}
+    .modal-title-wrap{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
     .modal-content{padding:24px;}
+    .question-meta-grid{display:grid; grid-template-columns:130px 150px minmax(0,1fr); gap:14px; margin-bottom:16px;}
     .opt-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
-    @media(max-width:680px){ .opt-grid{grid-template-columns:1fr;} }
     .field-label{font-size:12.5px; font-weight:600; display:block; margin-bottom:6px;}
     .field-input{width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:13.5px; font-family:inherit; outline:none; resize:vertical;}
-    .field-input:focus{border-color:var(--primary);}
-    .key-pick{display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border:1.5px solid var(--border); border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;}
-    .key-pick.active{background:var(--primary); color:#fff; border-color:var(--primary);}
+    .field-input:focus{border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,.08);}
+    .answer-helper{font-size:12px; color:var(--muted); margin-top:4px; line-height:1.5;}
+    .answer-list{display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:16px;}
+    .answer-item{display:grid; grid-template-columns:56px minmax(0,1fr) 150px; gap:12px; align-items:stretch; padding:12px; border:1.5px solid var(--border); border-radius:12px; background:#fff; transition:border-color .15s ease, background .15s ease, box-shadow .15s ease;}
+    .answer-item.active{border-color:var(--success); background:#ECFDF5; box-shadow:0 8px 24px rgba(16,185,129,.08);}
+    .answer-letter{width:44px; height:44px; border-radius:10px; background:var(--bg); color:var(--text-main); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800;}
+    .answer-item.active .answer-letter{background:var(--success); color:#fff;}
+    .answer-key-btn{height:100%; min-height:44px; border:1px solid var(--border); border-radius:10px; background:#fff; display:flex; align-items:center; justify-content:center; gap:8px; padding:10px 12px; cursor:pointer; font-size:12.5px; font-weight:700; color:var(--text-main); user-select:none;}
+    .answer-key-btn.active{border-color:var(--success); color:var(--success); background:#F0FDF4;}
+    .answer-key-btn input{cursor:pointer; margin:0;}
+    .answer-textarea{min-height:52px; height:52px;}
+    @media(max-width:900px){
+        .modal-box{max-width:96vw;}
+        .question-meta-grid{grid-template-columns:1fr;}
+        .opt-grid{grid-template-columns:1fr;}
+        .answer-item{grid-template-columns:48px minmax(0,1fr);}
+        .answer-key-btn{grid-column:1 / -1; justify-content:flex-start; height:auto;}
+    }
 </style>
 @endpush
 
@@ -86,9 +102,7 @@
                 <span class="q-num">{{ $index + 1 }}</span>
                 <div style="flex:1; min-width:0;">
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
-                        <span class="badge {{ match($question->difficulty) { 'mudah'=>'badge-success','sedang'=>'badge-warning',default=>'badge-danger' } }}">
-                            {{ ucfirst($question->difficulty) }}
-                        </span>
+                        <span class="badge badge-gray">Bobot: {{ rtrim(rtrim(number_format($question->scoreWeight(), 2, ',', '.'), '0'), ',') }}</span>
                         <span style="font-size:11.5px; color:var(--muted);">{{ $question->subject->name ?? '' }}</span>
                         @if($question->isMultiple())
                             <span class="badge" style="background:#EEF2FF; color:#4F46E5;">Multiple</span>
@@ -147,7 +161,12 @@
     <div class="modal-overlay" x-show="showAdd" x-cloak @keydown.escape.window="showAdd=false">
         <div class="modal-box" @click.outside="showAdd=false">
             <div class="modal-head">
-                <div style="font-size:16px; font-weight:700;">Tambah Soal Baru</div>
+                <div class="modal-title-wrap">
+                    <div style="font-size:16px; font-weight:700;">Tambah Soal Baru</div>
+                    <span style="font-size:12px; color:var(--muted); background:var(--bg); border:1px solid var(--border); border-radius:999px; padding:5px 10px;">
+                        No. {{ old('order', $tryout->questions->max('order') + 1) }}
+                    </span>
+                </div>
                 <button @click="showAdd=false" style="background:none; border:none; font-size:18px; cursor:pointer; color:var(--muted);">
                     <i class="fas fa-times"></i>
                 </button>
@@ -163,7 +182,22 @@
                       }">
                     @csrf
 
-                    <div class="opt-grid" style="margin-bottom:16px;">
+                    <div class="question-meta-grid">
+                        <div>
+                            <label class="field-label">Nomor Soal <span style="color:red;">*</span></label>
+                            <input type="number" name="order" min="1" class="field-input"
+                                   value="{{ old('order', $tryout->questions->max('order') + 1) }}"
+                                   placeholder="No.">
+                            <div class="answer-helper">Urutan tampil soal.</div>
+                        </div>
+
+                        <div>
+                            <label class="field-label">Bobot Nilai <span style="color:red;">*</span></label>
+                            <input type="number" name="score_weight" min="0.01" step="0.01" class="field-input"
+                                   value="{{ old('score_weight', 1) }}"
+                                   placeholder="1">
+                            <div class="answer-helper">Nilai penuh soal ini.</div>
+                        </div>
                         <div>
                             <label class="field-label">Mata Pelajaran <span style="color:red;">*</span></label>
                             <select name="subject_id" class="field-input">
@@ -172,14 +206,6 @@
                                     {{ $subject->name }}
                                 </option>
                                 @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="field-label">Tingkat Kesulitan</label>
-                            <select name="difficulty" class="field-input">
-                                <option value="mudah" {{ old('difficulty') === 'mudah' ? 'selected' : '' }}>Mudah</option>
-                                <option value="sedang" {{ old('difficulty','sedang') === 'sedang' ? 'selected' : '' }}>Sedang</option>
-                                <option value="sulit" {{ old('difficulty') === 'sulit' ? 'selected' : '' }}>Sulit</option>
                             </select>
                         </div>
                     </div>
@@ -191,7 +217,7 @@
                             <option value="multiple">Multiple Jawaban (beberapa benar)</option>
                         </select>
                         <div x-show="qtype==='multiple'" style="font-size:11.5px; color:var(--muted); margin-top:6px;">
-                            <i class="fas fa-info-circle"></i> Pilih minimal 2 kunci. Penilaian partial credit: nilai proporsional dengan kunci benar yang dipilih, dikurangi penalti tiap opsi salah.
+                            <i class="fas fa-info-circle"></i> Pilih minimal 2 kunci. Penilaian partial credit: nilai proporsional dari bobot soal sesuai jumlah kunci benar yang dipilih, tanpa penalti opsi salah.
                         </div>
                     </div>
 
@@ -202,31 +228,32 @@
                         @error('question_text') <div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ $message }}</div> @enderror
                     </div>
 
-                    {{-- Opsi jawaban: radio (single) / checkbox (multiple) di kiri untuk set kunci --}}
-                    <label class="field-label">
-                        <span x-show="qtype==='single'">Opsi Jawaban — klik radio di kiri untuk menandai kunci</span>
-                        <span x-show="qtype==='multiple'" x-cloak>Opsi Jawaban — centang semua kunci yang benar (min. 2)</span>
-                    </label>
-                    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+                    {{-- Opsi jawaban: input jawaban dan tombol kunci dipisah agar lebih mudah diisi --}}
+                    <label class="field-label">Opsi Jawaban</label>
+                    <div class="answer-helper" style="margin-bottom:10px;">
+                        <span x-show="qtype==='single'">Isi jawaban di kolom tengah, lalu pilih tombol <strong>Kunci</strong> pada jawaban yang benar.</span>
+                        <span x-show="qtype==='multiple'" x-cloak>Isi jawaban di kolom tengah, lalu centang semua tombol <strong>Kunci</strong> yang benar. Minimal 2 kunci.</span>
+                    </div>
+                    <div class="answer-list">
                         @foreach(['a'=>'A','b'=>'B','c'=>'C','d'=>'D','e'=>'E (opsional)'] as $key => $label)
-                        <div style="display:flex; gap:10px; align-items:flex-start; padding:10px; border:1.5px solid var(--border); border-radius:8px;"
-                             :style="isKey('{{ $key }}') ? 'border-color:var(--success); background:#ECFDF5;' : ''">
-                            <label style="display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding-top:2px;">
+                        <div class="answer-item" :class="isKey('{{ $key }}') ? 'active' : ''">
+                            <div class="answer-letter">{{ strtoupper($key[0]) }}</div>
+                            <textarea name="option_{{ $key }}" rows="2" class="field-input answer-textarea"
+                                      {{ $key !== 'e' ? 'required' : '' }}
+                                      placeholder="Tulis jawaban {{ $label }}...">{{ old('option_'.$key) }}</textarea>
+                            <label class="answer-key-btn" :class="isKey('{{ $key }}') ? 'active' : ''">
                                 {{-- single --}}
                                 <input type="radio" name="correct_answer" value="{{ $key }}" x-model="correct"
                                        x-show="qtype==='single'"
-                                       {{ old('correct_answer','a') === $key ? 'checked' : '' }} style="cursor:pointer;">
+                                       {{ old('correct_answer','a') === $key ? 'checked' : '' }}>
                                 {{-- multiple --}}
                                 <input type="checkbox" name="correct_answers[]" value="{{ $key }}"
                                        x-show="qtype==='multiple'" x-cloak
                                        :checked="multi.includes('{{ $key }}')"
-                                       @change="toggleMulti('{{ $key }}')" style="cursor:pointer;">
-                                <span style="font-size:12px; font-weight:700;">{{ strtoupper($key[0]) }}</span>
+                                       @change="toggleMulti('{{ $key }}')">
+                                <span x-show="!isKey('{{ $key }}')">Jadikan Kunci</span>
+                                <span x-show="isKey('{{ $key }}')"><i class="fas fa-check"></i> Kunci</span>
                             </label>
-                            <textarea name="option_{{ $key }}" rows="1" class="field-input"
-                                      {{ $key !== 'e' ? 'required' : '' }}
-                                      placeholder="Jawaban {{ $label }}..."
-                                      style="min-height:42px;">{{ old('option_'.$key) }}</textarea>
                         </div>
                         @endforeach
                     </div>

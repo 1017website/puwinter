@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SubscriptionPlan;
+use App\Models\Grade;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -13,11 +14,12 @@ class PlanController extends Controller
 {
     public function index(): View
     {
-        $plans = SubscriptionPlan::withCount('subscriptions')
+        $plans = SubscriptionPlan::with(['grade'])->withCount('subscriptions')
             ->orderBy('order')
             ->get();
+        $grades = Grade::active()->get();
 
-        return view('admin.plans.index', compact('plans'));
+        return view('admin.plans.index', compact('plans', 'grades'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -25,6 +27,7 @@ class PlanController extends Controller
         $request->validate([
             'name'             => 'required|string|max:100',
             'tier'             => 'nullable|in:regular,exclusive',
+            'grade_id'         => 'nullable|exists:grades,id',
             'duration_months'  => 'required|integer|min:1',
             'start_date'       => 'nullable|date',
             'end_date'         => 'nullable|date|after_or_equal:start_date',
@@ -53,6 +56,7 @@ class PlanController extends Controller
             'name'            => $request->name,
             'slug'            => Str::slug($request->name) . '-' . $request->duration_months . 'bln',
             'tier'            => $request->input('tier', 'regular'),
+            'grade_id'        => $request->filled('grade_id') ? (int) $request->grade_id : null,
             'duration_months' => $request->duration_months,
             'start_date'      => $request->start_date,
             'end_date'        => $request->end_date,
@@ -75,6 +79,7 @@ class PlanController extends Controller
         $request->validate([
             'name'            => 'required|string|max:100',
             'tier'            => 'nullable|in:regular,exclusive',
+            'grade_id'        => 'nullable|exists:grades,id',
             'duration_months' => 'required|integer|min:1',
             'start_date'      => 'nullable|date',
             'end_date'        => 'nullable|date|after_or_equal:start_date',
@@ -97,6 +102,7 @@ class PlanController extends Controller
         $data = [
             'name'            => $request->name,
             'tier'            => $request->input('tier', $plan->tier ?? 'regular'),
+            'grade_id'        => $request->filled('grade_id') ? (int) $request->grade_id : null,
             'duration_months' => $request->duration_months,
             'start_date'      => $request->start_date,
             'end_date'        => $request->end_date,
@@ -126,10 +132,10 @@ class PlanController extends Controller
     public function destroy(SubscriptionPlan $plan): RedirectResponse
     {
         if ($plan->subscriptions()->whereIn('status', ['active', 'pending'])->exists()) {
-            return back()->with('error', 'Tidak bisa menghapus paket yang masih memiliki subscriber aktif.');
+            return back()->with('error', 'Tidak bisa menghapus program yang masih memiliki subscriber aktif.');
         }
 
         $plan->delete();
-        return back()->with('success', 'Paket berhasil dihapus.');
+        return back()->with('success', 'Program berhasil dihapus.');
     }
 }

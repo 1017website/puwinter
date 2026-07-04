@@ -13,6 +13,9 @@ class SettingsController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
+        if ($user->isStudent()) {
+            $user->ensureAffiliateCode();
+        }
         $activeSubscription = $user->activeSubscription();
 
         return view('student.settings.index', compact('user', 'activeSubscription'));

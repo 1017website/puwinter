@@ -8,7 +8,8 @@
     $isIrt = $tryout->isIrt();
     $isCalibrated = (bool) $tryout->irt_calibrated;
     $officialLabel = $scoreColumn === 'irt_score' ? 'Skor IRT' : 'Skor Regular';
-    $accuracy = $questions->count() > 0 ? round(($attempt->correct_count / $questions->count()) * 100) : 0;
+    $scoreMax = max(1, $questions->sum(fn($q) => $q->scoreWeight()));
+    $accuracy = round(((float) ($attempt->score ?? 0) / $scoreMax) * 100);
     $percentile = $totalParticipants > 0 ? max(0, round((1 - ($currentRank / $totalParticipants)) * 100, 1)) : 0;
 @endphp
 
@@ -47,7 +48,7 @@
         <div class="stat-icon" style="background:#ECFDF5; color:#059669;"><i class="fas fa-check"></i></div>
         <div>
             <div class="stat-value">{{ $accuracy }}%</div>
-            <div class="stat-label">Akurasi benar penuh</div>
+            <div class="stat-label">Pencapaian skor</div>
         </div>
     </div>
     <div class="stat-card">
@@ -108,12 +109,12 @@
             </div>
             @foreach($subjectStats as $subject => $stat)
                 @php
-                    $pct = $stat['total'] > 0 ? round(($stat['correct'] / $stat['total']) * 100) : 0;
+                    $pct = $stat['total'] > 0 ? round(($stat['earned'] / $stat['total']) * 100) : 0;
                 @endphp
                 <div style="margin-bottom:14px;">
                     <div style="display:flex; justify-content:space-between; gap:8px; font-size:13px; margin-bottom:7px;">
                         <strong>{{ $subject }}</strong>
-                        <span style="color:var(--muted);">{{ $stat['correct'] }}/{{ $stat['total'] }} benar · {{ $stat['partial'] ?? 0 }} partial · {{ $stat['wrong'] ?? 0 }} salah · {{ $stat['empty'] ?? 0 }} kosong</span>
+                        <span style="color:var(--muted);">{{ rtrim(rtrim(number_format($stat['earned'], 2, ',', '.'), '0'), ',') }}/{{ rtrim(rtrim(number_format($stat['total'], 2, ',', '.'), '0'), ',') }} poin · {{ $stat['correct'] }} benar · {{ $stat['partial'] ?? 0 }} partial · {{ $stat['wrong'] ?? 0 }} salah · {{ $stat['empty'] ?? 0 }} kosong</span>
                     </div>
                     <div style="height:8px; background:#F1F5F9; border-radius:99px; overflow:hidden;">
                         <div style="height:100%; width:{{ $pct }}%; background:{{ $pct >= 70 ? '#10B981' : ($pct >= 50 ? '#F59E0B' : '#EF4444') }};"></div>
@@ -155,9 +156,11 @@
                             · Kunci: <strong style="color:#059669;">{{ strtoupper(implode(', ', $keys)) }}</strong>
                             <div style="margin-top:4px; display:flex; gap:5px; justify-content:flex-end; flex-wrap:wrap;">
                                 <span class="badge badge-gray">{{ ucfirst($q->difficulty) }}</span>
+                                <span class="badge badge-gray">Bobot Nilai {{ rtrim(rtrim(number_format($q->scoreWeight(), 2, ',', '.'), '0'), ',') }}</span>
                                 @if(!is_null($q->irt_weight))
                                     <span class="badge badge-primary">IRT {{ number_format($q->irt_weight, 2) }}</span>
                                 @endif
+                                <span class="badge badge-gray">Poin {{ rtrim(rtrim(number_format($row['earned'] ?? 0, 2, ',', '.'), '0'), ',') }}/{{ rtrim(rtrim(number_format($row['max'] ?? $q->scoreWeight(), 2, ',', '.'), '0'), ',') }}</span>
                                 @if(!is_null($q->correct_rate))
                                     <span class="badge badge-gray">{{ number_format($q->correct_rate, 1) }}% benar</span>
                                 @endif

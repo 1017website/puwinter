@@ -26,7 +26,7 @@
     <div style="text-align:center; margin-bottom:24px;">
         <h2 style="font-size:24px; font-weight:800;">Selesaikan Pembayaran</h2>
         <p style="font-size:13.5px; color:var(--text-muted); margin-top:6px;">
-            Paket <strong>{{ $subscription->plan->name ?? '-' }}</strong> · Transfer Bank Manual
+            Program <strong>{{ $subscription->plan->name ?? '-' }}</strong> · Transfer Bank Manual
         </p>
     </div>
 
@@ -51,11 +51,18 @@
     <div class="card" style="margin-bottom:16px; text-align:center;">
         <div style="font-size:12.5px; color:var(--text-muted); margin-bottom:6px;">Total yang harus ditransfer</div>
         <div style="font-size:32px; font-weight:800; color:var(--primary); letter-spacing:-0.5px;">
-            Rp {{ number_format($subscription->total_amount, 0, ',', '.') }}
+            Rp {{ number_format($subscription->total_amount ?? $subscription->amount_paid, 0, ',', '.') }}
         </div>
         <div style="font-size:12px; color:var(--text-muted); margin-top:8px; line-height:1.6;">
-            Harga paket Rp {{ number_format($subscription->amount_paid, 0, ',', '.') }}
-            + <strong>kode unik {{ $subscription->unique_code }}</strong>.<br>
+            @if(($subscription->affiliate_discount_amount ?? 0) > 0)
+                Harga program Rp {{ number_format($subscription->affiliate_original_amount ?? ($subscription->amount_paid + $subscription->affiliate_discount_amount), 0, ',', '.') }}
+                - <strong>potongan affiliate Rp {{ number_format($subscription->affiliate_discount_amount, 0, ',', '.') }}</strong><br>
+                Subtotal Rp {{ number_format($subscription->amount_paid, 0, ',', '.') }}
+                + <strong>kode unik {{ $subscription->unique_code }}</strong>.<br>
+            @else
+                Harga program Rp {{ number_format($subscription->amount_paid, 0, ',', '.') }}
+                + <strong>kode unik {{ $subscription->unique_code }}</strong>.<br>
+            @endif
             Transfer <u>tepat</u> hingga 3 digit terakhir agar mudah diverifikasi otomatis.
         </div>
     </div>

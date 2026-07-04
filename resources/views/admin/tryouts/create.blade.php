@@ -56,7 +56,7 @@
 
                 <div class="form-group">
                     <label>Seri / Gelombang</label>
-                    <input type="text" name="series" value="{{ old('series') }}" class="form-control" placeholder="Gelombang 1, Paket A, dll">
+                    <input type="text" name="series" value="{{ old('series') }}" class="form-control" placeholder="Gelombang 1, Program A, dll">
                 </div>
 
                 <div class="form-group">
@@ -82,10 +82,10 @@
                 <div class="form-group" style="grid-column:span 2;">
                     <label>Mode Penilaian <span style="color:red;">*</span></label>
                     <select name="scoring_mode" class="form-control">
-                        <option value="regular" {{ old('scoring_mode','regular') == 'regular' ? 'selected' : '' }}>Regular (benar +4 / salah -1)</option>
+                        <option value="regular" {{ old('scoring_mode','regular') == 'regular' ? 'selected' : '' }}>Regular (bobot nilai per soal)</option>
                         <option value="irt" {{ old('scoring_mode') == 'irt' ? 'selected' : '' }}>IRT (bobot kesulitan, ala UTBK)</option>
                     </select>
-                    <small style="color:var(--text-muted); font-size:12px;">IRT: skor dari bobot kesulitan soal. Bobot dihitung setelah tryout ditutup lewat tombol "Kalibrasi IRT".</small>
+                    <small style="color:var(--text-muted); font-size:12px;">Regular: skor mengikuti bobot nilai yang diatur pada setiap soal. IRT: skor dari bobot kesulitan soal. Bobot dihitung setelah tryout ditutup lewat tombol "Kalibrasi IRT".</small>
                 </div>
 
                 <div class="form-group" style="grid-column:span 2;">

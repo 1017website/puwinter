@@ -272,6 +272,7 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
         Route::post('/settings/favicon', [AdminSettings::class, 'uploadFavicon'])->name('settings.favicon');
         Route::post('/settings/artisan', [AdminSettings::class, 'runArtisan'])->name('settings.artisan');
         Route::post('/settings/bank', [AdminSettings::class, 'updateBank'])->name('settings.bank');
+        Route::post('/settings/affiliate', [AdminSettings::class, 'updateAffiliate'])->name('settings.affiliate');
 
         // Mata Pelajaran
         Route::prefix('subjects')->name('subjects.')->group(function () {

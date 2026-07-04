@@ -40,9 +40,9 @@
             <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px; text-align:center;">
                 <div style="font-size:11px; color:#64748B; font-weight:600; text-transform:uppercase; letter-spacing:.5px;">Regular</div>
                 <div style="font-size:32px; font-weight:800; color:#334155; line-height:1.1; margin-top:6px;">
-                    {{ number_format($regScore, 0) }}
+                    {{ rtrim(rtrim(number_format($regScore, 2, ',', '.'), '0'), ',') }}
                 </div>
-                <div style="font-size:11px; color:#94A3B8; margin-top:4px;">benar &times;4 &minus; salah &times;1</div>
+                <div style="font-size:11px; color:#94A3B8; margin-top:4px;">mengikuti bobot nilai per soal; multiple partial</div>
             </div>
             <div style="background:linear-gradient(135deg,#0EA5E9,#2563EB); border-radius:12px; padding:16px; text-align:center;">
                 <div style="font-size:11px; color:rgba(255,255,255,.75); font-weight:600; text-transform:uppercase; letter-spacing:.5px;">IRT (dipakai)</div>
@@ -90,7 +90,7 @@
                             @foreach($t->questions as $i => $q)
                                 @php
                                     $ua      = $answers[$q->id] ?? null;
-                                    $res     = $ua !== null ? $q->grade($ua) : ['status' => 'empty'];
+                                    $res     = $ua !== null ? $q->grade($ua, $q->scoreWeight()) : ['status' => 'empty'];
                                     $benar   = ($res['status'] ?? '') === 'correct';
                                     $poin    = $benar ? (float) ($q->irt_weight ?? 0) : 0.0;
                                     $pPersen = is_null($q->correct_rate) ? null : (float) $q->correct_rate;

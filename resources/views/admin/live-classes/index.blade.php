@@ -1,15 +1,15 @@
 @extends('admin.layouts.app')
-@section('title', 'Live Class')
+@section('title', 'Kelas Online')
 
 @section('content')
 
 <div class="page-header">
     <div>
-        <h2>Live Class</h2>
-        <p>Kelola jadwal, status, dan rekaman live class.</p>
+        <h2>Kelas Online</h2>
+        <p>Kelola jadwal, status, dan rekaman kelas online.</p>
     </div>
     <a href="{{ route('admin.live-classes.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Buat Live Class
+        <i class="fas fa-plus"></i> Buat Kelas Online
     </a>
 </div>
 
@@ -127,7 +127,7 @@
                         <a href="{{ route('admin.live-classes.edit', $lc) }}" class="btn btn-outline btn-sm">
                             <i class="fas fa-pen"></i>
                         </a>
-                        <form method="POST" action="{{ route('admin.live-classes.destroy', $lc) }}" onsubmit="return confirm('Hapus live class ini?')">
+                        <form method="POST" action="{{ route('admin.live-classes.destroy', $lc) }}" onsubmit="return confirm('Hapus kelas online ini?')">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
                         </form>
@@ -138,7 +138,7 @@
             <tr>
                 <td colspan="6" style="padding:60px; text-align:center; color:var(--muted);">
                     <i class="fas fa-video" style="font-size:32px; opacity:0.2; display:block; margin-bottom:10px;"></i>
-                    Belum ada live class.
+                    Belum ada kelas online.
                 </td>
             </tr>
             @endforelse

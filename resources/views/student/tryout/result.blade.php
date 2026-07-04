@@ -10,16 +10,18 @@
     $questions = $tryout->questions;
     $answers   = $attempt->answers ?? [];
 
-    // Hitung per subject
+    // Hitung per subject berbasis bobot nilai per soal.
     $subjectStats = [];
     foreach ($questions as $q) {
         $subjectName = $q->subject->name ?? 'Lainnya';
         if (!isset($subjectStats[$subjectName])) {
-            $subjectStats[$subjectName] = ['total' => 0, 'correct' => 0];
+            $subjectStats[$subjectName] = ['total' => 0.0, 'earned' => 0.0, 'correct' => 0];
         }
-        $subjectStats[$subjectName]['total']++;
+        $subjectStats[$subjectName]['total'] += $q->scoreWeight();
         $userAnswer = $answers[$q->id] ?? null;
-        if ($userAnswer !== null && ($q->grade($userAnswer)['status'] ?? '') === 'correct') {
+        $gradeRes = $q->grade($userAnswer, $q->scoreWeight());
+        $subjectStats[$subjectName]['earned'] += (float) ($gradeRes['earned'] ?? 0);
+        if (($gradeRes['status'] ?? '') === 'correct') {
             $subjectStats[$subjectName]['correct']++;
         }
     }
@@ -29,12 +31,17 @@
         ? round((1 - ($attempt->rank_at_submit / $totalParticipants)) * 100, 1)
         : 0;
 
-    // Grade
+    $scoreValue   = (float) ($attempt->score ?? 0);
+    $scoreMax     = max(1, $questions->sum(fn($q) => $q->scoreWeight()));
+    $scorePercent = round(($scoreValue / $scoreMax) * 100);
+    $scoreDisplay = rtrim(rtrim(number_format($scoreValue, 2, '.', ''), '0'), '.');
+
+    // Grade berbasis persentase dari total bobot nilai.
     $grade = match(true) {
-        $attempt->score >= 700 => ['label' => 'Sangat Baik', 'color' => '#10B981', 'bg' => '#ECFDF5'],
-        $attempt->score >= 600 => ['label' => 'Baik',        'color' => '#2563EB', 'bg' => '#EFF6FF'],
-        $attempt->score >= 500 => ['label' => 'Cukup',       'color' => '#F59E0B', 'bg' => '#FFFBEB'],
-        default                => ['label' => 'Perlu Belajar','color' => '#EF4444', 'bg' => '#FEF2F2'],
+        $scorePercent >= 85 => ['label' => 'Sangat Baik', 'color' => '#10B981', 'bg' => '#ECFDF5'],
+        $scorePercent >= 70 => ['label' => 'Baik',        'color' => '#2563EB', 'bg' => '#EFF6FF'],
+        $scorePercent >= 50 => ['label' => 'Cukup',       'color' => '#F59E0B', 'bg' => '#FFFBEB'],
+        default             => ['label' => 'Perlu Belajar','color' => '#EF4444', 'bg' => '#FEF2F2'],
     };
 @endphp
 
@@ -64,9 +71,9 @@
                 {{-- Big score --}}
                 <div style="text-align:center;">
                     <div style="font-size:64px; font-weight:800; color:#fff; line-height:1;">
-                        {{ number_format($attempt->score, 0) }}
+                        {{ $scoreDisplay }}
                     </div>
-                    <div style="font-size:13px; color:rgba(255,255,255,0.6); margin-top:4px;">Skor Total</div>
+                    <div style="font-size:13px; color:rgba(255,255,255,0.6); margin-top:4px;">Skor Total dari {{ rtrim(rtrim(number_format($scoreMax, 2, ',', '.'), '0'), ',') }} poin</div>
                     <div style="display:inline-block; margin-top:10px; padding:5px 14px; background:{{ $grade['bg'] }}; color:{{ $grade['color'] }}; border-radius:20px; font-size:12px; font-weight:700;">
                         {{ $grade['label'] }}
                     </div>
@@ -142,11 +149,11 @@
         <div class="card" style="margin-bottom:20px;">
             <div style="font-size:15px; font-weight:700; margin-bottom:16px;">Performa Per Mata Pelajaran</div>
             @foreach($subjectStats as $subject => $stat)
-            @php $pct = $stat['total'] > 0 ? round($stat['correct'] / $stat['total'] * 100) : 0; @endphp
+            @php $pct = $stat['total'] > 0 ? round($stat['earned'] / $stat['total'] * 100) : 0; @endphp
             <div style="margin-bottom:14px;">
                 <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
                     <span style="font-weight:600;">{{ $subject }}</span>
-                    <span style="color:var(--text-muted);">{{ $stat['correct'] }}/{{ $stat['total'] }} benar ({{ $pct }}%)</span>
+                    <span style="color:var(--text-muted);">{{ rtrim(rtrim(number_format($stat['earned'], 2, ',', '.'), '0'), ',') }}/{{ rtrim(rtrim(number_format($stat['total'], 2, ',', '.'), '0'), ',') }} poin ({{ $pct }}%)</span>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-bar-fill" style="width:{{ $pct }}%; background:{{ $pct >= 70 ? '#10B981' : ($pct >= 50 ? '#F59E0B' : '#EF4444') }};"></div>
@@ -168,7 +175,7 @@
                     ? array_map(fn($v) => strtolower((string) $v), $userAnswer)
                     : ($userAnswer !== null && $userAnswer !== '' ? [strtolower((string) $userAnswer)] : []);
 
-                $gradeRes   = count($pickedArr) ? $question->grade($userAnswer) : ['status' => 'empty'];
+                $gradeRes   = count($pickedArr) ? $question->grade($userAnswer, $question->scoreWeight()) : ['status' => 'empty', 'earned' => 0, 'max' => $question->scoreWeight()];
                 $isCorrect  = ($gradeRes['status'] ?? '') === 'correct';
                 $isPartial  = ($gradeRes['status'] ?? '') === 'partial';
                 $isEmpty    = count($pickedArr) === 0;
@@ -190,6 +197,7 @@
                             @elseif($isEmpty) <i class="fas fa-minus-circle"></i> Tidak Dijawab
                             @else <i class="fas fa-times-circle"></i> Salah
                             @endif
+                            <small style="color:var(--text-muted); margin-left:6px;">({{ rtrim(rtrim(number_format($gradeRes['earned'] ?? 0, 2, ',', '.'), '0'), ',') }}/{{ rtrim(rtrim(number_format($gradeRes['max'] ?? $question->scoreWeight(), 2, ',', '.'), '0'), ',') }} poin)</small>
                         </span>
                     </div>
                     <div style="font-size:12px; color:var(--text-muted); text-align:right;">
@@ -209,6 +217,7 @@
                             <span style="background:{{ $diffColor[0] }}; color:{{ $diffColor[1] }}; padding:2px 8px; border-radius:6px; font-weight:700; font-size:11px;">
                                 {{ ucfirst($question->difficulty) }}
                             </span>
+                            <span style="background:#EEF2FF; color:#4F46E5; padding:2px 8px; border-radius:6px; font-weight:700; font-size:11px;">Bobot nilai {{ rtrim(rtrim(number_format($question->scoreWeight(), 2, ',', '.'), '0'), ',') }}</span>
                             @if($question->answered_count > 0)
                                 <span style="background:#F1F5F9; color:#475569; padding:2px 8px; border-radius:6px; font-weight:700; font-size:11px;"
                                       title="Persentase peserta yang menjawab benar">
@@ -286,10 +295,10 @@
         {{-- Akurasi --}}
         <div class="card" style="margin-bottom:16px;">
             <div style="font-size:13px; font-weight:700; margin-bottom:12px;">Ringkasan Hasil</div>
-            @php $accuracy = $questions->count() > 0 ? round($attempt->correct_count / $questions->count() * 100) : 0; @endphp
+            @php $accuracy = $scorePercent; @endphp
             <div style="text-align:center; margin-bottom:14px;">
                 <div style="font-size:32px; font-weight:800; color:{{ $accuracy >= 70 ? '#10B981' : ($accuracy >= 50 ? '#F59E0B' : '#EF4444') }};">{{ $accuracy }}%</div>
-                <div style="font-size:12px; color:var(--text-muted);">Akurasi</div>
+                <div style="font-size:12px; color:var(--text-muted);">Pencapaian Skor</div>
             </div>
             <div class="progress-bar" style="margin-bottom:16px;">
                 <div class="progress-bar-fill" style="width:{{ $accuracy }}%; background:{{ $accuracy >= 70 ? '#10B981' : ($accuracy >= 50 ? '#F59E0B' : '#EF4444') }};"></div>

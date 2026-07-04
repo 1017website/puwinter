@@ -35,6 +35,20 @@ class AppSetting extends Model
         static::updateOrCreate(['key' => $key], ['value' => $value]);
     }
 
+
+    /**
+     * Konfigurasi affiliate/referral.
+     * - discount_amount: potongan harga untuk siswa yang memakai kode affiliate.
+     * - reward_amount: nominal reward untuk pemilik kode ketika pembayaran divalidasi.
+     */
+    public static function affiliateInfo(): array
+    {
+        return [
+            'affiliate_discount_amount' => (int) static::get('affiliate_discount_amount', 0),
+            'affiliate_reward_amount'   => (int) static::get('affiliate_reward_amount', 0),
+        ];
+    }
+
     /**
      * Ambil seluruh setting rekening transfer manual sekaligus.
      */

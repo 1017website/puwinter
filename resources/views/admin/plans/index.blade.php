@@ -1,11 +1,11 @@
 @extends('admin.layouts.app')
-@section('title', 'Paket Program')
+@section('title', 'Program')
 
 @section('content')
 
 <div class="page-header">
     <div>
-        <h2>Paket Program</h2>
+        <h2>Program</h2>
         <p>Kelola program belajar yang ditawarkan ke siswa.</p>
     </div>
 </div>
@@ -39,6 +39,7 @@
                     </div>
                     <div style="display:flex; align-items:center; gap:16px; font-size:12px; color:var(--muted); flex-wrap:wrap;">
                         <span><i class="fas fa-calendar" style="margin-right:3px;"></i>{{ $plan->duration_months }} bulan</span>
+                        <span><i class="fas fa-graduation-cap" style="margin-right:3px;"></i>Kelas: {{ $plan->grade->name ?? 'Semua Kelas' }}</span>
                         @if($plan->periodLabel())
                             <span><i class="fas fa-calendar-day" style="margin-right:3px;"></i>{{ $plan->periodLabel() }}</span>
                         @endif
@@ -96,6 +97,16 @@
                             <select name="tier" class="form-control" style="font-size:13px;">
                                 <option value="regular" {{ ($plan->tier ?? 'regular') === 'regular' ? 'selected' : '' }}>Regular</option>
                                 <option value="exclusive" {{ ($plan->tier ?? '') === 'exclusive' ? 'selected' : '' }}>Exclusive (kuota terbatas)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-size:11px; font-weight:700; color:var(--muted);">Kelas Program</label>
+                            <select name="grade_id" class="form-control" style="font-size:13px;">
+                                <option value="">Semua Kelas</option>
+                                @foreach($grades as $grade)
+                                    <option value="{{ $grade->id }}" {{ (int) $plan->grade_id === (int) $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
@@ -185,6 +196,17 @@
                         <option value="exclusive" {{ old('tier') === 'exclusive' ? 'selected' : '' }}>Exclusive (kuota terbatas)</option>
                     </select>
                 </div>
+
+                <div class="form-group">
+                    <label>Kelas Program</label>
+                    <select name="grade_id" class="form-control">
+                        <option value="">Semua Kelas</option>
+                        @foreach($grades as $grade)
+                            <option value="{{ $grade->id }}" {{ old('grade_id') == $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
+                        @endforeach
+                    </select>
+                    <div style="font-size:11px; color:var(--muted); margin-top:4px;">Program hanya tampil untuk siswa pada kelas yang dipilih.</div>
+                </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                     <div class="form-group">
                         <label>Harga (Rp) <span style="color:var(--danger);">*</span></label>
@@ -222,7 +244,7 @@
                 </div>
                 <div class="form-group">
                     <label>Fitur <span style="font-size:11px; color:var(--muted); font-weight:400;">(1 baris = 1 fitur)</span></label>
-                    <textarea name="features" class="form-control" rows="5" style="resize:vertical;" placeholder="24 kali pertemuan&#10;Live class tiap pekan&#10;Materi PDF">{{ old('features') }}</textarea>
+                    <textarea name="features" class="form-control" rows="5" style="resize:vertical;" placeholder="24 kali pertemuan&#10;Kelas online tiap pekan&#10;Materi PDF">{{ old('features') }}</textarea>
                 </div>
                 <div class="form-group">
                     <label>Bonus <span style="font-size:11px; color:var(--muted); font-weight:400;">(opsional)</span></label>

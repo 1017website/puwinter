@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Subscription extends Model
 {
     protected $fillable = [
-        'user_id', 'plan_id', 'tier', 'status',
+        'user_id', 'plan_id', 'affiliate_referrer_id', 'affiliate_code', 'tier', 'status',
         'started_at', 'expired_at', 'payment_method',
         'midtrans_order_id', 'midtrans_snap_token', 'amount_paid',
-        'unique_code', 'total_amount', 'payment_proof', 'proof_uploaded_at',
+        'unique_code', 'total_amount', 'affiliate_original_amount',
+        'affiliate_discount_amount', 'affiliate_reward_amount',
+        'payment_proof', 'proof_uploaded_at',
     ];
 
     protected $casts = [
@@ -22,6 +24,9 @@ class Subscription extends Model
         'amount_paid'       => 'integer',
         'unique_code'       => 'integer',
         'total_amount'      => 'integer',
+        'affiliate_original_amount' => 'integer',
+        'affiliate_discount_amount' => 'integer',
+        'affiliate_reward_amount'   => 'integer',
     ];
 
     // -------------------------------------------------------------------------
@@ -54,6 +59,11 @@ class Subscription extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function affiliateReferrer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'affiliate_referrer_id');
     }
 
     public function plan(): BelongsTo

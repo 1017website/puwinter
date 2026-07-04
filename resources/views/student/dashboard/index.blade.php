@@ -133,10 +133,10 @@
     {{-- ================================================================== --}}
     <div>
 
-        {{-- Jadwal Live Class --}}
+        {{-- Jadwal Kelas Online --}}
         <div class="card" style="margin-bottom:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                <div style="font-size:15px; font-weight:700;">Jadwal Live Class</div>
+                <div style="font-size:15px; font-weight:700;">Jadwal Kelas Online</div>
                 <a href="{{ route('student.live.index') }}" style="font-size:12px; color:var(--primary); font-weight:600; text-decoration:none;">Lihat Semua</a>
             </div>
 

@@ -17,7 +17,7 @@ class WelcomeController extends Controller
             return redirect()->route('dashboard');
         }
 
-        // Paket harga dari DB
+        // Program dari DB
         $plans = SubscriptionPlan::active()->orderBy('order')->get();
 
         // Stats platform dari DB
@@ -37,7 +37,7 @@ class WelcomeController extends Controller
             return redirect()->route('dashboard');
         }
 
-        // Paket harga dari DB
+        // Program dari DB
         $plans = SubscriptionPlan::active()->orderBy('order')->get();
 
         // Stats platform dari DB
@@ -57,7 +57,7 @@ class WelcomeController extends Controller
             return redirect()->route('dashboard');
         }
 
-        // Paket harga dari DB
+        // Program dari DB
         $plans = SubscriptionPlan::active()->orderBy('order')->get();
 
         // Stats platform dari DB

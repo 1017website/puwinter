@@ -242,6 +242,25 @@
             @endif
         </div>
 
+
+
+        {{-- Kode Affiliate --}}
+        <div class="settings-section" style="margin-bottom:0;">
+            <div style="font-size:13px; font-weight:700; color:#1E293B; margin-bottom:10px;">
+                <i class="fas fa-handshake" style="color:var(--primary); margin-right:6px;"></i>Kode Affiliate Kamu
+            </div>
+            <div style="background:#F8FAFC; border:1px dashed #CBD5E1; border-radius:10px; padding:13px; text-align:center; margin-bottom:10px;">
+                <div style="font-size:22px; font-weight:800; letter-spacing:1px; color:#1E293B;">{{ $user->affiliate_code ?: $user->ensureAffiliateCode() }}</div>
+            </div>
+            <p style="font-size:11.5px; color:#64748B; line-height:1.6; margin-bottom:10px;">
+                Bagikan kode ini ke siswa lain. Mereka bisa mengisi kode saat daftar dan mendapat potongan harga sesuai pengaturan admin.
+            </p>
+            <button type="button" onclick="navigator.clipboard.writeText('{{ $user->affiliate_code }}'); alert('Kode affiliate disalin: {{ $user->affiliate_code }}')"
+                    style="width:100%; padding:9px; background:#fff; color:#475569; border:1.5px solid #E2E8F0; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;">
+                <i class="fas fa-copy"></i> Salin Kode
+            </button>
+        </div>
+
         {{-- Status Langganan --}}
         <div class="settings-section" style="margin-bottom:0;">
             <div style="font-size:13px; font-weight:700; color:#1E293B; margin-bottom:14px;">
@@ -283,7 +302,7 @@
                         <i class="fas fa-crown" style="color:#F59E0B; font-size:20px;"></i>
                     </div>
                     <p style="font-size:12px; color:#64748B; margin-bottom:14px; line-height:1.5;">
-                        Upgrade Premium untuk akses semua kelas, tryout, dan live class tanpa batas.
+                        Upgrade Premium untuk akses semua kelas, tryout, dan kelas online tanpa batas.
                     </p>
                     <a href="{{ route('upgrade.index') }}"
                        style="display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; background:linear-gradient(135deg,#F59E0B,#EF4444); color:#fff; border-radius:8px; font-size:12px; font-weight:700; text-decoration:none;">

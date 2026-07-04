@@ -1,13 +1,13 @@
 @extends('layouts.student')
 
-@section('title', 'Live Class')
+@section('title', 'Kelas Online')
 @php $subtitle = 'Ikuti kelas langsung bersama mentor terbaik.'; @endphp
 
 @section('content')
 
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
     <div>
-        <h2 style="font-size:22px; font-weight:800;">Live Class</h2>
+        <h2 style="font-size:22px; font-weight:800;">Kelas Online</h2>
         <p style="font-size:13px; color:var(--text-muted); margin-top:2px;">Ikuti kelas langsung bersama mentor terbaik.</p>
     </div>
 </div>
@@ -90,7 +90,7 @@
     @if($upcoming->isEmpty())
         <div class="card" style="text-align:center; padding:40px; color:var(--text-muted);">
             <i class="fas fa-calendar-xmark" style="font-size:36px; opacity:0.2; display:block; margin-bottom:12px;"></i>
-            <p style="font-size:14px; font-weight:600;">Belum ada jadwal live class.</p>
+            <p style="font-size:14px; font-weight:600;">Belum ada jadwal kelas online.</p>
         </div>
     @else
         <div style="display:flex; flex-direction:column; gap:10px;">
@@ -147,7 +147,7 @@
 <div>
     <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;">
         <i class="fas fa-film" style="color:#7C3AED; margin-right:6px;"></i>
-        Rekaman Live Class
+        Rekaman Kelas Online
     </h3>
 
     @if($recordings->isEmpty())

@@ -8,6 +8,8 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -27,6 +29,7 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate(['student']);
 
         $request->session()->regenerate();
+        $this->invalidateOtherSessions($request);
 
         return $this->redirectByRole($request->user());
     }
@@ -46,8 +49,34 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate(['superadmin', 'admin', 'mentor']);
 
         $request->session()->regenerate();
+        $this->invalidateOtherSessions($request);
 
         return $this->redirectByRole($request->user());
+    }
+
+    /**
+     * Paksa 1 akun hanya aktif di 1 device/session.
+     * Saat user login dari device baru, session lama milik user yang sama dihapus
+     * dari tabel sessions sehingga device lama otomatis ter-logout pada request berikutnya.
+     */
+    private function invalidateOtherSessions(Request $request): void
+    {
+        $user = $request->user();
+
+        if (!$user || config('session.driver') !== 'database') {
+            return;
+        }
+
+        $table = config('session.table', 'sessions');
+
+        if (!Schema::hasTable($table)) {
+            return;
+        }
+
+        DB::table($table)
+            ->where('user_id', $user->id)
+            ->where('id', '!=', $request->session()->getId())
+            ->delete();
     }
 
     // =========================================================================

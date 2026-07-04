@@ -7,7 +7,7 @@
     <link rel="shortcut icon" href="{{ asset('images/favicon.png') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Puwinter — Platform Belajar Bahasa Inggris Terbaik Indonesia</title>
-    <meta name="description" content="Belajar bahasa Inggris lebih cerdas bersama Puwinter. Live class, practice test, dan pembahasan latihan bersama tutor terbaik.">
+    <meta name="description" content="Belajar bahasa Inggris lebih cerdas bersama Puwinter. Kelas online, practice test, dan pembahasan latihan bersama tutor terbaik.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -1413,7 +1413,7 @@
     <div id="harga" class="pricing-section">
         <div class="section-label">Harga</div>
         <h2 class="section-title">Investasi terbaik untuk <span class="highlight">masa depanmu</span></h2>
-        <p class="section-desc">Mulai gratis, tingkatkan paket kapan saja. Garansi uang kembali 7 hari.</p>
+        <p class="section-desc">Mulai gratis, tingkatkan program kapan saja. Garansi uang kembali 7 hari.</p>
         <div class="pricing-grid">@forelse($plans as $plan)
             @php
             $priceK = $plan->price >= 1000
@@ -1424,9 +1424,9 @@
             : '';
             @endphp<div class="pricing-card {{ $plan->is_popular ? 'popular' : '' }} reveal">@if($plan->is_popular)<div class="popular-tag">PALING POPULER</div>@endif @if($plan->flyer_image)<div class="flyer-thumb" onclick="openFlyer('{{ asset('storage/'.$plan->flyer_image) }}')" style="margin:0 0 12px;cursor:zoom-in;border-radius:10px;overflow:hidden;border:1px solid rgba(148,163,184,.25);"><img src="{{ asset('storage/'.$plan->flyer_image) }}" alt="Pamflet {{ $plan->name }}" style="width:100%;display:block;height:275px;object-fit:cover;object-position:top;"></div>@endif<div class="pricing-name">{{ $plan->name }}</div>@if($plan->periodLabel())<div style="font-size:11px;color:#94A3B8;font-weight:600;margin-top:2px;"><i class="far fa-calendar"></i> {{ $plan->periodLabel() }}</div>@endif
                 <div class="pricing-price"><sup>Rp</sup>{{ $priceK }}</div>
-                <div class="pricing-period">/ {{ $plan->duration_months }} bulan</div>@if($plan->original_price > $plan->price)<div class="pricing-strike">Rp {{ number_format($plan->original_price) }}{{ $discount }}</div>@endif @if($plan->bonus)<div style="font-size:12px;color:var(--accent);font-weight:800;margin:6px 0;">🎁 {{ $plan->bonus }}</div>@endif @if($plan->features)<ul class="pricing-features">@foreach($plan->features as $f)<li><i class="fas fa-check-circle"></i> {{ $f }}</li>@endforeach</ul>@endif<a href="{{ route('register') }}" class="btn-pricing {{ $plan->is_popular ? 'btn-pricing-filled' : 'btn-pricing-outline' }}">{{ $plan->is_popular ? 'Pilih Paket Ini' : 'Mulai Sekarang' }}</a>@if(!is_null($plan->quota))<div style="font-size:11.5px;margin-top:8px;font-weight:600;color:{{ $plan->isQuotaFull() ? '#EF4444' : '#10B981' }};">@if($plan->isQuotaFull())<i class="fas fa-circle-xmark"></i> Kuota penuh@else<i class="fas fa-user-check"></i> Sisa kuota: {{ $plan->remainingQuota() }} dari {{ $plan->quota }}@endif</div>@endif
+                <div class="pricing-period">/ {{ $plan->duration_months }} bulan</div>@if($plan->original_price > $plan->price)<div class="pricing-strike">Rp {{ number_format($plan->original_price) }}{{ $discount }}</div>@endif @if($plan->bonus)<div style="font-size:12px;color:var(--accent);font-weight:800;margin:6px 0;">🎁 {{ $plan->bonus }}</div>@endif @if($plan->features)<ul class="pricing-features">@foreach($plan->features as $f)<li><i class="fas fa-check-circle"></i> {{ $f }}</li>@endforeach</ul>@endif<a href="{{ route('register') }}" class="btn-pricing {{ $plan->is_popular ? 'btn-pricing-filled' : 'btn-pricing-outline' }}">{{ $plan->is_popular ? 'Pilih Program Ini' : 'Mulai Sekarang' }}</a>@if(!is_null($plan->quota))<div style="font-size:11.5px;margin-top:8px;font-weight:600;color:{{ $plan->isQuotaFull() ? '#EF4444' : '#10B981' }};">@if($plan->isQuotaFull())<i class="fas fa-circle-xmark"></i> Kuota penuh@else<i class="fas fa-user-check"></i> Sisa kuota: {{ $plan->remainingQuota() }} dari {{ $plan->quota }}@endif</div>@endif
             </div>@empty<div class="pricing-card reveal" style="grid-column:1/-1;text-align:center;padding:40px;">
-                <p style="color:#94A3B8;">Paket harga belum tersedia. Hubungi admin.</p>
+                <p style="color:#94A3B8;">Program belum tersedia. Hubungi admin.</p>
             </div>@endforelse</div>
         <div style="margin-top:34px;color:#94A3B8;font-size:13.5px" class="reveal"><i class="fas fa-shield-halved" style="color:#10B981;"></i> Garansi uang kembali 7 hari — tidak puas, kami kembalikan 100%.</div>
     </div>

@@ -113,7 +113,7 @@
 
 {{-- LIVE CLASS --}}
 <div class="card">
-    <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;"><i class="fas fa-video"></i> Live Class</h3>
+    <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;"><i class="fas fa-video"></i> Kelas Online</h3>
     @forelse($liveClasses as $lc)
     <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); gap:10px;">
         <div>
@@ -126,7 +126,7 @@
         </div>
     </div>
     @empty
-    <p style="font-size:13px; color:var(--text-muted);">Belum ada live class di program ini.</p>
+    <p style="font-size:13px; color:var(--text-muted);">Belum ada kelas online di program ini.</p>
     @endforelse
 </div>
 

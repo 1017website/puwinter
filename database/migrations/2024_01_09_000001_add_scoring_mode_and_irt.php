@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Dua tipe penilaian tryout: 'regular' (existing +4/-1) & 'irt'.
+ * Dua tipe penilaian tryout: 'regular' (bobot nilai per soal) & 'irt'.
  *
  * - tryouts.scoring_mode    : mode penilaian yang dipakai tryout ini.
  * - tryouts.irt_calibrated  : true bila bobot IRT sudah dihitung (setelah tryout ditutup).

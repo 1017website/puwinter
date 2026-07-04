@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
  *  3. TKA Bahasa Inggris Wajib 2026            (190.000, 24x, Agu-Okt 2026)
  *  4. Literasi Bhs Inggris UTBK SNBT 2027      (295.000, 36x, Agu 2026-Apr 2027)
  *
- * Pendekatan: tiap program = 1 paket harga (subscription_plan) + 1 course.
+ * Pendekatan: tiap program = 1 program (subscription_plan) + 1 course.
  * Seeder idempotent (aman dijalankan berulang) — pakai updateOrInsert by slug.
  */
 class PuwinterProgramSeeder extends Seeder
@@ -81,10 +81,10 @@ class PuwinterProgramSeeder extends Seeder
                         . "Dirancang khusus untuk menguatkan Materi Bahasa Inggris Sekolah, membantu siswa lebih SIAP "
                         . "menghadapi Ulangan, Asesmen, dan Ujian.",
                 'features' => [
-                    'Paket Semester 1: Agustus-Desember 2026',
-                    'Paket Semester 2: Januari-Mei 2027',
+                    'Program Semester 1: Agustus-Desember 2026',
+                    'Program Semester 2: Januari-Mei 2027',
                     '20 kali pertemuan per semester',
-                    'Live class tiap pekan (1x), durasi 60 menit',
+                    'Kelas online tiap pekan (1x), durasi 60 menit',
                     'Rekaman + link video tiap pertemuan',
                     'Materi PDF tiap selesai kelas',
                     'Online via Zoom Premium',
@@ -104,10 +104,10 @@ class PuwinterProgramSeeder extends Seeder
                         . "Dirancang khusus untuk menguatkan Materi Bahasa Inggris Sekolah, membantu siswa lebih SIAP "
                         . "menghadapi Ulangan, Asesmen, dan Ujian.",
                 'features' => [
-                    'Paket Semester 1: Agustus-Desember 2026',
-                    'Paket Semester 2: Januari-Mei 2027',
+                    'Program Semester 1: Agustus-Desember 2026',
+                    'Program Semester 2: Januari-Mei 2027',
                     '20 kali pertemuan per semester',
-                    'Live class tiap pekan (1x), durasi 60 menit',
+                    'Kelas online tiap pekan (1x), durasi 60 menit',
                     'Rekaman + link video tiap pertemuan',
                     'Materi PDF tiap selesai kelas',
                     'Online via Zoom Premium',
@@ -128,7 +128,7 @@ class PuwinterProgramSeeder extends Seeder
                 'features' => [
                     'Periode: Agustus-Oktober 2026',
                     '24 kali pertemuan',
-                    'Live class tiap pekan (1x), durasi 60 menit',
+                    'Kelas online tiap pekan (1x), durasi 60 menit',
                     'Rekaman + link video tiap pertemuan',
                     'Materi PDF tiap selesai kelas',
                     'Online via Zoom Premium',
@@ -150,7 +150,7 @@ class PuwinterProgramSeeder extends Seeder
                 'features' => [
                     'Periode: Agustus 2026-April 2027',
                     '36 kali pertemuan',
-                    'Live class tiap pekan (1x), durasi 60 menit',
+                    'Kelas online tiap pekan (1x), durasi 60 menit',
                     'Rekaman + link video tiap pertemuan',
                     'Materi PDF tiap selesai kelas',
                     'Online via Zoom Premium',
@@ -180,7 +180,7 @@ class PuwinterProgramSeeder extends Seeder
                 ]
             );
 
-            // ---- PLAN (paket harga per-program) ----
+            // ---- PLAN (program per-program) ----
             $planData = [
                 'name'            => $p['plan_name'],
                 'duration_months' => $p['duration'],

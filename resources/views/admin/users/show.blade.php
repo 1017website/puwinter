@@ -115,7 +115,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Paket</th>
+                            <th>Program</th>
                             <th>Nominal</th>
                             <th>Metode</th>
                             <th>Status</th>
@@ -126,7 +126,12 @@
                         @foreach($user->subscriptions->sortByDesc('created_at') as $sub)
                         <tr>
                             <td style="font-weight:600; font-size:13px;">{{ $sub->plan->name ?? '-' }}</td>
-                            <td>Rp {{ number_format($sub->amount_paid, 0, ',', '.') }}</td>
+                            <td>
+                                <div>Rp {{ number_format($sub->total_amount ?? $sub->amount_paid, 0, ',', '.') }}</div>
+                                @if($sub->unique_code)
+                                    <div style="font-size:11px; color:var(--muted);">Kode {{ $sub->unique_code }}</div>
+                                @endif
+                            </td>
                             <td style="font-size:12px; text-transform:uppercase; color:var(--muted);">
                                 {{ str_replace('_', ' ', $sub->payment_method ?? '-') }}
                             </td>

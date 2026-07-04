@@ -136,18 +136,21 @@ class TryoutResultController extends Controller
         foreach ($questions as $index => $question) {
             $subjectName = $question->subject->name ?? 'Lainnya';
             $subjectStats[$subjectName] ??= [
-                'total' => 0,
+                'total' => 0.0,
                 'correct' => 0,
                 'partial' => 0,
                 'wrong' => 0,
                 'empty' => 0,
+                'earned' => 0.0,
             ];
-            $subjectStats[$subjectName]['total']++;
+            $subjectStats[$subjectName]['total'] += $question->scoreWeight();
 
             $userAnswer = $answers[$question->id] ?? null;
-            $gradeResult = $question->grade($userAnswer);
+            $gradeResult = $question->grade($userAnswer, $question->scoreWeight());
             $status = $gradeResult['status'] ?? 'empty';
+            $earned = (float) ($gradeResult['earned'] ?? 0);
             $subjectStats[$subjectName][$status] = ($subjectStats[$subjectName][$status] ?? 0) + 1;
+            $subjectStats[$subjectName]['earned'] += $earned;
 
             $picked = is_array($userAnswer)
                 ? array_values(array_map(fn($v) => strtolower((string) $v), $userAnswer))
@@ -157,7 +160,8 @@ class TryoutResultController extends Controller
                 'number' => $index + 1,
                 'question' => $question,
                 'status' => $status,
-                'earned' => (float) ($gradeResult['earned'] ?? 0),
+                'earned' => $earned,
+                'max' => $question->scoreWeight(),
                 'picked' => $picked,
                 'keys' => $question->correctKeys(),
             ];

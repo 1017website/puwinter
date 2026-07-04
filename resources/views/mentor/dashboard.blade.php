@@ -1,7 +1,7 @@
 @extends('layouts.student')
 
 @section('title', 'Dashboard Mentor')
-@php $subtitle = 'Kelola kelas dan live class kamu.'; @endphp
+@php $subtitle = 'Kelola kelas, materi, dan kelas online kamu.'; @endphp
 
 @section('content')
 
@@ -11,7 +11,7 @@
     <div style="position:relative; z-index:1;">
         <div style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:4px; text-transform:uppercase; letter-spacing:1px; font-weight:700;">Mentor Panel</div>
         <h2 style="font-size:24px; font-weight:800; color:#fff; margin-bottom:6px;">Halo, {{ auth()->user()->name }}!</h2>
-        <p style="font-size:13px; color:rgba(255,255,255,0.7);">Kelola kelas dan live class kamu dari sini.</p>
+        <p style="font-size:13px; color:rgba(255,255,255,0.7);">Kelola kelas, materi, dan kelas online kamu dari sini.</p>
     </div>
 </div>
 
@@ -42,7 +42,7 @@
         <div class="stat-icon green"><i class="fas fa-video"></i></div>
         <div>
             <div class="stat-value">{{ $myLiveClasses->count() }}</div>
-            <div class="stat-label">Live Class</div>
+            <div class="stat-label">Kelas Online</div>
         </div>
     </div>
     <div class="stat-card">
@@ -90,14 +90,14 @@
         @endif
     </div>
 
-    {{-- Live Class --}}
+    {{-- Kelas Online --}}
     <div>
-        <div style="font-size:14px; font-weight:700; margin-bottom:14px;">Live Class Saya</div>
+        <div style="font-size:14px; font-weight:700; margin-bottom:14px;">Kelas Online Saya</div>
 
         @if($myLiveClasses->isEmpty())
             <div class="card" style="text-align:center; padding:40px; color:var(--text-muted);">
                 <i class="fas fa-video" style="font-size:32px; opacity:0.2; display:block; margin-bottom:10px;"></i>
-                <p style="font-size:13px; font-weight:600;">Belum ada live class.</p>
+                <p style="font-size:13px; font-weight:600;">Belum ada kelas online.</p>
             </div>
         @else
             <div style="display:flex; flex-direction:column; gap:10px;">
@@ -132,7 +132,7 @@
 <div class="card" style="margin-top:20px; background:#FFFBEB; border-color:#FCD34D; display:flex; align-items:center; gap:12px; padding:14px 18px;">
     <i class="fas fa-circle-info" style="color:#F59E0B; font-size:18px; flex-shrink:0;"></i>
     <div style="font-size:13px; color:#92400E; line-height:1.5;">
-        Untuk mengelola kelas, modul, materi, atau live class — hubungi admin untuk mendapatkan akses panel Admin.
+        Untuk mengelola kelas, modul, materi, atau kelas online — hubungi admin untuk mendapatkan akses panel Admin.
     </div>
 </div>
 

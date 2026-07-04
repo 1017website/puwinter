@@ -14,7 +14,7 @@ class SubscriptionController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Subscription::with(['user', 'plan'])->latest();
+        $query = Subscription::with(['user', 'plan', 'affiliateReferrer'])->latest();
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -34,7 +34,11 @@ class SubscriptionController extends Controller
             'total'   => Subscription::count(),
             'active'  => Subscription::where('status','active')->where('expired_at','>',now())->count(),
             'pending' => Subscription::where('status','pending')->count(),
-            'revenue' => Subscription::where('status','active')->sum('amount_paid'),
+            'revenue' => (int) Subscription::where('status','active')
+                ->selectRaw('COALESCE(SUM(COALESCE(total_amount, amount_paid)), 0) as total')
+                ->value('total'),
+            'affiliate_rewards' => (int) Subscription::where('status','active')
+                ->sum('affiliate_reward_amount'),
         ];
 
         return view('admin.subscriptions.index', compact('subscriptions', 'stats'));
@@ -76,6 +80,30 @@ class SubscriptionController extends Controller
                 'enrolled_at'     => now(),
             ]
         );
+
+
+        if ($subscription->affiliate_referrer_id && ($subscription->affiliate_reward_amount ?? 0) > 0) {
+            \App\Models\PaymentLog::create([
+                'subscription_id' => $subscription->id,
+                'user_id'         => $subscription->affiliate_referrer_id,
+                'event_type'      => 'affiliate.reward.confirmed',
+                'payload'         => [
+                    'buyer_user_id' => $subscription->user_id,
+                    'reward_amount' => (int) $subscription->affiliate_reward_amount,
+                    'affiliate_code' => $subscription->affiliate_code,
+                ],
+                'status'          => 'active',
+            ]);
+
+            Notification::notify(
+                $subscription->affiliate_referrer_id,
+                'affiliate',
+                'Reward affiliate berhasil dicatat',
+                'Reward Rp ' . number_format((int) $subscription->affiliate_reward_amount, 0, ',', '.') . ' dari kode affiliate kamu sudah tercatat.',
+                route('student.settings.index'),
+                'fa-hand-holding-dollar'
+            );
+        }
 
         Notification::notify(
             $subscription->user_id,

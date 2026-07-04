@@ -30,7 +30,7 @@
     </div>
     <div class="stat-card">
         <div class="stat-icon" style="background:#F5F3FF;"><i class="fas fa-money-bill-wave" style="color:#7C3AED;"></i></div>
-        <div><div class="stat-value">Rp {{ number_format($stats['revenue']/1000000, 1) }}Jt</div><div class="stat-label">Total Revenue</div></div>
+        <div><div class="stat-value">Rp {{ number_format($stats['revenue']/1000000, 1) }}Jt</div><div class="stat-label">Total Revenue</div><div style="font-size:10.5px; color:var(--muted); margin-top:2px;">Reward Affiliate: Rp {{ number_format(($stats['affiliate_rewards'] ?? 0), 0, ',', '.') }}</div></div>
     </div>
 </div>
 
@@ -57,7 +57,7 @@
             <thead>
                 <tr>
                     <th>User</th>
-                    <th>Paket</th>
+                    <th>Program</th>
                     <th>Nominal</th>
                     <th>Metode</th>
                     <th>Status</th>
@@ -74,7 +74,18 @@
                         <div style="font-size:11.5px; color:var(--muted);">{{ $sub->user->email ?? '' }}</div>
                     </td>
                     <td style="font-size:13px; font-weight:600;">{{ $sub->plan->name ?? '-' }}</td>
-                    <td style="font-weight:700;">Rp {{ number_format($sub->amount_paid, 0, ',', '.') }}</td>
+                    <td>
+                        <div style="font-weight:700;">Rp {{ number_format($sub->total_amount ?? $sub->amount_paid, 0, ',', '.') }}</div>
+                        @if($sub->unique_code)
+                            <div style="font-size:11px; color:var(--muted);">Harga Rp {{ number_format($sub->amount_paid, 0, ',', '.') }} + kode {{ $sub->unique_code }}</div>
+                        @endif
+                        @if(($sub->affiliate_discount_amount ?? 0) > 0)
+                            <div style="font-size:11px; color:#059669; margin-top:2px;">Diskon affiliate Rp {{ number_format($sub->affiliate_discount_amount, 0, ',', '.') }}</div>
+                        @endif
+                        @if($sub->affiliateReferrer)
+                            <div style="font-size:11px; color:var(--muted); margin-top:2px;">Ref: {{ $sub->affiliateReferrer->name }} ({{ $sub->affiliate_code }}) · Reward Rp {{ number_format($sub->affiliate_reward_amount ?? 0, 0, ',', '.') }}</div>
+                        @endif
+                    </td>
                     <td style="font-size:12px; text-transform:uppercase; color:var(--muted);">
                         {{ str_replace('_', ' ', $sub->payment_method ?? '-') }}
                     </td>

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -18,7 +19,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'name', 'email', 'password', 'role',
         'avatar', 'phone', 'phone_verified_at',
         'school', 'city', 'province', 'birth_date', 'grade', 'grade_id', 'grade_locked',
-        'is_active', 'last_login_at',
+        'is_active', 'last_login_at', 'affiliate_code', 'referred_by_user_id',
     ];
 
     protected $hidden = [
@@ -32,7 +33,41 @@ class User extends Authenticatable implements MustVerifyEmail
         'birth_date'         => 'date',
         'is_active'          => 'boolean',
         'grade_locked'       => 'boolean',
+        'referred_by_user_id'=> 'integer',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+            if (($user->role ?? 'student') === 'student' && empty($user->affiliate_code)) {
+                $user->affiliate_code = static::generateUniqueAffiliateCode($user->name ?: 'PW');
+            }
+        });
+    }
+
+    public static function generateUniqueAffiliateCode(string $name = 'PW'): string
+    {
+        $prefix = Str::upper(Str::slug($name, ''));
+        $prefix = preg_replace('/[^A-Z0-9]/', '', $prefix) ?: 'PW';
+        $prefix = Str::limit($prefix, 6, '');
+
+        do {
+            $code = $prefix . random_int(1000, 9999);
+        } while (static::where('affiliate_code', $code)->exists());
+
+        return $code;
+    }
+
+    public function ensureAffiliateCode(): string
+    {
+        if (empty($this->affiliate_code)) {
+            $this->forceFill([
+                'affiliate_code' => static::generateUniqueAffiliateCode($this->name ?: 'PW'),
+            ])->save();
+        }
+
+        return (string) $this->affiliate_code;
+    }
 
     // -------------------------------------------------------------------------
     // Role Helpers
@@ -239,6 +274,16 @@ class User extends Authenticatable implements MustVerifyEmail
     // -------------------------------------------------------------------------
     // Relationships
     // -------------------------------------------------------------------------
+
+    public function referredBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'referred_by_user_id');
+    }
+
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(User::class, 'referred_by_user_id');
+    }
 
     public function subscriptions(): HasMany
     {

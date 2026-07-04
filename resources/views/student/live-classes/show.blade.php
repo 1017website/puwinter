@@ -1,13 +1,13 @@
 @extends('layouts.student')
 
 @section('title', $liveClass->title)
-@php $subtitle = 'Detail Live Class'; @endphp
+@php $subtitle = 'Detail Kelas Online'; @endphp
 
 @section('content')
 
 {{-- Breadcrumb --}}
 <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-muted); margin-bottom:20px;">
-    <a href="{{ route('student.live.index') }}" style="color:var(--primary); text-decoration:none; font-weight:600;">Live Class</a>
+    <a href="{{ route('student.live.index') }}" style="color:var(--primary); text-decoration:none; font-weight:600;">Kelas Online</a>
     <i class="fas fa-chevron-right" style="font-size:10px;"></i>
     <span style="color:var(--text-main); font-weight:600;">{{ $liveClass->title }}</span>
 </div>

@@ -370,8 +370,8 @@ class IrtTryoutTestSeeder extends Seeder
         $wrong = 0;
         $empty = 0;
         $rawScore = 0.0;
-        $fullPoint = 4.0;
-        $penaltyPerWrong = 1.0;
+        $fullPoint = 1.0;
+        $penaltyPerWrong = 0.0;
 
         foreach ($questions as $question) {
             $userAnswer = $answers[$question->id] ?? null;
@@ -404,7 +404,7 @@ class IrtTryoutTestSeeder extends Seeder
     {
         $questions = $tryout->questions;
         $weightedMax = max(1e-9, $questions->sum(fn($q) => $q->difficultyWeight()));
-        $fullPoint = 4.0;
+        $fullPoint = 1.0;
 
         foreach ($tryout->attempts()->whereNotNull('submitted_at')->get() as $attempt) {
             $answers = $attempt->answers ?? [];

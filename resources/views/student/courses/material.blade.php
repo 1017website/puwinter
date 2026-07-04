@@ -193,8 +193,8 @@
         @elseif($material->type === 'live_class')
             <div class="card" style="text-align:center; padding:60px 20px; margin-bottom:20px;">
                 <i class="fas fa-video" style="font-size:48px; color:#059669; opacity:0.4; display:block; margin-bottom:16px;"></i>
-                <p style="font-size:15px; font-weight:700; margin-bottom:6px;">Live Class</p>
-                <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Materi ini terkait dengan sesi live class.</p>
+                <p style="font-size:15px; font-weight:700; margin-bottom:6px;">Kelas Online</p>
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Materi ini terkait dengan sesi kelas online.</p>
                 <a href="{{ route('student.live.index') }}" class="btn btn-primary"><i class="fas fa-external-link-alt"></i> Lihat Jadwal Live</a>
             </div>
         @endif
@@ -207,7 +207,7 @@
                     <div style="display:flex; align-items:center; gap:12px; font-size:12px; color:var(--text-muted); flex-wrap:wrap;">
                         @php
                             $typeLabel = match($material->type) {
-                                'video' => 'Video', 'pdf' => 'PDF', 'quiz' => 'Quiz', 'live_class' => 'Live Class', default => 'Materi'
+                                'video' => 'Video', 'pdf' => 'PDF', 'quiz' => 'Quiz', 'live_class' => 'Kelas Online', default => 'Materi'
                             };
                         @endphp
                         <span><i class="fas fa-tag" style="margin-right:4px;"></i>{{ $typeLabel }}</span>

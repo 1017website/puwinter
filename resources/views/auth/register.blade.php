@@ -310,7 +310,7 @@
 
     <div class="left-hero">
         <h1>Bergabung dengan <span>24.560+</span> Pejuang UTBK</h1>
-        <p>Daftar gratis dan mulai belajar hari ini. Akses ratusan materi, tryout, dan live class terbaik.</p>
+        <p>Daftar gratis dan mulai belajar hari ini. Akses ratusan materi, tryout, dan kelas online terbaik.</p>
 
         <div class="benefit-list">
             <div class="benefit-item">
@@ -457,6 +457,26 @@
                         Kelas hanya dipilih sekali saat daftar. Untuk pindah kelas, ajukan permintaan ke admin.
                     </small>
                 </div>
+            </div>
+
+
+            {{-- Affiliate --}}
+            <div class="section-divider" style="margin-top:8px;">Affiliate <span style="font-size:10px; font-weight:400; color:#94A3B8;">(opsional)</span></div>
+            <div class="form-group">
+                <label>Kode Affiliate <span class="optional">(opsional)</span></label>
+                <div class="input-wrap">
+                    <i class="fas fa-ticket input-icon"></i>
+                    <input type="text" name="affiliate_code" value="{{ old('affiliate_code') }}"
+                           placeholder="Masukkan kode teman jika ada"
+                           class="{{ $errors->has('affiliate_code') ? 'is-invalid' : '' }}"
+                           style="text-transform:uppercase;">
+                </div>
+                @error('affiliate_code')
+                    <div class="invalid-feedback"><i class="fas fa-circle-exclamation"></i> {{ $message }}</div>
+                @enderror
+                <small class="optional" style="display:block;margin-top:6px;line-height:1.5;">
+                    Jika memakai kode affiliate, potongan harga akan diterapkan saat checkout program berbayar.
+                </small>
             </div>
 
             <p class="terms-note">
