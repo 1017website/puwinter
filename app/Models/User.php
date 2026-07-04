@@ -366,9 +366,23 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(LiveClass::class, 'mentor_id');
     }
 
+    /**
+     * Override notifikasi verifikasi email bawaan Laravel agar memakai
+     * pengiriman custom yang sekaligus mencatat status ke tabel email_logs.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        app(\App\Services\EmailVerificationMailService::class)->send($this, null, 'system');
+    }
+
     public function emailVerifications(): HasMany
     {
         return $this->hasMany(EmailVerification::class);
+    }
+
+    public function emailLogs(): HasMany
+    {
+        return $this->hasMany(EmailLog::class);
     }
 
     public function notifications(): HasMany

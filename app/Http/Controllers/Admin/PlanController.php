@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\SubscriptionPlan;
 use App\Models\Grade;
+use App\Models\SubscriptionPlan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -14,7 +14,7 @@ class PlanController extends Controller
 {
     public function index(): View
     {
-        $plans = SubscriptionPlan::with(['grade'])->withCount('subscriptions')
+        $plans = SubscriptionPlan::with(['grade', 'grades'])->withCount('subscriptions')
             ->orderBy('order')
             ->get();
         $grades = Grade::active()->get();
@@ -27,7 +27,8 @@ class PlanController extends Controller
         $request->validate([
             'name'             => 'required|string|max:100',
             'tier'             => 'nullable|in:regular,exclusive',
-            'grade_id'         => 'nullable|exists:grades,id',
+            'grade_ids'        => 'nullable|array',
+            'grade_ids.*'      => 'integer|exists:grades,id',
             'duration_months'  => 'required|integer|min:1',
             'start_date'       => 'nullable|date',
             'end_date'         => 'nullable|date|after_or_equal:start_date',
@@ -52,11 +53,15 @@ class PlanController extends Controller
             $flyerPath = $request->file('flyer_image')->store('flyers', 'public');
         }
 
-        SubscriptionPlan::create([
+        $gradeIds = $this->normalizeGradeIds($request);
+
+        $plan = SubscriptionPlan::create([
             'name'            => $request->name,
             'slug'            => Str::slug($request->name) . '-' . $request->duration_months . 'bln',
             'tier'            => $request->input('tier', 'regular'),
-            'grade_id'        => $request->filled('grade_id') ? (int) $request->grade_id : null,
+            // Fallback lama: simpan kelas pertama agar data lama/fitur lain tetap aman.
+            // Relasi utama banyak kelas disimpan di subscription_plan_grades.
+            'grade_id'        => $gradeIds[0] ?? null,
             'duration_months' => $request->duration_months,
             'start_date'      => $request->start_date,
             'end_date'        => $request->end_date,
@@ -71,6 +76,8 @@ class PlanController extends Controller
             'order'           => $request->input('order', SubscriptionPlan::max('order') + 1),
         ]);
 
+        $plan->grades()->sync($gradeIds);
+
         return back()->with('success', 'Program berhasil ditambahkan.');
     }
 
@@ -79,7 +86,8 @@ class PlanController extends Controller
         $request->validate([
             'name'            => 'required|string|max:100',
             'tier'            => 'nullable|in:regular,exclusive',
-            'grade_id'        => 'nullable|exists:grades,id',
+            'grade_ids'       => 'nullable|array',
+            'grade_ids.*'     => 'integer|exists:grades,id',
             'duration_months' => 'required|integer|min:1',
             'start_date'      => 'nullable|date',
             'end_date'        => 'nullable|date|after_or_equal:start_date',
@@ -99,10 +107,13 @@ class PlanController extends Controller
             fn($f) => $f !== ''
         );
 
+        $gradeIds = $this->normalizeGradeIds($request);
+
         $data = [
             'name'            => $request->name,
             'tier'            => $request->input('tier', $plan->tier ?? 'regular'),
-            'grade_id'        => $request->filled('grade_id') ? (int) $request->grade_id : null,
+            // Fallback lama: kelas pertama. Jika tidak memilih kelas, program = Semua Kelas.
+            'grade_id'        => $gradeIds[0] ?? null,
             'duration_months' => $request->duration_months,
             'start_date'      => $request->start_date,
             'end_date'        => $request->end_date,
@@ -125,6 +136,7 @@ class PlanController extends Controller
         }
 
         $plan->update($data);
+        $plan->grades()->sync($gradeIds);
 
         return back()->with('success', 'Program berhasil diperbarui.');
     }
@@ -137,5 +149,19 @@ class PlanController extends Controller
 
         $plan->delete();
         return back()->with('success', 'Program berhasil dihapus.');
+    }
+
+    /**
+     * Ambil daftar kelas program dari checkbox admin.
+     * Kosong berarti berlaku untuk Semua Kelas.
+     */
+    private function normalizeGradeIds(Request $request): array
+    {
+        return collect($request->input('grade_ids', []))
+            ->filter(fn ($id) => $id !== null && $id !== '')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
     }
 }

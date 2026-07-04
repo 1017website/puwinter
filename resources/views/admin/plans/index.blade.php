@@ -100,14 +100,20 @@
                             </select>
                         </div>
 
-                        <div class="form-group" style="margin-bottom:0;">
+                        <div class="form-group" style="margin-bottom:0; grid-column:span 2;">
                             <label style="font-size:11px; font-weight:700; color:var(--muted);">Kelas Program</label>
-                            <select name="grade_id" class="form-control" style="font-size:13px;">
-                                <option value="">Semua Kelas</option>
+                            @php($selectedGradeIds = $plan->gradeIdsForForm())
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:8px; background:#fff; border:1px solid var(--border); border-radius:8px; padding:10px;">
                                 @foreach($grades as $grade)
-                                    <option value="{{ $grade->id }}" {{ (int) $plan->grade_id === (int) $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
+                                    <label style="display:flex; align-items:center; gap:7px; font-size:13px; cursor:pointer; font-weight:500; color:var(--text);">
+                                        <input type="checkbox" name="grade_ids[]" value="{{ $grade->id }}"
+                                               {{ in_array((int) $grade->id, $selectedGradeIds, true) ? 'checked' : '' }}
+                                               style="accent-color:var(--primary);">
+                                        {{ $grade->name }}
+                                    </label>
                                 @endforeach
-                            </select>
+                            </div>
+                            <div style="font-size:11px; color:var(--muted); margin-top:4px;">Centang satu atau beberapa kelas. Kosongkan semua jika program untuk Semua Kelas.</div>
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
                             <label style="font-size:11px; font-weight:700; color:var(--muted);">Kuota Berbayar <span style="font-weight:400;">(kosong = tanpa batas)</span></label>
@@ -199,13 +205,20 @@
 
                 <div class="form-group">
                     <label>Kelas Program</label>
-                    <select name="grade_id" class="form-control">
-                        <option value="">Semua Kelas</option>
+                    @php($oldGradeIds = collect(old('grade_ids', []))->map(fn($id) => (int) $id)->all())
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; border:1px solid var(--border); border-radius:8px; padding:10px; background:#fff;">
                         @foreach($grades as $grade)
-                            <option value="{{ $grade->id }}" {{ old('grade_id') == $grade->id ? 'selected' : '' }}>{{ $grade->name }}</option>
+                            <label style="display:flex; align-items:center; gap:7px; font-size:13px; cursor:pointer; font-weight:500; color:var(--text);">
+                                <input type="checkbox" name="grade_ids[]" value="{{ $grade->id }}"
+                                       {{ in_array((int) $grade->id, $oldGradeIds, true) ? 'checked' : '' }}
+                                       style="accent-color:var(--primary);">
+                                {{ $grade->name }}
+                            </label>
                         @endforeach
-                    </select>
-                    <div style="font-size:11px; color:var(--muted); margin-top:4px;">Program hanya tampil untuk siswa pada kelas yang dipilih.</div>
+                    </div>
+                    <div style="font-size:11px; color:var(--muted); margin-top:4px;">Bisa memilih lebih dari satu kelas. Kosongkan semua jika program untuk Semua Kelas.</div>
+                    @error('grade_ids') <div style="font-size:11px; color:var(--danger); margin-top:3px;">{{ $message }}</div> @enderror
+                    @error('grade_ids.*') <div style="font-size:11px; color:var(--danger); margin-top:3px;">{{ $message }}</div> @enderror
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                     <div class="form-group">

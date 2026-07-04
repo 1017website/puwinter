@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SubscriptionPlan extends Model
@@ -37,16 +39,24 @@ class SubscriptionPlan extends Model
     }
 
     /**
-     * Filter program berdasarkan field Kelas Program (subscription_plans.grade_id).
-     * grade_id NULL berarti program umum / Semua Kelas.
+     * Filter program berdasarkan kelas siswa.
+     *
+     * - Program tanpa grade di pivot dan grade_id legacy kosong = Semua Kelas.
+     * - Program dengan salah satu grade di pivot = tampil hanya untuk kelas tersebut.
+     * - grade_id legacy tetap dibaca sebagai fallback untuk data lama.
      */
     public function scopeForGrade($query, ?int $gradeId)
     {
         return $query->where(function ($q) use ($gradeId) {
-            $q->whereNull('grade_id');
+            $q->where(function ($allClasses) {
+                $allClasses->whereNull('grade_id')
+                    ->whereDoesntHave('grades');
+            });
 
             if (!empty($gradeId)) {
-                $q->orWhere('grade_id', $gradeId);
+                $q->orWhereHas('grades', function ($grades) use ($gradeId) {
+                    $grades->where('grades.id', $gradeId);
+                })->orWhere('grade_id', $gradeId);
             }
         });
     }
@@ -127,16 +137,34 @@ class SubscriptionPlan extends Model
      */
     public function gradeLabel(): string
     {
+        $grades = $this->relationLoaded('grades')
+            ? $this->grades
+            : $this->grades()->get();
+
+        if ($grades->isNotEmpty()) {
+            return $grades->pluck('name')->implode(', ');
+        }
+
         return $this->grade?->name ?? 'Semua Kelas';
     }
 
     /**
      * Program tersedia untuk siswa jika:
-     * - grade_id program kosong = umum / semua kelas, atau
-     * - grade_id program sama dengan grade_id siswa.
+     * - tidak ada kelas khusus = umum / semua kelas, atau
+     * - kelas siswa ada di salah satu kelas program.
      */
     public function appliesToGrade(?int $gradeId): bool
     {
+        $selectedGradeIds = $this->relationLoaded('grades')
+            ? $this->grades->pluck('id')
+            : $this->grades()->pluck('grades.id');
+
+        if ($selectedGradeIds->isNotEmpty()) {
+            return !empty($gradeId) && $selectedGradeIds
+                ->map(fn ($id) => (int) $id)
+                ->contains((int) $gradeId);
+        }
+
         if (empty($this->grade_id)) {
             return true;
         }
@@ -144,13 +172,45 @@ class SubscriptionPlan extends Model
         return !empty($gradeId) && (int) $this->grade_id === (int) $gradeId;
     }
 
+    /**
+     * ID kelas untuk form admin. Menggabungkan pivot baru + grade_id lama sebagai fallback.
+     */
+    public function gradeIdsForForm(): array
+    {
+        $ids = $this->relationLoaded('grades')
+            ? $this->grades->pluck('id')->all()
+            : $this->grades()->pluck('grades.id')->all();
+
+        if (empty($ids) && !empty($this->grade_id)) {
+            $ids = [(int) $this->grade_id];
+        }
+
+        return array_values(array_unique(array_map('intval', $ids)));
+    }
+
     // -------------------------------------------------------------------------
     // Relationships
     // -------------------------------------------------------------------------
 
-    public function grade(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    /**
+     * Relasi lama 1 kelas, dipertahankan untuk kompatibilitas data lama.
+     */
+    public function grade(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Grade::class);
+    }
+
+    /**
+     * Relasi baru: 1 program bisa berlaku untuk banyak kelas.
+     */
+    public function grades(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            \App\Models\Grade::class,
+            'subscription_plan_grades',
+            'subscription_plan_id',
+            'grade_id'
+        )->withTimestamps()->orderBy('grades.order');
     }
 
     public function subscriptions(): HasMany

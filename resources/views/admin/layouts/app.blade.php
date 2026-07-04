@@ -468,6 +468,22 @@
 
         <div class="sidebar-section">
             <div class="sidebar-section-label">Sistem</div>
+            <a href="{{ route('admin.email-logs.index') }}" class="nav-item {{ request()->routeIs('admin.email-logs.*') ? 'active' : '' }}">
+                <i class="fas fa-envelope-circle-check"></i> Log Email
+                @php
+                    $failedEmailCount = 0;
+                    try {
+                        if (\Illuminate\Support\Facades\Schema::hasTable('email_logs')) {
+                            $failedEmailCount = \App\Models\EmailLog::where('status', 'failed')->count();
+                        }
+                    } catch (\Throwable $e) {
+                        $failedEmailCount = 0;
+                    }
+                @endphp
+                @if($failedEmailCount > 0)
+                    <span class="nav-badge">{{ $failedEmailCount }}</span>
+                @endif
+            </a>
             <a href="{{ route('admin.settings.index') }}" class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                 <i class="fas fa-gear"></i> Pengaturan
             </a>

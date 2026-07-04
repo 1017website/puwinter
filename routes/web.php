@@ -33,6 +33,7 @@ use App\Http\Controllers\Admin\CourseController as AdminCourse;
 use App\Http\Controllers\Admin\TryoutController as AdminTryout;
 use App\Http\Controllers\Admin\TryoutResultController as AdminTryoutResult;
 use App\Http\Controllers\Admin\SubscriptionController as AdminSubscription;
+use App\Http\Controllers\Admin\EmailLogController as AdminEmailLog;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\WelcomeController;
@@ -67,11 +68,15 @@ require __DIR__ . '/auth.php';
 // EMAIL VERIFICATION
 // ============================================================================
 
+// Link dari email sengaja tidak memakai middleware auth, supaya user yang membuka
+// email dari HP/browser lain tetap bisa langsung terverifikasi berdasarkan token.
+Route::get('/email/verify/{token}', [EmailVerificationController::class, 'verify'])
+    ->middleware('throttle:12,1')
+    ->name('verification.verify');
+
 Route::middleware('auth')->group(function () {
     Route::get('/email/verify', [EmailVerificationController::class, 'notice'])
         ->name('verification.notice');
-    Route::get('/email/verify/{token}', [EmailVerificationController::class, 'verify'])
-        ->name('verification.verify');
     Route::post('/email/resend', [EmailVerificationController::class, 'resend'])
         ->middleware('throttle:6,1')
         ->name('verification.send');
@@ -265,6 +270,9 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
             Route::delete('/{liveClass}', [AdminLiveClass::class, 'destroy'])->name('destroy');
             Route::patch('/{liveClass}/status', [AdminLiveClass::class, 'setStatus'])->name('set-status');
         });
+
+        // Log Email
+        Route::get('/email-logs', [AdminEmailLog::class, 'index'])->name('email-logs.index');
 
         // Settings
         Route::get('/settings', [AdminSettings::class, 'index'])->name('settings.index');

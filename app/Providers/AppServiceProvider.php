@@ -47,6 +47,17 @@ class AppServiceProvider extends ServiceProvider
 
             return url('/email/verify/' . $token);
         });
+
+        // Fallback: kalau notifikasi verifikasi bawaan Laravel masih terpanggil
+        // dari flow lama/cache route, email tetap berbahasa Indonesia.
+        \Illuminate\Auth\Notifications\VerifyEmail::toMailUsing(function ($notifiable, string $url) {
+            return (new \Illuminate\Notifications\Messages\MailMessage)
+                ->subject('Verifikasi Email Akun Puwinter')
+                ->greeting('Halo ' . ($notifiable->name ?: 'Siswa Puwinter') . ',')
+                ->line('Terima kasih sudah mendaftar di Puwinter. Klik tombol di bawah ini untuk memverifikasi email dan mengaktifkan akun kamu.')
+                ->action('Verifikasi Email Saya', $url)
+                ->line('Jika kamu tidak merasa membuat akun di Puwinter, abaikan email ini.');
+        });
         // Bagikan jumlah notifikasi belum dibaca ($notifCount) & beberapa notifikasi
         // terbaru ($recentNotifs) ke SEMUA view (layout student & admin pakai ini).
         //

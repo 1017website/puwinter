@@ -21,7 +21,7 @@ class SubscriptionController extends Controller
     public function index(Request $request): View
     {
         $plans = SubscriptionPlan::active()
-            ->with('grade')
+            ->with(['grade', 'grades'])
             ->forGrade($request->user()->grade_id)
             ->get();
         $activeSubscription = $request->user()->activeSubscription();

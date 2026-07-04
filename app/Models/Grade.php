@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Grade extends Model
@@ -37,4 +38,11 @@ class Grade extends Model
     {
         return $this->hasMany(LiveClass::class);
     }
+
+    public function subscriptionPlans(): BelongsToMany
+    {
+        return $this->belongsToMany(SubscriptionPlan::class, 'subscription_plan_grades', 'grade_id', 'subscription_plan_id')
+            ->withTimestamps();
+    }
 }
+

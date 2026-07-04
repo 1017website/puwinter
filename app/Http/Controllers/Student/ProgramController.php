@@ -19,7 +19,7 @@ class ProgramController extends Controller
         $user = $request->user();
 
         $programs = SubscriptionPlan::active()
-            ->with('grade')
+            ->with(['grade', 'grades'])
             ->forGrade($user->grade_id)
             ->orderBy('order')
             ->get();
