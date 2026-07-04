@@ -39,7 +39,7 @@
                     </div>
                     <div style="display:flex; align-items:center; gap:16px; font-size:12px; color:var(--muted); flex-wrap:wrap;">
                         <span><i class="fas fa-calendar" style="margin-right:3px;"></i>{{ $plan->duration_months }} bulan</span>
-                        <span><i class="fas fa-graduation-cap" style="margin-right:3px;"></i>Kelas: {{ $plan->grade->name ?? 'Semua Kelas' }}</span>
+                        <span><i class="fas fa-graduation-cap" style="margin-right:3px;"></i>Kelas: {{ $plan->gradeLabel() }}</span>
                         @if($plan->periodLabel())
                             <span><i class="fas fa-calendar-day" style="margin-right:3px;"></i>{{ $plan->periodLabel() }}</span>
                         @endif

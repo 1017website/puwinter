@@ -28,6 +28,7 @@ class FreshProgramSeeder extends Seeder
     {
         $now = now();
         $hasTier = Schema::hasColumn('subscription_plans', 'tier');
+        $hasGradeId = Schema::hasColumn('subscription_plans', 'grade_id');
 
         // =====================================================================
         // 1) USERS
@@ -199,6 +200,9 @@ class FreshProgramSeeder extends Seeder
             ];
             if ($hasTier) {
                 $planData['tier'] = $p['tier'];
+            }
+            if ($hasGradeId) {
+                $planData['grade_id'] = $gradeId[$p['grade_code']] ?? null;
             }
 
             DB::table('subscription_plans')->updateOrInsert(['slug' => $p['plan_slug']], $planData);

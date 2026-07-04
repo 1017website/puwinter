@@ -20,7 +20,10 @@ class SubscriptionController extends Controller
 
     public function index(Request $request): View
     {
-        $plans              = SubscriptionPlan::active()->forGrade($request->user()->grade_id)->get();
+        $plans = SubscriptionPlan::active()
+            ->with('grade')
+            ->forGrade($request->user()->grade_id)
+            ->get();
         $activeSubscription = $request->user()->activeSubscription();
 
         // Subscription pending milik user (untuk lanjut bayar / upload bukti)

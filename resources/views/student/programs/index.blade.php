@@ -59,7 +59,7 @@
                     <span class="badge" style="background:#DBEAFE; color:#1E40AF; flex-shrink:0;">Terdaftar</span>
                 @endif
             </div>
-            <div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i class="fas fa-graduation-cap"></i> {{ $plan->grade->name ?? 'Semua Kelas' }}</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i class="fas fa-graduation-cap"></i> {{ $plan->gradeLabel() }}</div>
             @if($plan->periodLabel())
             <div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i class="far fa-calendar"></i> {{ $plan->periodLabel() }}</div>
             @endif

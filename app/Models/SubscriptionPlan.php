@@ -36,11 +36,15 @@ class SubscriptionPlan extends Model
         return $query->where('is_active', true)->orderBy('order');
     }
 
-
+    /**
+     * Filter program berdasarkan field Kelas Program (subscription_plans.grade_id).
+     * grade_id NULL berarti program umum / Semua Kelas.
+     */
     public function scopeForGrade($query, ?int $gradeId)
     {
         return $query->where(function ($q) use ($gradeId) {
             $q->whereNull('grade_id');
+
             if (!empty($gradeId)) {
                 $q->orWhere('grade_id', $gradeId);
             }
@@ -118,9 +122,26 @@ class SubscriptionPlan extends Model
         return (int) round($this->price / $this->duration_months);
     }
 
+    /**
+     * Label kelas sesuai pilihan admin di menu Program.
+     */
+    public function gradeLabel(): string
+    {
+        return $this->grade?->name ?? 'Semua Kelas';
+    }
+
+    /**
+     * Program tersedia untuk siswa jika:
+     * - grade_id program kosong = umum / semua kelas, atau
+     * - grade_id program sama dengan grade_id siswa.
+     */
     public function appliesToGrade(?int $gradeId): bool
     {
-        return $this->grade_id === null || empty($gradeId) || (int) $this->grade_id === (int) $gradeId;
+        if (empty($this->grade_id)) {
+            return true;
+        }
+
+        return !empty($gradeId) && (int) $this->grade_id === (int) $gradeId;
     }
 
     // -------------------------------------------------------------------------

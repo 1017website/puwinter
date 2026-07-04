@@ -62,6 +62,7 @@ class PuwinterProgramSeeder extends Seeder
 
         // Kolom opsional (tier) — cek agar seeder tetap jalan walau migrasi tier belum ada.
         $hasTier = \Illuminate\Support\Facades\Schema::hasColumn('subscription_plans', 'tier');
+        $hasGradeId = \Illuminate\Support\Facades\Schema::hasColumn('subscription_plans', 'grade_id');
 
         // ---------------------------------------------------------------------
         // 4) DEFINISI PROGRAM (course + plan)
@@ -196,6 +197,9 @@ class PuwinterProgramSeeder extends Seeder
             ];
             if ($hasTier) {
                 $planData['tier'] = $p['tier'];
+            }
+            if ($hasGradeId) {
+                $planData['grade_id'] = $gradeId[$p['grade_code']] ?? null;
             }
 
             DB::table('subscription_plans')->updateOrInsert(

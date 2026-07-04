@@ -31,6 +31,7 @@ class FullProgramSeeder extends Seeder
         $hasTier      = Schema::hasColumn('subscription_plans', 'tier');
         $hasSubTier   = Schema::hasColumn('subscriptions', 'tier');
         $hasQType     = Schema::hasColumn('tryout_questions', 'question_type');
+        $hasPlanGrade = Schema::hasColumn('subscription_plans', 'grade_id');
 
         // =====================================================================
         // USERS
@@ -122,6 +123,7 @@ class FullProgramSeeder extends Seeder
                 'is_active' => true, 'order' => $order, 'updated_at' => $now, 'created_at' => $now,
             ];
             if ($hasTier) $planData['tier'] = $p['tier'];
+            if ($hasPlanGrade) $planData['grade_id'] = $gradeId[$p['grade']] ?? null;
             if (Schema::hasColumn('subscription_plans', 'start_date')) {
                 $planData['start_date'] = $p['start'] ?? null;
                 $planData['end_date']   = $p['end'] ?? null;
