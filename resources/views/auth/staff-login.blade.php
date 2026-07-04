@@ -289,6 +289,42 @@
 
         .register-link a:hover { text-decoration: underline; }
 
+        .password-wrap input {
+            padding-right: 48px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 9px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 34px;
+            height: 34px;
+            border: none;
+            border-radius: 7px;
+            background: transparent;
+            color: #64748B;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .toggle-password:hover {
+            background: #F1F5F9;
+            color: #2563EB;
+        }
+
+        .form-group .input-wrap .toggle-password i {
+            position: static;
+            left: auto;
+            top: auto;
+            transform: none;
+            color: inherit;
+            font-size: 14px;
+        }
+
         .alert-error {
             background: #FEF2F2;
             border: 1px solid #FECACA;
@@ -400,12 +436,16 @@
             {{-- Password --}}
             <div class="form-group">
                 <label>Password</label>
-                <div class="input-wrap">
+                <div class="input-wrap password-wrap">
                     <i class="fas fa-lock"></i>
                     <input type="password" name="password"
+                           id="staff-password-input"
                            placeholder="Masukkan password"
                            class="{{ $errors->has('password') ? 'is-invalid' : '' }}"
                            required autocomplete="current-password">
+                    <button type="button" class="toggle-password" data-toggle-password="staff-password-input" aria-label="Tampilkan password">
+                        <i class="fas fa-eye"></i>
+                    </button>
                 </div>
                 @error('password')
                     <div class="invalid-feedback"><i class="fas fa-circle-exclamation"></i> {{ $message }}</div>
@@ -435,6 +475,27 @@
     </div>
 </div>
 
+
+
+<script>
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('[data-toggle-password]');
+        if (!button) return;
+
+        const input = document.getElementById(button.dataset.togglePassword);
+        if (!input) return;
+
+        const willShow = input.type === 'password';
+        input.type = willShow ? 'text' : 'password';
+        button.setAttribute('aria-label', willShow ? 'Sembunyikan password' : 'Tampilkan password');
+
+        const icon = button.querySelector('i');
+        if (icon) {
+            icon.classList.toggle('fa-eye', !willShow);
+            icon.classList.toggle('fa-eye-slash', willShow);
+        }
+    });
+</script>
 
 </body>
 </html>

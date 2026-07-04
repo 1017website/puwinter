@@ -45,7 +45,7 @@ class AppServiceProvider extends ServiceProvider
                 ]);
             }
 
-            return route('verification.verify', $token);
+            return url('/email/verify/' . $token);
         });
         // Bagikan jumlah notifikasi belum dibaca ($notifCount) & beberapa notifikasi
         // terbaru ($recentNotifs) ke SEMUA view (layout student & admin pakai ini).
