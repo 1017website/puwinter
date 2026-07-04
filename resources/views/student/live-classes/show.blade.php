@@ -65,6 +65,7 @@
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
                         <div class="youtube-mask-top" title="Area YouTube disembunyikan"></div>
                         <div class="youtube-mask-corner" title="Tombol share/buka YouTube disembunyikan"></div>
+                            <div class="youtube-mask-left-corner" title="Tombol salin link YouTube disembunyikan"></div>
                         <button type="button" class="player-expand-btn" onclick="puwinterTogglePlayerFullscreen(this)" aria-label="Perbesar video">
                             <i class="fas fa-expand"></i>
                         </button>
@@ -241,6 +242,16 @@
     z-index: 5;
     pointer-events: auto;
     background: linear-gradient(270deg, rgba(0,0,0,.88), rgba(0,0,0,.35), rgba(0,0,0,0));
+}
+.youtube-mask-left-corner {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 130px;
+    height: 58px;
+    z-index: 5;
+    pointer-events: auto;
+    background: linear-gradient(90deg, rgba(0,0,0,.88), rgba(0,0,0,.35), rgba(0,0,0,0));
 }
 .player-expand-btn {
     position: absolute;
