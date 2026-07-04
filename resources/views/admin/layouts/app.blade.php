@@ -431,6 +431,9 @@
             <a href="{{ route('admin.tryouts.index') }}" class="nav-item {{ request()->routeIs('admin.tryouts.*') ? 'active' : '' }}">
                 <i class="fas fa-bullseye"></i> Tryout
             </a>
+            <a href="{{ route('admin.tryout-results.index') }}" class="nav-item {{ request()->routeIs('admin.tryout-results.*') ? 'active' : '' }}">
+                <i class="fas fa-clipboard-check"></i> Hasil Tryout
+            </a>
             <a href="{{ route('admin.subscriptions.index') }}" class="nav-item {{ request()->routeIs('admin.subscriptions.*') ? 'active' : '' }}">
                 <i class="fas fa-credit-card"></i> Langganan
                 @php $pendingCount = \App\Models\Subscription::where('status','pending')->count(); @endphp

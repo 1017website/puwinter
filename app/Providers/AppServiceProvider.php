@@ -23,6 +23,30 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Arahkan link email verifikasi bawaan Laravel ke route token custom.
+        //
+        // Tanpa ini, event(new Registered($user)) memicu notifikasi VerifyEmail
+        // bawaan yang membangun URL route 'verification.verify' dengan {id}/{hash}
+        // — sedangkan route custom kita memakai {token} → UrlGenerationException.
+        \Illuminate\Auth\Notifications\VerifyEmail::createUrlUsing(function ($notifiable) {
+            $token = \App\Models\EmailVerification::where('user_id', $notifiable->getKey())
+                ->whereNull('used_at')
+                ->latest()
+                ->value('token');
+
+            // Fallback: bila token belum ada (jalur lain memicu notifikasi),
+            // buat token baru agar link selalu valid.
+            if (!$token) {
+                $token = \Illuminate\Support\Str::random(64);
+                \App\Models\EmailVerification::create([
+                    'user_id'    => $notifiable->getKey(),
+                    'token'      => $token,
+                    'expires_at' => now()->addHours(24),
+                ]);
+            }
+
+            return route('verification.verify', $token);
+        });
         // Bagikan jumlah notifikasi belum dibaca ($notifCount) & beberapa notifikasi
         // terbaru ($recentNotifs) ke SEMUA view (layout student & admin pakai ini).
         //

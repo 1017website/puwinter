@@ -8,9 +8,14 @@
         <h2>Manajemen Tryout</h2>
         <p>Buat dan kelola tryout UTBK.</p>
     </div>
-    <a href="{{ route('admin.tryouts.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Buat Tryout
-    </a>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="{{ route('admin.tryout-results.index') }}" class="btn btn-outline">
+            <i class="fas fa-clipboard-check"></i> Hasil Tryout
+        </a>
+        <a href="{{ route('admin.tryouts.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Buat Tryout
+        </a>
+    </div>
 </div>
 
 {{-- Filter --}}
@@ -73,6 +78,9 @@
                         <div style="display:flex; gap:4px;">
                             <a href="{{ route('admin.tryouts.show', $tryout) }}" class="btn btn-outline btn-sm">
                                 <i class="fas fa-list"></i> Soal
+                            </a>
+                            <a href="{{ route('admin.tryout-results.index', ['tryout_id' => $tryout->id]) }}" class="btn btn-outline btn-sm">
+                                <i class="fas fa-chart-column"></i> Hasil
                             </a>
                             <a href="{{ route('admin.tryouts.edit', $tryout) }}" class="btn btn-outline btn-sm">
                                 <i class="fas fa-pen"></i>

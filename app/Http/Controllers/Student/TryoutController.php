@@ -178,7 +178,7 @@ class TryoutController extends Controller
             }
         }
 
-        // Skor akhir (penentu ranking). Tidak boleh negatif.
+        // Skor regular (penentu ranking mode regular). Tidak boleh negatif.
         $score = max(0, round($rawScore, 2));
 
         // Skor berbobot kesulitan (skala 0..100). Info saja, tidak untuk ranking.
@@ -186,10 +186,26 @@ class TryoutController extends Controller
             ? round($weightedRaw / $weightedMax * 100, 2)
             : 0.0;
 
-        // Hitung rank sementara
+        // --- Skor IRT ---
+        // Bila tryout mode IRT & sudah dikalibrasi, hitung skor IRT sekarang.
+        // Bila belum dikalibrasi, irt_score menyusul saat admin menjalankan
+        // kalibrasi (bobot baru valid setelah semua peserta selesai).
+        $irtScore = null;
+
+        // Kolom penentu ranking: regular -> `score`, irt(terkalibrasi) -> `irt_score`.
+        $rankColumn = 'score';
+        $rankValue  = $score;
+
+        if ($tryout->isIrt() && $tryout->irt_calibrated) {
+            $irtScore   = app(\App\Services\IrtScoringService::class)->scoreFromAnswers($tryout, $answers);
+            $rankColumn = 'irt_score';
+            $rankValue  = $irtScore;
+        }
+
+        // Hitung rank sementara sesuai mode
         $rank = UserTryoutAttempt::where('tryout_id', $tryout->id)
             ->whereNotNull('submitted_at')
-            ->where('score', '>', $score)
+            ->where($rankColumn, '>', $rankValue)
             ->count() + 1;
 
         $attempt->update([
@@ -201,28 +217,33 @@ class TryoutController extends Controller
             'empty_count' => $empty,
             'rank_at_submit' => $rank,
             'weighted_score' => $weightedScore,
+            'irt_score' => $irtScore,
             'tab_switch_count' => (int) $request->input('tab_switch_count', 0),
         ]);
 
-        // Catat ke study history
+        // Skor yang ditampilkan & dipakai leaderboard mengikuti mode aktif.
+        $displayScore = ($tryout->isIrt() && $irtScore !== null) ? $irtScore : $score;
+
+        // Catat ke study history (skor mengikuti mode aktif)
         StudyHistory::create([
             'user_id' => $request->user()->id,
             'activity_type' => 'tryout',
             'reference_id' => $tryout->id,
             'reference_type' => Tryout::class,
             'duration_seconds' => now()->diffInSeconds($attempt->started_at),
-            'score' => $score,
+            'score' => $displayScore,
         ]);
 
-        // Update leaderboard
-        $this->updateLeaderboard($request->user()->id, $tryout->subject_id, $score);
+        // Update leaderboard (skor mengikuti mode aktif)
+        $this->updateLeaderboard($request->user()->id, $tryout->subject_id, $displayScore);
 
         // Notifikasi hasil tryout
+        $skorLabel = $tryout->isIrt() ? "Skor IRT kamu {$displayScore}" : "Skor kamu {$displayScore}";
         Notification::notify(
             $request->user()->id,
             'tryout',
             'Tryout selesai: ' . $tryout->title,
-            "Skor kamu {$score} (benar {$correct}" . ($partial > 0 ? ", partial {$partial}" : "") . ", salah {$wrong}). Peringkat #{$rank}.",
+            "{$skorLabel} (benar {$correct}" . ($partial > 0 ? ", partial {$partial}" : "") . ", salah {$wrong}). Peringkat #{$rank}.",
             route('student.tryout.result', $attempt->id),
             'fa-clipboard-check'
         );

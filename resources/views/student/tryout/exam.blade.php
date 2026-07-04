@@ -449,7 +449,7 @@
             <div class="options-list">
                 @foreach($question->options() as $key => $text)
                 <label class="option-item" id="opt-{{ $question->id }}-{{ $key }}"
-                       onclick="selectAnswer({{ $question->id }}, '{{ $key }}', this, {{ $question->isMultiple() ? 'true' : 'false' }})">
+       onclick="event.preventDefault(); selectAnswer({{ $question->id }}, '{{ $key }}', this, {{ $question->isMultiple() ? 'true' : 'false' }})">
                     @if($question->isMultiple())
                         <input type="checkbox" name="answer_{{ $question->id }}[]" value="{{ $key }}" style="display:none;">
                     @else

@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\UserController as AdminUser;
 use App\Http\Controllers\Admin\CourseController as AdminCourse;
 use App\Http\Controllers\Admin\TryoutController as AdminTryout;
+use App\Http\Controllers\Admin\TryoutResultController as AdminTryoutResult;
 use App\Http\Controllers\Admin\SubscriptionController as AdminSubscription;
 use Illuminate\Support\Facades\Route;
 
@@ -223,6 +224,12 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
             Route::delete('/materials/{material}', [AdminCourse::class, 'destroyMaterial'])->name('materials.destroy');
         });
 
+        // Hasil Tryout Siswa
+        Route::prefix('tryout-results')->name('tryout-results.')->group(function () {
+            Route::get('/', [AdminTryoutResult::class, 'index'])->name('index');
+            Route::get('/{attempt}', [AdminTryoutResult::class, 'show'])->name('show');
+        });
+
         // Tryouts
         Route::prefix('tryouts')->name('tryouts.')->group(function () {
             Route::get('/', [AdminTryout::class, 'index'])->name('index');
@@ -233,6 +240,7 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
             Route::put('/{tryout}', [AdminTryout::class, 'update'])->name('update');
             Route::delete('/{tryout}', [AdminTryout::class, 'destroy'])->name('destroy');
             Route::patch('/{tryout}/toggle-publish', [AdminTryout::class, 'togglePublish'])->name('toggle-publish');
+            Route::patch('/{tryout}/calibrate-irt', [AdminTryout::class, 'calibrateIrt'])->name('calibrate-irt');
 
             // Questions
             Route::post('/{tryout}/questions', [AdminTryout::class, 'storeQuestion'])->name('questions.store');

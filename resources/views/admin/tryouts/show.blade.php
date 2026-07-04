@@ -42,6 +42,17 @@
         </p>
     </div>
     <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="{{ route('admin.tryout-results.index', ['tryout_id' => $tryout->id]) }}" class="btn btn-outline">
+            <i class="fas fa-chart-column"></i> Hasil Siswa
+        </a>
+        @if($tryout->isIrt())
+            <form method="POST" action="{{ route('admin.tryouts.calibrate-irt', $tryout) }}" onsubmit="return confirm('Kalibrasi ulang IRT untuk tryout ini? Skor IRT dan ranking peserta akan diperbarui.')">
+                @csrf @method('PATCH')
+                <button type="submit" class="btn btn-outline">
+                    <i class="fas fa-scale-balanced"></i> {{ $tryout->irt_calibrated ? 'Kalibrasi Ulang IRT' : 'Kalibrasi IRT' }}
+                </button>
+            </form>
+        @endif
         <button @click="showAdd=true" class="btn btn-primary">
             <i class="fas fa-plus"></i> Tambah Soal
         </button>

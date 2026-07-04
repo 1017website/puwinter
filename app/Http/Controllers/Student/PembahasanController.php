@@ -29,7 +29,8 @@ class PembahasanController extends Controller
             $answers = $attempt->answers ?? [];
             foreach ($attempt->tryout->questions as $question) {
                 $userAnswer = $answers[$question->id] ?? null;
-                $isCorrect  = $userAnswer && $question->isCorrect($userAnswer);
+                $isCorrect  = $userAnswer !== null
+                    && ($question->grade($userAnswer)['status'] ?? '') === 'correct';
 
                 if ($subjectId && $question->subject_id != $subjectId) continue;
                 if ($filter === 'salah' && ($isCorrect || !$userAnswer)) continue;

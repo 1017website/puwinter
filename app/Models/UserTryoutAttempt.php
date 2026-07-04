@@ -10,7 +10,7 @@ class UserTryoutAttempt extends Model
     protected $fillable = [
         'user_id', 'tryout_id', 'started_at', 'submitted_at',
         'answers', 'score', 'correct_count', 'wrong_count',
-        'empty_count', 'rank_at_submit', 'weighted_score', 'tab_switch_count',
+        'empty_count', 'rank_at_submit', 'weighted_score', 'irt_score', 'tab_switch_count',
     ];
 
     protected $casts = [
@@ -19,6 +19,7 @@ class UserTryoutAttempt extends Model
         'answers'      => 'array',
         'score'          => 'float',
         'weighted_score' => 'float',
+        'irt_score'      => 'float',
     ];
 
     // -------------------------------------------------------------------------

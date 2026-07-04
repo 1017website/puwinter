@@ -19,7 +19,7 @@
         }
         $subjectStats[$subjectName]['total']++;
         $userAnswer = $answers[$q->id] ?? null;
-        if ($userAnswer && $q->isCorrect($userAnswer)) {
+        if ($userAnswer !== null && ($q->grade($userAnswer)['status'] ?? '') === 'correct') {
             $subjectStats[$subjectName]['correct']++;
         }
     }
@@ -94,6 +94,8 @@
             </div>
         </div>
 
+        @include('student.tryout._score-comparison', ['attempt' => $attempt])
+
         @if(($attempt->tab_switch_count ?? 0) > 0)
         {{-- Catatan integritas: siswa meninggalkan jendela saat tryout --}}
         <div class="card" style="margin-bottom:20px; border-left:3px solid #F59E0B; background:#FFFBEB;">
@@ -160,8 +162,20 @@
             @foreach($questions as $index => $question)
             @php
                 $userAnswer = $answers[$question->id] ?? null;
-                $isCorrect  = $userAnswer && $question->isCorrect($userAnswer);
-                $isEmpty    = !$userAnswer;
+
+                // Normalisasi: jawaban bisa string (single) atau array (multiple).
+                $pickedArr = is_array($userAnswer)
+                    ? array_map(fn($v) => strtolower((string) $v), $userAnswer)
+                    : ($userAnswer !== null && $userAnswer !== '' ? [strtolower((string) $userAnswer)] : []);
+
+                $gradeRes   = count($pickedArr) ? $question->grade($userAnswer) : ['status' => 'empty'];
+                $isCorrect  = ($gradeRes['status'] ?? '') === 'correct';
+                $isPartial  = ($gradeRes['status'] ?? '') === 'partial';
+                $isEmpty    = count($pickedArr) === 0;
+
+                $keysArr     = $question->correctKeys();
+                $pickedLabel = count($pickedArr) ? strtoupper(implode(', ', $pickedArr)) : '—';
+                $kunciLabel  = strtoupper(implode(', ', $keysArr));
             @endphp
             <div style="border:1px solid var(--border); border-radius:10px; margin-bottom:12px; overflow:hidden;">
                 {{-- Question header --}}
@@ -172,6 +186,7 @@
                         </span>
                         <span style="font-size:13px; font-weight:600; color:{{ $isCorrect ? '#065F46' : ($isEmpty ? '#64748B' : '#991B1B') }};">
                             @if($isCorrect) <i class="fas fa-check-circle"></i> Benar
+                            @elseif($isPartial) <i class="fas fa-adjust"></i> Partial
                             @elseif($isEmpty) <i class="fas fa-minus-circle"></i> Tidak Dijawab
                             @else <i class="fas fa-times-circle"></i> Salah
                             @endif
@@ -179,9 +194,9 @@
                     </div>
                     <div style="font-size:12px; color:var(--text-muted); text-align:right;">
                         <div>
-                            Jawaban kamu: <strong>{{ $userAnswer ? strtoupper($userAnswer) : '—' }}</strong>
+                            Jawaban kamu: <strong>{{ $pickedLabel }}</strong>
                             &nbsp;·&nbsp;
-                            Kunci: <strong style="color:#10B981;">{{ strtoupper($question->correct_answer) }}</strong>
+                            Kunci: <strong style="color:#10B981;">{{ $kunciLabel }}</strong>
                         </div>
                         <div style="margin-top:4px; display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;">
                             @php
@@ -221,12 +236,17 @@
 
                         {{-- Options --}}
                         @foreach($question->options() as $key => $text)
+                        @php
+                            $isKey    = in_array($key, $keysArr, true);
+                            $isPicked = in_array($key, $pickedArr, true);
+                            $wrongPick = $isPicked && !$isKey;
+                        @endphp
                         <div style="padding:10px 14px; border-radius:8px; margin-bottom:6px; display:flex; align-items:flex-start; gap:10px;
-                            background:{{ $key === $question->correct_answer ? '#ECFDF5' : ($userAnswer === $key && !$isCorrect ? '#FEF2F2' : '#F8FAFC') }};
-                            border:1px solid {{ $key === $question->correct_answer ? '#6EE7B7' : ($userAnswer === $key && !$isCorrect ? '#FECACA' : '#E2E8F0') }};">
+                            background:{{ $isKey ? '#ECFDF5' : ($wrongPick ? '#FEF2F2' : '#F8FAFC') }};
+                            border:1px solid {{ $isKey ? '#6EE7B7' : ($wrongPick ? '#FECACA' : '#E2E8F0') }};">
                             <span style="width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;
-                                background:{{ $key === $question->correct_answer ? '#10B981' : ($userAnswer === $key ? '#EF4444' : '#E2E8F0') }};
-                                color:{{ in_array($key, [$question->correct_answer, $userAnswer]) ? '#fff' : '#64748B' }};">
+                                background:{{ $isKey ? '#10B981' : ($isPicked ? '#EF4444' : '#E2E8F0') }};
+                                color:{{ ($isKey || $isPicked) ? '#fff' : '#64748B' }};">
                                 {{ strtoupper($key) }}
                             </span>
                             <span style="font-size:13px; color:var(--text-main); padding-top:3px;">{{ $text }}</span>

@@ -13,14 +13,24 @@ class Tryout extends Model
 
     protected $fillable = [
         'title', 'slug', 'subject_id', 'grade', 'grade_id', 'plan_id', 'access_tier', 'description',
-        'duration_minutes', 'total_questions',
+        'duration_minutes', 'total_questions', 'scoring_mode', 'irt_calibrated',
         'is_premium', 'is_published', 'series', 'order',
     ];
 
     protected $casts = [
-        'is_premium'   => 'boolean',
-        'is_published' => 'boolean',
+        'is_premium'     => 'boolean',
+        'is_published'   => 'boolean',
+        'irt_calibrated' => 'boolean',
     ];
+
+    // Mode penilaian
+    public const SCORING_REGULAR = 'regular';
+    public const SCORING_IRT     = 'irt';
+
+    public function isIrt(): bool
+    {
+        return $this->scoring_mode === self::SCORING_IRT;
+    }
 
     // -------------------------------------------------------------------------
     // Scopes

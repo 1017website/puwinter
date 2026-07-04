@@ -50,6 +50,7 @@ class TryoutController extends Controller
             'is_premium'       => 'boolean',
             'plan_id'          => 'nullable|exists:subscription_plans,id',
             'access_tier'      => 'required|in:free,paid,both',
+            'scoring_mode'     => 'nullable|in:regular,irt',
         ]);
 
         $tryout = Tryout::create([
@@ -63,6 +64,7 @@ class TryoutController extends Controller
             'is_premium'       => $request->boolean('is_premium'),
             'plan_id'          => $request->filled('plan_id') ? (int) $request->plan_id : null,
             'access_tier'      => $request->input('access_tier', 'both'),
+            'scoring_mode'     => $request->input('scoring_mode', 'regular'),
             'is_published'     => false,
         ]);
 
@@ -95,9 +97,12 @@ class TryoutController extends Controller
             'series'           => 'nullable|string|max:100',
             'is_premium'       => 'boolean',
             'is_published'     => 'boolean',
+            'scoring_mode'     => 'nullable|in:regular,irt',
         ]);
 
-        $tryout->update([
+        $newMode = $request->input('scoring_mode', $tryout->scoring_mode ?? 'regular');
+
+        $payload = [
             'title'            => $request->title,
             'subject_id'       => $request->subject_id,
             'grade'            => $request->filled('grade') ? $request->grade : null,
@@ -106,7 +111,15 @@ class TryoutController extends Controller
             'series'           => $request->series,
             'is_premium'       => $request->boolean('is_premium'),
             'is_published'     => $request->boolean('is_published'),
-        ]);
+            'scoring_mode'     => $newMode,
+        ];
+
+        // Jika mode penilaian berubah, reset status kalibrasi.
+        if ($newMode !== $tryout->scoring_mode) {
+            $payload['irt_calibrated'] = false;
+        }
+
+        $tryout->update($payload);
 
         return back()->with('success', 'Tryout berhasil diperbarui.');
     }
@@ -127,6 +140,28 @@ class TryoutController extends Controller
 
         $status = $tryout->is_published ? 'dipublikasikan' : 'disembunyikan';
         return back()->with('success', "Tryout berhasil $status.");
+    }
+
+    /**
+     * Kalibrasi IRT: hitung bobot kesulitan tiap soal dari seluruh attempt
+     * selesai, lalu re-score semua peserta. Jalankan setelah tryout ditutup.
+     */
+    public function calibrateIrt(Tryout $tryout, \App\Services\IrtScoringService $irt): RedirectResponse
+    {
+        if (!$tryout->isIrt()) {
+            return back()->with('error', 'Tryout ini bukan mode IRT.');
+        }
+
+        $peserta = $tryout->attempts()->whereNotNull('submitted_at')->count();
+        if ($peserta < 1) {
+            return back()->with('error', 'Belum ada peserta yang menyelesaikan tryout ini.');
+        }
+
+        $irt->calibrate($tryout);
+        $updated = $irt->rescoreAll($tryout);
+
+        return back()->with('success',
+            "Kalibrasi IRT selesai. Bobot {$tryout->questions()->count()} soal dihitung ulang & {$updated} peringkat peserta diperbarui.");
     }
 
     // =========================================================================

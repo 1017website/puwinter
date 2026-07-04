@@ -80,6 +80,15 @@
                 </div>
 
                 <div class="form-group" style="grid-column:span 2;">
+                    <label>Mode Penilaian <span style="color:red;">*</span></label>
+                    <select name="scoring_mode" class="form-control">
+                        <option value="regular" {{ old('scoring_mode','regular') == 'regular' ? 'selected' : '' }}>Regular (benar +4 / salah -1)</option>
+                        <option value="irt" {{ old('scoring_mode') == 'irt' ? 'selected' : '' }}>IRT (bobot kesulitan, ala UTBK)</option>
+                    </select>
+                    <small style="color:var(--text-muted); font-size:12px;">IRT: skor dari bobot kesulitan soal. Bobot dihitung setelah tryout ditutup lewat tombol "Kalibrasi IRT".</small>
+                </div>
+
+                <div class="form-group" style="grid-column:span 2;">
                     <label>Deskripsi</label>
                     <textarea name="description" class="form-control" rows="3" placeholder="Deskripsi singkat tryout...">{{ old('description') }}</textarea>
                 </div>

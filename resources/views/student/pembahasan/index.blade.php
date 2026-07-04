@@ -89,8 +89,14 @@
                     </div>
                     <div style="font-size:13.5px; line-height:1.6; margin-bottom:10px;">{{ $q->question_text }}</div>
                     <div style="display:flex; gap:16px; font-size:12px; flex-wrap:wrap;">
-                        <span>Jawaban kamu: <strong style="color:{{ $isCorrect ? 'var(--success)':'var(--danger)' }};">{{ $userAnswer ? strtoupper($userAnswer) : '—' }}</strong></span>
-                        <span>Jawaban benar: <strong style="color:var(--success);">{{ strtoupper($q->correct_answer) }}</strong></span>
+                        @php
+                            $uaLabel = is_array($userAnswer)
+                                ? strtoupper(implode(', ', $userAnswer))
+                                : ($userAnswer ? strtoupper($userAnswer) : '—');
+                            $kunci = strtoupper(implode(', ', $q->correctKeys()));
+                        @endphp
+                        <span>Jawaban kamu: <strong style="color:{{ $isCorrect ? 'var(--success)':'var(--danger)' }};">{{ $uaLabel }}</strong></span>
+                        <span>Jawaban benar: <strong style="color:var(--success);">{{ $kunci }}</strong></span>
                     </div>
                     @if($q->explanation)
                     <div style="margin-top:10px;">
