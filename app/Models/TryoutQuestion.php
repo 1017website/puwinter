@@ -49,10 +49,21 @@ class TryoutQuestion extends Model
     public function correctKeys(): array
     {
         if (!$this->isMultiple()) {
-            return [strtolower((string) $this->correct_answer)];
+            return array_values(array_filter([strtolower((string) $this->correct_answer)]));
         }
+
         $keys = is_array($this->correct_answers) ? $this->correct_answers : [];
-        return array_values(array_unique(array_map(fn($k) => strtolower((string) $k), $keys)));
+        $keys = array_values(array_unique(array_filter(
+            array_map(fn($k) => strtolower((string) $k), $keys),
+            fn($k) => $k !== ''
+        )));
+
+        // Fallback untuk data lama: multiple sudah dibuat, tapi kolom JSON belum terisi.
+        if (empty($keys) && $this->correct_answer) {
+            $keys = [strtolower((string) $this->correct_answer)];
+        }
+
+        return $keys;
     }
 
     // -------------------------------------------------------------------------
@@ -71,69 +82,93 @@ class TryoutQuestion extends Model
     }
 
     /**
-     * Untuk tipe single: cek kecocokan persis.
-     * (Dipertahankan agar kode lama tetap kompatibel.)
+     * Cek benar penuh untuk single maupun multiple.
+     * Dipertahankan agar kode lama tetap kompatibel.
      */
-    public function isCorrect(string $answer): bool
+    public function isCorrect(mixed $answer): bool
     {
-        return strtolower($answer) === $this->correct_answer;
+        return $this->grade($answer, 1.0, 0.0)['status'] === 'correct';
     }
 
     /**
-     * Penilaian satu soal, mendukung single & multiple (partial credit).
+     * Penilaian satu soal, mendukung single & multiple.
      *
-     * Input $userAnswer:
-     *   - single   : string 'a'..'e' atau null
-     *   - multiple : array ['a','c'] atau null/[]
+     * Aturan baru:
+     * - Single answer   : benar = 1, salah/kosong = 0.
+     * - Multiple answer : nilai proporsional sesuai jumlah kunci benar yang dipilih.
+     *   Contoh 2 dari 4 kunci benar terpilih = 0.5.
+     * - Tidak ada penalti minus. Opsi salah bernilai 0 dan tidak mengurangi skor.
      *
-     * Rumus partial credit (multiple):
-     *   skor = max(0, (benar_dipilih / total_kunci) * bobot_penuh
-     *               - (salah_dipilih * penalti_per_salah))
-     *
-     * @return array{status:string, earned:float, max:float}
-     *   status: 'correct' | 'partial' | 'wrong' | 'empty'
-     *   earned: poin yang diraih (skala bobot_penuh)
-     *   max   : poin maksimum soal (selalu = bobot_penuh)
+     * @return array{
+     *   status:string,
+     *   earned:float,
+     *   max:float,
+     *   selected:array<int,string>,
+     *   correct_keys:array<int,string>,
+     *   correct_selected:int,
+     *   wrong_selected:int
+     * }
+     * status: 'correct' | 'partial' | 'wrong' | 'empty'
      */
-    public function grade(mixed $userAnswer, float $fullPoint = 4.0, float $penaltyPerWrong = 1.0): array
+    public function grade(mixed $userAnswer, float $fullPoint = 1.0, float $penaltyPerWrong = 0.0): array
     {
         $keys = $this->correctKeys();
         $totalKeys = max(1, count($keys));
 
+        $emptyResult = [
+            'status' => 'empty',
+            'earned' => 0.0,
+            'max' => $fullPoint,
+            'selected' => [],
+            'correct_keys' => $keys,
+            'correct_selected' => 0,
+            'wrong_selected' => 0,
+        ];
+
         // ---- SINGLE ----
         if (!$this->isMultiple()) {
             if ($userAnswer === null || $userAnswer === '' || $userAnswer === []) {
-                return ['status' => 'empty', 'earned' => 0.0, 'max' => $fullPoint];
+                return $emptyResult;
             }
+
             $ans = is_array($userAnswer) ? (string) ($userAnswer[0] ?? '') : (string) $userAnswer;
             $ans = strtolower($ans);
-            if (in_array($ans, $keys, true)) {
-                return ['status' => 'correct', 'earned' => $fullPoint, 'max' => $fullPoint];
-            }
-            // salah: penalti seperti aturan lama (benar*4 - salah*1) ditangani di controller
-            return ['status' => 'wrong', 'earned' => 0.0, 'max' => $fullPoint];
+            $isCorrect = in_array($ans, $keys, true);
+
+            return [
+                'status' => $isCorrect ? 'correct' : 'wrong',
+                'earned' => $isCorrect ? $fullPoint : 0.0,
+                'max' => $fullPoint,
+                'selected' => $ans !== '' ? [$ans] : [],
+                'correct_keys' => $keys,
+                'correct_selected' => $isCorrect ? 1 : 0,
+                'wrong_selected' => $isCorrect ? 0 : 1,
+            ];
         }
 
-        // ---- MULTIPLE (partial credit) ----
+        // ---- MULTIPLE (partial credit tanpa penalti minus) ----
         $picked = [];
         if (is_array($userAnswer)) {
-            $picked = array_values(array_unique(array_map(fn($k) => strtolower((string) $k), $userAnswer)));
+            $picked = array_values(array_unique(array_filter(
+                array_map(fn($k) => strtolower((string) $k), $userAnswer),
+                fn($k) => $k !== ''
+            )));
         } elseif ($userAnswer !== null && $userAnswer !== '') {
             $picked = [strtolower((string) $userAnswer)];
         }
 
         if (count($picked) === 0) {
-            return ['status' => 'empty', 'earned' => 0.0, 'max' => $fullPoint];
+            return $emptyResult;
         }
 
-        $rightPicked = count(array_intersect($picked, $keys)); // opsi benar yang dipilih
-        $wrongPicked = count(array_diff($picked, $keys));       // opsi salah yang dipilih
+        $rightPicked = count(array_intersect($picked, $keys));
+        $wrongPicked = count(array_diff($picked, $keys));
 
-        $earned = ($rightPicked / $totalKeys) * $fullPoint - ($wrongPicked * $penaltyPerWrong);
-        $earned = max(0.0, round($earned, 2));
+        // Nilai hanya dari jumlah kunci benar yang dipilih.
+        // Opsi salah tidak mengurangi skor karena aturan baru salah = 0.
+        $earned = round(($rightPicked / $totalKeys) * $fullPoint, 2);
 
-        // status untuk statistik
-        if ($rightPicked === $totalKeys && $wrongPicked === 0) {
+        if ($earned >= $fullPoint) {
             $status = 'correct';
         } elseif ($earned > 0) {
             $status = 'partial';
@@ -141,7 +176,15 @@ class TryoutQuestion extends Model
             $status = 'wrong';
         }
 
-        return ['status' => $status, 'earned' => $earned, 'max' => $fullPoint];
+        return [
+            'status' => $status,
+            'earned' => $earned,
+            'max' => $fullPoint,
+            'selected' => $picked,
+            'correct_keys' => $keys,
+            'correct_selected' => $rightPicked,
+            'wrong_selected' => $wrongPicked,
+        ];
     }
 
     /**

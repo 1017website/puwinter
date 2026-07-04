@@ -29,16 +29,24 @@ class PembahasanController extends Controller
             $answers = $attempt->answers ?? [];
             foreach ($attempt->tryout->questions as $question) {
                 $userAnswer = $answers[$question->id] ?? null;
-                $isCorrect  = $userAnswer && $question->isCorrect($userAnswer);
+                $storedScores = $attempt->question_scores ?? [];
+                $scoreDetail = $storedScores[$question->id] ?? $storedScores[(string) $question->id] ?? null;
+                $gradeResult = $scoreDetail ?: $question->grade($userAnswer, 1.0, 0.0);
+                $status = $gradeResult['status'] ?? 'empty';
+                $isCorrect = $status === 'correct';
+                $isAnswered = $status !== 'empty';
 
                 if ($subjectId && $question->subject_id != $subjectId) continue;
-                if ($filter === 'salah' && ($isCorrect || !$userAnswer)) continue;
+                if ($filter === 'salah' && ($isCorrect || !$isAnswered)) continue;
                 if ($filter === 'benar' && !$isCorrect) continue;
 
                 $answeredQuestions->push([
                     'question'    => $question,
                     'user_answer' => $userAnswer,
                     'is_correct'  => $isCorrect,
+                    'status'      => $status,
+                    'score'       => (float) ($gradeResult['score'] ?? $gradeResult['earned'] ?? 0),
+                    'correct_keys'=> $gradeResult['correct_keys'] ?? $question->correctKeys(),
                     'attempt'     => $attempt,
                 ]);
             }
@@ -65,8 +73,9 @@ class PembahasanController extends Controller
         $stats = [
             'total'  => $answeredQuestions->count(),
             'benar'  => $answeredQuestions->where('is_correct', true)->count(),
-            'salah'  => $answeredQuestions->where('is_correct', false)->filter(fn($i) => $i['user_answer'])->count(),
-            'kosong' => $answeredQuestions->filter(fn($i) => !$i['user_answer'])->count(),
+            'partial'=> $answeredQuestions->where('status', 'partial')->count(),
+            'salah'  => $answeredQuestions->where('status', 'wrong')->count(),
+            'kosong' => $answeredQuestions->where('status', 'empty')->count(),
         ];
 
         return view('student.pembahasan.index', compact(

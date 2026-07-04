@@ -9,15 +9,16 @@ class UserTryoutAttempt extends Model
 {
     protected $fillable = [
         'user_id', 'tryout_id', 'started_at', 'submitted_at',
-        'answers', 'score', 'correct_count', 'wrong_count',
+        'answers', 'question_scores', 'score', 'correct_count', 'wrong_count',
         'empty_count', 'rank_at_submit', 'weighted_score', 'tab_switch_count',
     ];
 
     protected $casts = [
         'started_at'   => 'datetime',
         'submitted_at' => 'datetime',
-        'answers'      => 'array',
-        'score'          => 'float',
+        'answers'         => 'array',
+        'question_scores' => 'array',
+        'score'           => 'float',
         'weighted_score' => 'float',
     ];
 
@@ -50,9 +51,28 @@ class UserTryoutAttempt extends Model
         return (int) $this->started_at->diffInMinutes($end);
     }
 
-    public function answerFor(int $questionId): ?string
+    public function answerFor(int $questionId): mixed
     {
         return $this->answers[$questionId] ?? null;
+    }
+
+    public function questionScoreFor(int $questionId): ?array
+    {
+        $scores = $this->question_scores ?? [];
+        return $scores[$questionId] ?? $scores[(string) $questionId] ?? null;
+    }
+
+    public function partialCount(): int
+    {
+        return collect($this->question_scores ?? [])
+            ->where('status', 'partial')
+            ->count();
+    }
+
+    public function formattedScore(?int $max = null): string
+    {
+        $score = rtrim(rtrim(number_format((float) $this->score, 2, '.', ''), '0'), '.');
+        return $max ? $score . '/' . $max : $score;
     }
 
     // -------------------------------------------------------------------------

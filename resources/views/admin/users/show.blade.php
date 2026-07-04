@@ -194,17 +194,22 @@
             <div class="table-wrap">
                 <table>
                     <thead>
-                        <tr><th>Tryout</th><th>Skor</th><th>Benar/Salah/Kosong</th><th>Peringkat</th><th>Waktu</th></tr>
+                        <tr><th>Tryout</th><th>Skor</th><th>Benar/Partial/Salah/Kosong</th><th>Peringkat</th><th>Waktu</th></tr>
                     </thead>
                     <tbody>
                         @foreach($user->tryoutAttempts->whereNotNull('submitted_at')->sortByDesc('submitted_at')->take(10) as $attempt)
                         <tr>
                             <td style="font-size:13px; font-weight:600;">{{ $attempt->tryout->title ?? '-' }}</td>
-                            <td style="font-weight:800; color:{{ $attempt->score >= 600 ? 'var(--success)' : ($attempt->score >= 400 ? 'var(--warning)' : 'var(--danger)') }};">
-                                {{ number_format($attempt->score, 0) }}
+                            @php
+                                $maxAttemptScore = max(1, (int) ($attempt->tryout->total_questions ?? 0));
+                                $attemptPct = $maxAttemptScore > 0 ? min(100, max(0, (($attempt->score ?? 0) / $maxAttemptScore) * 100)) : 0;
+                            @endphp
+                            <td style="font-weight:800; color:{{ $attemptPct >= 70 ? 'var(--success)' : ($attemptPct >= 50 ? 'var(--warning)' : 'var(--danger)') }};">
+                                {{ $attempt->formattedScore($maxAttemptScore) }}
                             </td>
                             <td style="font-size:12px;">
                                 <span style="color:var(--success);">{{ $attempt->correct_count }}</span> /
+                                <span style="color:var(--warning);">{{ $attempt->partialCount() }}</span> /
                                 <span style="color:var(--danger);">{{ $attempt->wrong_count }}</span> /
                                 <span style="color:var(--muted);">{{ $attempt->empty_count }}</span>
                             </td>

@@ -22,6 +22,10 @@
         <div><div class="stat-value">{{ $stats['benar'] }}</div><div class="stat-label">Benar</div></div>
     </div>
     <div class="stat-card">
+        <div class="stat-icon yellow"><i class="fas fa-star-half-stroke"></i></div>
+        <div><div class="stat-value">{{ $stats['partial'] ?? 0 }}</div><div class="stat-label">Partial</div></div>
+    </div>
+    <div class="stat-card">
         <div class="stat-icon" style="background:#FEF2F2; color:#EF4444;"><i class="fas fa-times-circle"></i></div>
         <div><div class="stat-value">{{ $stats['salah'] }}</div><div class="stat-label">Salah</div></div>
     </div>
@@ -66,14 +70,28 @@
             $q          = $item['question'];
             $userAnswer = $item['user_answer'];
             $isCorrect  = $item['is_correct'];
+            $status     = $item['status'] ?? ($isCorrect ? 'correct' : ($userAnswer ? 'wrong' : 'empty'));
+            $score      = (float) ($item['score'] ?? 0);
+            $correctKeys = $item['correct_keys'] ?? $q->correctKeys();
             $attempt    = $item['attempt'];
+            $formatAnswer = function ($answer) {
+                if (is_array($answer)) {
+                    $items = array_filter(array_map(fn($v) => strtoupper((string) $v), $answer));
+                    return count($items) ? implode(', ', $items) : '—';
+                }
+                return $answer ? strtoupper((string) $answer) : '—';
+            };
+            $answerLabel = $formatAnswer($userAnswer);
+            $correctLabel = $formatAnswer($correctKeys);
         @endphp
-        <div class="card" style="padding:18px 20px; border-left:4px solid {{ $isCorrect ? 'var(--success)' : ($userAnswer ? 'var(--danger)' : 'var(--border)') }};" x-data="{ showExplain: false }">
+        <div class="card" style="padding:18px 20px; border-left:4px solid {{ $status === 'correct' ? 'var(--success)' : ($status === 'partial' ? 'var(--warning)' : ($status === 'wrong' ? 'var(--danger)' : 'var(--border)')) }};" x-data="{ showExplain: false }">
             <div style="display:flex; align-items:flex-start; gap:14px;">
-                <div style="width:30px; height:30px; border-radius:50%; background:{{ $isCorrect ? '#ECFDF5':($userAnswer ? '#FEF2F2':'#F1F5F9') }}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                    @if($isCorrect)
+                <div style="width:30px; height:30px; border-radius:50%; background:{{ $status === 'correct' ? '#ECFDF5' : ($status === 'partial' ? '#FFFBEB' : ($status === 'wrong' ? '#FEF2F2' : '#F1F5F9')) }}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    @if($status === 'correct')
                         <i class="fas fa-check" style="font-size:13px; color:var(--success);"></i>
-                    @elseif($userAnswer)
+                    @elseif($status === 'partial')
+                        <i class="fas fa-star-half-stroke" style="font-size:13px; color:var(--warning);"></i>
+                    @elseif($status === 'wrong')
                         <i class="fas fa-times" style="font-size:13px; color:var(--danger);"></i>
                     @else
                         <i class="fas fa-minus" style="font-size:13px; color:var(--text-muted);"></i>
@@ -89,8 +107,9 @@
                     </div>
                     <div style="font-size:13.5px; line-height:1.6; margin-bottom:10px;">{{ $q->question_text }}</div>
                     <div style="display:flex; gap:16px; font-size:12px; flex-wrap:wrap;">
-                        <span>Jawaban kamu: <strong style="color:{{ $isCorrect ? 'var(--success)':'var(--danger)' }};">{{ $userAnswer ? strtoupper($userAnswer) : '—' }}</strong></span>
-                        <span>Jawaban benar: <strong style="color:var(--success);">{{ strtoupper($q->correct_answer) }}</strong></span>
+                        <span>Jawaban kamu: <strong style="color:{{ $status === 'correct' ? 'var(--success)' : ($status === 'partial' ? 'var(--warning)' : 'var(--danger)') }};">{{ $answerLabel }}</strong></span>
+                        <span>Jawaban benar: <strong style="color:var(--success);">{{ $correctLabel }}</strong></span>
+                        <span>Nilai: <strong>{{ rtrim(rtrim(number_format($score, 2, '.', ''), '0'), '.') }}/1</strong></span>
                     </div>
                     @if($q->explanation)
                     <div style="margin-top:10px;">

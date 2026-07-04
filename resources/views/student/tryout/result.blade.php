@@ -9,18 +9,38 @@
     $tryout    = $attempt->tryout;
     $questions = $tryout->questions;
     $answers   = $attempt->answers ?? [];
+    $storedQuestionScores = $attempt->question_scores ?? [];
+    $maxScore = max(1, $questions->count());
 
-    // Hitung per subject
+    $formatScore = fn($value) => rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.');
+    $formatAnswer = function ($answer) {
+        if (is_array($answer)) {
+            $items = array_filter(array_map(fn($v) => strtoupper((string) $v), $answer));
+            return count($items) ? implode(', ', $items) : '—';
+        }
+        return $answer ? strtoupper((string) $answer) : '—';
+    };
+
+    // Hitung per subject berdasarkan nilai per soal, bukan hanya jumlah benar penuh.
     $subjectStats = [];
+    $partialCount = 0;
     foreach ($questions as $q) {
         $subjectName = $q->subject->name ?? 'Lainnya';
         if (!isset($subjectStats[$subjectName])) {
-            $subjectStats[$subjectName] = ['total' => 0, 'correct' => 0];
+            $subjectStats[$subjectName] = ['total' => 0, 'correct' => 0, 'earned' => 0.0];
         }
+
+        $storedScore = $storedQuestionScores[$q->id] ?? $storedQuestionScores[(string) $q->id] ?? null;
+        $gradeResult = $storedScore ?: $q->grade($answers[$q->id] ?? null, 1.0, 0.0);
+        $earned = (float) ($gradeResult['score'] ?? $gradeResult['earned'] ?? 0);
+        $status = $gradeResult['status'] ?? 'empty';
+
         $subjectStats[$subjectName]['total']++;
-        $userAnswer = $answers[$q->id] ?? null;
-        if ($userAnswer && $q->isCorrect($userAnswer)) {
+        $subjectStats[$subjectName]['earned'] += $earned;
+        if ($status === 'correct') {
             $subjectStats[$subjectName]['correct']++;
+        } elseif ($status === 'partial') {
+            $partialCount++;
         }
     }
 
@@ -29,12 +49,13 @@
         ? round((1 - ($attempt->rank_at_submit / $totalParticipants)) * 100, 1)
         : 0;
 
-    // Grade
+    // Grade berdasarkan persentase skor total. Skor resmi sekarang 0..jumlah soal.
+    $scorePercent = $maxScore > 0 ? round(min(100, max(0, ((float) $attempt->score / $maxScore) * 100)), 1) : 0;
     $grade = match(true) {
-        $attempt->score >= 700 => ['label' => 'Sangat Baik', 'color' => '#10B981', 'bg' => '#ECFDF5'],
-        $attempt->score >= 600 => ['label' => 'Baik',        'color' => '#2563EB', 'bg' => '#EFF6FF'],
-        $attempt->score >= 500 => ['label' => 'Cukup',       'color' => '#F59E0B', 'bg' => '#FFFBEB'],
-        default                => ['label' => 'Perlu Belajar','color' => '#EF4444', 'bg' => '#FEF2F2'],
+        $scorePercent >= 85 => ['label' => 'Sangat Baik', 'color' => '#10B981', 'bg' => '#ECFDF5'],
+        $scorePercent >= 70 => ['label' => 'Baik',        'color' => '#2563EB', 'bg' => '#EFF6FF'],
+        $scorePercent >= 55 => ['label' => 'Cukup',       'color' => '#F59E0B', 'bg' => '#FFFBEB'],
+        default             => ['label' => 'Perlu Belajar','color' => '#EF4444', 'bg' => '#FEF2F2'],
     };
 @endphp
 
@@ -64,9 +85,10 @@
                 {{-- Big score --}}
                 <div style="text-align:center;">
                     <div style="font-size:64px; font-weight:800; color:#fff; line-height:1;">
-                        {{ number_format($attempt->score, 0) }}
+                        {{ $formatScore($attempt->score) }}
                     </div>
-                    <div style="font-size:13px; color:rgba(255,255,255,0.6); margin-top:4px;">Skor Total</div>
+                    <div style="font-size:13px; color:rgba(255,255,255,0.6); margin-top:4px;">Skor Total dari {{ $questions->count() }} soal</div>
+                    <div style="font-size:12px; color:rgba(255,255,255,0.55); margin-top:2px;">{{ $scorePercent }}%</div>
                     <div style="display:inline-block; margin-top:10px; padding:5px 14px; background:{{ $grade['bg'] }}; color:{{ $grade['color'] }}; border-radius:20px; font-size:12px; font-weight:700;">
                         {{ $grade['label'] }}
                     </div>
@@ -76,7 +98,11 @@
                 <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:14px;">
                     <div style="background:rgba(255,255,255,0.08); border-radius:10px; padding:14px; text-align:center;">
                         <div style="font-size:22px; font-weight:800; color:#34D399;">{{ $attempt->correct_count }}</div>
-                        <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-top:3px;">Benar</div>
+                        <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-top:3px;">Benar Penuh</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.08); border-radius:10px; padding:14px; text-align:center;">
+                        <div style="font-size:22px; font-weight:800; color:#FBBF24;">{{ $partialCount }}</div>
+                        <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-top:3px;">Partial</div>
                     </div>
                     <div style="background:rgba(255,255,255,0.08); border-radius:10px; padding:14px; text-align:center;">
                         <div style="font-size:22px; font-weight:800; color:#F87171;">{{ $attempt->wrong_count }}</div>
@@ -85,10 +111,6 @@
                     <div style="background:rgba(255,255,255,0.08); border-radius:10px; padding:14px; text-align:center;">
                         <div style="font-size:22px; font-weight:800; color:#94A3B8;">{{ $attempt->empty_count }}</div>
                         <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-top:3px;">Kosong</div>
-                    </div>
-                    <div style="background:rgba(255,255,255,0.08); border-radius:10px; padding:14px; text-align:center;">
-                        <div style="font-size:22px; font-weight:800; color:#FBBF24;">{{ $attempt->duration() }}</div>
-                        <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-top:3px;">Menit</div>
                     </div>
                 </div>
             </div>
@@ -140,11 +162,13 @@
         <div class="card" style="margin-bottom:20px;">
             <div style="font-size:15px; font-weight:700; margin-bottom:16px;">Performa Per Mata Pelajaran</div>
             @foreach($subjectStats as $subject => $stat)
-            @php $pct = $stat['total'] > 0 ? round($stat['correct'] / $stat['total'] * 100) : 0; @endphp
+            @php
+                $pct = $stat['total'] > 0 ? round(($stat['earned'] / $stat['total']) * 100) : 0;
+            @endphp
             <div style="margin-bottom:14px;">
                 <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
                     <span style="font-weight:600;">{{ $subject }}</span>
-                    <span style="color:var(--text-muted);">{{ $stat['correct'] }}/{{ $stat['total'] }} benar ({{ $pct }}%)</span>
+                    <span style="color:var(--text-muted);">Nilai {{ $formatScore($stat['earned']) }}/{{ $stat['total'] }} ({{ $pct }}%)</span>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-bar-fill" style="width:{{ $pct }}%; background:{{ $pct >= 70 ? '#10B981' : ($pct >= 50 ? '#F59E0B' : '#EF4444') }};"></div>
@@ -160,28 +184,41 @@
             @foreach($questions as $index => $question)
             @php
                 $userAnswer = $answers[$question->id] ?? null;
-                $isCorrect  = $userAnswer && $question->isCorrect($userAnswer);
-                $isEmpty    = !$userAnswer;
+                $storedScore = $storedQuestionScores[$question->id] ?? $storedQuestionScores[(string) $question->id] ?? null;
+                $gradeResult = $storedScore ?: $question->grade($userAnswer, 1.0, 0.0);
+                $status = $gradeResult['status'] ?? 'empty';
+                $earned = (float) ($gradeResult['score'] ?? $gradeResult['earned'] ?? 0);
+                $isCorrect = $status === 'correct';
+                $isPartial = $status === 'partial';
+                $isEmpty = $status === 'empty';
+                $correctKeys = $gradeResult['correct_keys'] ?? $question->correctKeys();
+                $pickedKeys = $gradeResult['selected'] ?? (is_array($userAnswer) ? $userAnswer : ($userAnswer ? [$userAnswer] : []));
+                $answerLabel = $formatAnswer($userAnswer);
+                $correctLabel = $formatAnswer($correctKeys);
+                $statusBg = $isCorrect ? '#ECFDF5' : ($isPartial ? '#FFFBEB' : ($isEmpty ? '#F8FAFC' : '#FEF2F2'));
+                $statusColor = $isCorrect ? '#10B981' : ($isPartial ? '#F59E0B' : ($isEmpty ? '#94A3B8' : '#EF4444'));
+                $statusTextColor = $isCorrect ? '#065F46' : ($isPartial ? '#92400E' : ($isEmpty ? '#64748B' : '#991B1B'));
+                $statusIcon = $isCorrect ? 'fa-check-circle' : ($isPartial ? 'fa-star-half-stroke' : ($isEmpty ? 'fa-minus-circle' : 'fa-times-circle'));
+                $statusLabel = $isCorrect ? 'Benar Penuh' : ($isPartial ? 'Partial' : ($isEmpty ? 'Tidak Dijawab' : 'Salah'));
             @endphp
             <div style="border:1px solid var(--border); border-radius:10px; margin-bottom:12px; overflow:hidden;">
                 {{-- Question header --}}
-                <div style="padding:12px 16px; background:{{ $isCorrect ? '#ECFDF5' : ($isEmpty ? '#F8FAFC' : '#FEF2F2') }}; display:flex; align-items:center; justify-content:space-between;">
+                <div style="padding:12px 16px; background:{{ $statusBg }}; display:flex; align-items:center; justify-content:space-between;">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span style="width:28px; height:28px; border-radius:6px; background:{{ $isCorrect ? '#10B981' : ($isEmpty ? '#94A3B8' : '#EF4444') }}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;">
+                        <span style="width:28px; height:28px; border-radius:6px; background:{{ $statusColor }}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;">
                             {{ $index + 1 }}
                         </span>
-                        <span style="font-size:13px; font-weight:600; color:{{ $isCorrect ? '#065F46' : ($isEmpty ? '#64748B' : '#991B1B') }};">
-                            @if($isCorrect) <i class="fas fa-check-circle"></i> Benar
-                            @elseif($isEmpty) <i class="fas fa-minus-circle"></i> Tidak Dijawab
-                            @else <i class="fas fa-times-circle"></i> Salah
-                            @endif
+                        <span style="font-size:13px; font-weight:600; color:{{ $statusTextColor }};">
+                            <i class="fas {{ $statusIcon }}"></i> {{ $statusLabel }}
                         </span>
                     </div>
                     <div style="font-size:12px; color:var(--text-muted); text-align:right;">
                         <div>
-                            Jawaban kamu: <strong>{{ $userAnswer ? strtoupper($userAnswer) : '—' }}</strong>
+                            Jawaban kamu: <strong>{{ $answerLabel }}</strong>
                             &nbsp;·&nbsp;
-                            Kunci: <strong style="color:#10B981;">{{ strtoupper($question->correct_answer) }}</strong>
+                            Kunci: <strong style="color:#10B981;">{{ $correctLabel }}</strong>
+                            &nbsp;·&nbsp;
+                            Nilai: <strong style="color:{{ $statusColor }};">{{ $formatScore($earned) }}/1</strong>
                         </div>
                         <div style="margin-top:4px; display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;">
                             @php
@@ -221,15 +258,27 @@
 
                         {{-- Options --}}
                         @foreach($question->options() as $key => $text)
+                        @php
+                            $isKey = in_array($key, $correctKeys, true);
+                            $isPicked = in_array($key, $pickedKeys, true);
+                            $optBg = $isKey ? '#ECFDF5' : ($isPicked ? '#FEF2F2' : '#F8FAFC');
+                            $optBorder = $isKey ? '#6EE7B7' : ($isPicked ? '#FECACA' : '#E2E8F0');
+                            $optCircleBg = $isKey ? '#10B981' : ($isPicked ? '#EF4444' : '#E2E8F0');
+                        @endphp
                         <div style="padding:10px 14px; border-radius:8px; margin-bottom:6px; display:flex; align-items:flex-start; gap:10px;
-                            background:{{ $key === $question->correct_answer ? '#ECFDF5' : ($userAnswer === $key && !$isCorrect ? '#FEF2F2' : '#F8FAFC') }};
-                            border:1px solid {{ $key === $question->correct_answer ? '#6EE7B7' : ($userAnswer === $key && !$isCorrect ? '#FECACA' : '#E2E8F0') }};">
+                            background:{{ $optBg }};
+                            border:1px solid {{ $optBorder }};">
                             <span style="width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;
-                                background:{{ $key === $question->correct_answer ? '#10B981' : ($userAnswer === $key ? '#EF4444' : '#E2E8F0') }};
-                                color:{{ in_array($key, [$question->correct_answer, $userAnswer]) ? '#fff' : '#64748B' }};">
+                                background:{{ $optCircleBg }};
+                                color:{{ ($isKey || $isPicked) ? '#fff' : '#64748B' }};">
                                 {{ strtoupper($key) }}
                             </span>
-                            <span style="font-size:13px; color:var(--text-main); padding-top:3px;">{{ $text }}</span>
+                            <span style="font-size:13px; color:var(--text-main); padding-top:3px; flex:1;">{{ $text }}</span>
+                            @if($isKey)
+                                <span style="font-size:11px; color:#059669; font-weight:700; padding-top:4px;">Kunci</span>
+                            @elseif($isPicked)
+                                <span style="font-size:11px; color:#DC2626; font-weight:700; padding-top:4px;">Dipilih</span>
+                            @endif
                         </div>
                         @endforeach
 
@@ -266,18 +315,21 @@
         {{-- Akurasi --}}
         <div class="card" style="margin-bottom:16px;">
             <div style="font-size:13px; font-weight:700; margin-bottom:12px;">Ringkasan Hasil</div>
-            @php $accuracy = $questions->count() > 0 ? round($attempt->correct_count / $questions->count() * 100) : 0; @endphp
             <div style="text-align:center; margin-bottom:14px;">
-                <div style="font-size:32px; font-weight:800; color:{{ $accuracy >= 70 ? '#10B981' : ($accuracy >= 50 ? '#F59E0B' : '#EF4444') }};">{{ $accuracy }}%</div>
-                <div style="font-size:12px; color:var(--text-muted);">Akurasi</div>
+                <div style="font-size:32px; font-weight:800; color:{{ $scorePercent >= 70 ? '#10B981' : ($scorePercent >= 50 ? '#F59E0B' : '#EF4444') }};">{{ $scorePercent }}%</div>
+                <div style="font-size:12px; color:var(--text-muted);">Persentase Nilai</div>
             </div>
             <div class="progress-bar" style="margin-bottom:16px;">
-                <div class="progress-bar-fill" style="width:{{ $accuracy }}%; background:{{ $accuracy >= 70 ? '#10B981' : ($accuracy >= 50 ? '#F59E0B' : '#EF4444') }};"></div>
+                <div class="progress-bar-fill" style="width:{{ $scorePercent }}%; background:{{ $scorePercent >= 70 ? '#10B981' : ($scorePercent >= 50 ? '#F59E0B' : '#EF4444') }};"></div>
             </div>
-            <div style="display:flex; justify-content:space-around; font-size:12px; text-align:center;">
+            <div style="display:flex; justify-content:space-around; font-size:12px; text-align:center; gap:8px; flex-wrap:wrap;">
                 <div>
                     <div style="font-size:18px; font-weight:800; color:#10B981;">{{ $attempt->correct_count }}</div>
                     <div style="color:var(--text-muted);">Benar</div>
+                </div>
+                <div>
+                    <div style="font-size:18px; font-weight:800; color:#F59E0B;">{{ $partialCount }}</div>
+                    <div style="color:var(--text-muted);">Partial</div>
                 </div>
                 <div>
                     <div style="font-size:18px; font-weight:800; color:#EF4444;">{{ $attempt->wrong_count }}</div>
@@ -287,6 +339,9 @@
                     <div style="font-size:18px; font-weight:800; color:#94A3B8;">{{ $attempt->empty_count }}</div>
                     <div style="color:var(--text-muted);">Kosong</div>
                 </div>
+            </div>
+            <div style="margin-top:12px; font-size:12px; color:var(--text-muted); text-align:center;">
+                Durasi: <strong>{{ $attempt->duration() }} menit</strong>
             </div>
         </div>
 

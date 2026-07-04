@@ -180,7 +180,7 @@
                             <option value="multiple">Multiple Jawaban (beberapa benar)</option>
                         </select>
                         <div x-show="qtype==='multiple'" style="font-size:11.5px; color:var(--muted); margin-top:6px;">
-                            <i class="fas fa-info-circle"></i> Pilih minimal 2 kunci. Penilaian partial credit: nilai proporsional dengan kunci benar yang dipilih, dikurangi penalti tiap opsi salah.
+                            <i class="fas fa-info-circle"></i> Pilih minimal 2 kunci. Penilaian multiple proporsional: benar penuh = 1, salah = 0, jika benar separuh maka nilai 0,5. Tidak ada penalti minus.
                         </div>
                     </div>
 

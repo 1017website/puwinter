@@ -9,6 +9,7 @@ use App\Models\Tryout;
 use App\Models\UserTryoutAttempt;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -39,11 +40,12 @@ class TryoutController extends Controller
             ->withSum('tryout', 'total_questions') // tidak bisa langsung, pakai alternatif
             ->count(); // jumlah attempt selesai
 
-        // Hitung total soal yang sudah dijawab user (dari attempts)
-        $soalDijawab = \App\Models\UserTryoutAttempt::where('user_id', auth()->id())
-            ->whereNotNull('submitted_at')
-            ->selectRaw('SUM(correct_count + wrong_count + empty_count) as total')
-            ->value('total') ?? 0;
+        // Hitung total soal dari tryout yang sudah diselesaikan user.
+        // Jangan menjumlah correct/wrong/empty karena soal partial punya skor pecahan.
+        $soalDijawab = \App\Models\UserTryoutAttempt::where('user_tryout_attempts.user_id', auth()->id())
+            ->whereNotNull('user_tryout_attempts.submitted_at')
+            ->join('tryouts', 'tryouts.id', '=', 'user_tryout_attempts.tryout_id')
+            ->sum('tryouts.total_questions');
 
         $totalPeserta = \App\Models\UserTryoutAttempt::whereNotNull('submitted_at')
             ->distinct('user_id')->count('user_id');
@@ -115,17 +117,20 @@ class TryoutController extends Controller
         $empty = 0;
         $partial = 0;
 
-        // Akumulator skor utama (mendukung partial credit untuk soal multiple).
-        // Skala per soal: benar penuh = +4, partial = pecahan 0..4, salah = 0 lalu
-        // dikenai penalti -1 (mengikuti aturan lama benar*4 - salah*1).
+        // Aturan skor baru:
+        // - Single answer: benar = 1, salah/kosong = 0.
+        // - Multiple answer: nilai proporsional sesuai jumlah kunci benar yang dipilih.
+        //   Contoh 2 dari 4 kunci benar = 0.5.
+        // - Tidak ada penalti minus.
         $rawScore = 0.0;
+        $questionScores = [];
 
-        // Akumulator skor berbobot kesulitan (info tambahan).
+        // Akumulator skor berbobot kesulitan (info tambahan, skala 0..100).
         $weightedRaw = 0.0;
         $weightedMax = 0.0;
 
-        $fullPoint  = 4.0;
-        $penaltyPer = 1.0;
+        $fullPoint  = 1.0;
+        $penaltyPer = 0.0;
 
         foreach ($tryout->questions as $question) {
             $userAnswer = $answers[$question->id] ?? null;
@@ -143,22 +148,31 @@ class TryoutController extends Controller
                 $empty++;
             } elseif ($status === 'correct') {
                 $correct++;
-                $rawScore   += $earned;                     // +4
-                $weightedRaw += $weight;                    // bobot penuh
             } elseif ($status === 'partial') {
                 $partial++;
-                $rawScore   += $earned;                     // pecahan 0..4
-                // bobot proporsional terhadap perolehan poin
-                $weightedRaw += $weight * ($earned / $fullPoint);
-            } else { // wrong
+            } else {
                 $wrong++;
-                $rawScore   -= $penaltyPer;                 // -1
             }
+
+            $rawScore += $earned;
+            $weightedRaw += $weight * ($earned / $fullPoint);
+
+            // Simpan nilai per soal agar hasil bisa diaudit/detail di UI.
+            $questionScores[$question->id] = [
+                'question_id' => (int) $question->id,
+                'status' => $status,
+                'score' => round($earned, 2),
+                'max' => $fullPoint,
+                'selected' => $result['selected'] ?? [],
+                'correct_keys' => $result['correct_keys'] ?? $question->correctKeys(),
+                'correct_selected' => (int) ($result['correct_selected'] ?? 0),
+                'wrong_selected' => (int) ($result['wrong_selected'] ?? 0),
+            ];
 
             // --- Perbarui statistik global soal (rolling, hanya yang dijawab) ---
             $isAnswered = !($status === 'empty');
             if ($isAnswered) {
-                // Untuk correct_rate: soal dihitung "benar" hanya jika status correct penuh.
+                // Untuk correct_rate: soal dihitung benar jika mendapat skor penuh.
                 $isThisCorrect = ($status === 'correct');
 
                 $prevAnswered = (int) $question->answered_count;
@@ -178,10 +192,10 @@ class TryoutController extends Controller
             }
         }
 
-        // Skor akhir (penentu ranking). Tidak boleh negatif.
-        $score = max(0, round($rawScore, 2));
+        // Skor akhir penentu ranking. Maksimum = jumlah soal.
+        $score = round($rawScore, 2);
 
-        // Skor berbobot kesulitan (skala 0..100). Info saja, tidak untuk ranking.
+        // Skor berbobot kesulitan tetap skala 0..100 sebagai info tambahan.
         $weightedScore = $weightedMax > 0
             ? round($weightedRaw / $weightedMax * 100, 2)
             : 0.0;
@@ -192,7 +206,7 @@ class TryoutController extends Controller
             ->where('score', '>', $score)
             ->count() + 1;
 
-        $attempt->update([
+        $updateData = [
             'submitted_at' => now(),
             'answers' => $answers,
             'score' => $score,
@@ -202,7 +216,14 @@ class TryoutController extends Controller
             'rank_at_submit' => $rank,
             'weighted_score' => $weightedScore,
             'tab_switch_count' => (int) $request->input('tab_switch_count', 0),
-        ]);
+        ];
+
+        // Guard agar tidak 500 jika file sudah ter-upload tapi migration belum dijalankan.
+        if (Schema::hasColumn('user_tryout_attempts', 'question_scores')) {
+            $updateData['question_scores'] = $questionScores;
+        }
+
+        $attempt->update($updateData);
 
         // Catat ke study history
         StudyHistory::create([
@@ -222,7 +243,7 @@ class TryoutController extends Controller
             $request->user()->id,
             'tryout',
             'Tryout selesai: ' . $tryout->title,
-            "Skor kamu {$score} (benar {$correct}" . ($partial > 0 ? ", partial {$partial}" : "") . ", salah {$wrong}). Peringkat #{$rank}.",
+            "Skor kamu {$score} (benar {$correct}" . ($partial > 0 ? ", partial {$partial}" : "") . ", salah {$wrong}, kosong {$empty}). Peringkat #{$rank}.",
             route('student.tryout.result', $attempt->id),
             'fa-clipboard-check'
         );

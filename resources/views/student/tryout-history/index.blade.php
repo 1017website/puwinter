@@ -50,7 +50,7 @@
                     <th style="padding:12px 10px; font-weight:600;">Tryout</th>
                     <th style="padding:12px 10px; font-weight:600;">Mapel</th>
                     <th style="padding:12px 10px; font-weight:600; text-align:center;">Skor</th>
-                    <th style="padding:12px 10px; font-weight:600; text-align:center;">B / S / K</th>
+                    <th style="padding:12px 10px; font-weight:600; text-align:center;">B / P / S / K</th>
                     <th style="padding:12px 10px; font-weight:600; text-align:center;">Peringkat</th>
                     <th style="padding:12px 10px; font-weight:600;">Tanggal</th>
                     <th style="padding:12px 10px; font-weight:600; text-align:right;">Aksi</th>
@@ -66,13 +66,14 @@
                         {{ $a->tryout->subject->name ?? '-' }}
                     </td>
                     <td style="padding:12px 10px; text-align:center;">
-                        <span style="font-weight:800; color:var(--primary);">{{ rtrim(rtrim(number_format($a->score, 2, '.', ''), '0'), '.') }}</span>
+                        <span style="font-weight:800; color:var(--primary);">{{ $a->formattedScore($a->tryout?->total_questions) }}</span>
                         @if(!is_null($a->weighted_score))
                             <div style="font-size:11px; color:var(--text-muted);">bobot: {{ $a->weighted_score }}</div>
                         @endif
                     </td>
                     <td style="padding:12px 10px; text-align:center; color:var(--text-muted);">
                         <span style="color:#10B981; font-weight:700;">{{ $a->correct_count }}</span> /
+                        <span style="color:#F59E0B; font-weight:700;">{{ $a->partialCount() }}</span> /
                         <span style="color:#EF4444; font-weight:700;">{{ $a->wrong_count }}</span> /
                         <span>{{ $a->empty_count }}</span>
                     </td>
