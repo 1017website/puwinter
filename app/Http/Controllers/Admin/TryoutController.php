@@ -231,6 +231,19 @@ class TryoutController extends Controller
         }
 
         $request->validate($rules, [
+            'question_text.required' => 'Teks soal wajib diisi.',
+            'question_type.required' => 'Tipe soal wajib dipilih.',
+            'score_weight.required' => 'Bobot nilai wajib diisi.',
+            'subject_id.required' => 'Mata pelajaran wajib dipilih.',
+            'subject_id.exists' => 'Mata pelajaran yang dipilih tidak valid.',
+            'order.required' => 'Nomor soal wajib diisi.',
+            'option_a.required' => $type === 'matrix' ? 'Baris A wajib diisi untuk soal kategori.' : 'Opsi jawaban A wajib diisi.',
+            'option_b.required' => $type === 'matrix' ? 'Baris B wajib diisi untuk soal kategori.' : 'Opsi jawaban B wajib diisi.',
+            'option_c.required' => 'Opsi jawaban C wajib diisi.',
+            'option_d.required' => 'Opsi jawaban D wajib diisi.',
+            'correct_answer.required_if' => 'Pilih satu opsi sebagai kunci jawaban.',
+            'correct_answers.required_if' => 'Pilih minimal 2 opsi sebagai kunci jawaban.',
+            'correct_answers.min' => 'Soal multiple jawaban minimal punya 2 kunci jawaban.',
             'matrix_columns.col_1.required' => 'Nama kategori kolom pertama wajib diisi.',
             'matrix_columns.col_2.required' => 'Nama kategori kolom kedua wajib diisi.',
             'correct_matrix_answers.required' => 'Kunci kategori wajib dipilih untuk setiap baris yang terisi.',
@@ -241,22 +254,29 @@ class TryoutController extends Controller
             return back()->withInput()->with('error', 'Soal cerita yang dipilih tidak valid untuk tryout ini.');
         }
 
+        // Normalisasi opsi lebih awal.
+        // Catatan: kolom option_c dan option_d di database lama masih NOT NULL.
+        // Untuk tipe kategori, baris C/D/E memang opsional, jadi nilai kosong disimpan
+        // sebagai string kosong agar user mendapat validasi/alert, bukan error database.
+        $optionValues = [
+            'a' => trim((string) $request->input('option_a', '')),
+            'b' => trim((string) $request->input('option_b', '')),
+            'c' => trim((string) $request->input('option_c', '')),
+            'd' => trim((string) $request->input('option_d', '')),
+            'e' => trim((string) $request->input('option_e', '')),
+        ];
+
         // Normalisasi kunci jawaban sesuai tipe.
         $matrixColumns = null;
         if ($type === 'matrix') {
-            $availableRows = array_keys(array_filter([
-                'a' => $request->option_a,
-                'b' => $request->option_b,
-                'c' => $request->option_c,
-                'd' => $request->option_d,
-                'e' => $request->option_e,
-            ], fn($value) => filled($value)));
+            $availableRows = array_keys(array_filter($optionValues, fn($value) => filled($value)));
 
             $matrixKeys = [];
             foreach ($availableRows as $rowKey) {
                 $selectedColumn = $request->input("correct_matrix_answers.$rowKey");
                 if (!in_array($selectedColumn, ['col_1', 'col_2'], true)) {
                     return back()->withInput()
+                        ->withErrors(["correct_matrix_answers.$rowKey" => 'Kunci kategori untuk baris '.strtoupper($rowKey).' wajib dipilih.'])
                         ->with('error', 'Setiap baris kategori yang terisi wajib dipilih kuncinya.');
                 }
                 $matrixKeys[$rowKey] = $selectedColumn;
@@ -264,6 +284,7 @@ class TryoutController extends Controller
 
             if (count($availableRows) < 2) {
                 return back()->withInput()
+                    ->withErrors(['option_a' => 'Soal kategori minimal punya 2 baris/pernyataan yang terisi.'])
                     ->with('error', 'Soal kategori minimal punya 2 baris/pernyataan.');
             }
 
@@ -280,22 +301,27 @@ class TryoutController extends Controller
                 ->values()
                 ->all();
             // Pastikan kunci yang dipilih punya opsi terisi (mis. tidak memilih 'e' jika opsi e kosong).
-            $available = array_keys(array_filter([
-                'a' => $request->option_a, 'b' => $request->option_b,
-                'c' => $request->option_c, 'd' => $request->option_d,
-                'e' => $request->option_e,
-            ], fn($value) => filled($value)));
+            $available = array_keys(array_filter($optionValues, fn($value) => filled($value)));
             $keys = array_values(array_intersect($keys, $available));
 
             if (count($keys) < 2) {
                 return back()->withInput()
+                    ->withErrors(['correct_answers' => 'Soal multiple jawaban minimal punya 2 kunci yang valid dan opsinya harus terisi.'])
                     ->with('error', 'Soal multiple jawaban minimal punya 2 kunci yang valid.');
             }
 
             $correctAnswer  = $keys[0];   // simpan 1 nilai di kolom lama agar kompatibel
             $correctAnswers = $keys;
         } else {
-            $correctAnswer  = $request->correct_answer;
+            $correctAnswer = strtolower((string) $request->correct_answer);
+            $available = array_keys(array_filter($optionValues, fn($value) => filled($value)));
+
+            if (!in_array($correctAnswer, $available, true)) {
+                return back()->withInput()
+                    ->withErrors(['correct_answer' => 'Kunci jawaban yang dipilih harus memiliki teks opsi jawaban.'])
+                    ->with('error', 'Kunci jawaban yang dipilih belum memiliki teks opsi jawaban.');
+            }
+
             $correctAnswers = null;
         }
 
@@ -304,7 +330,7 @@ class TryoutController extends Controller
 
         $questionImage = $this->uploadTryoutImage($request, 'question_image');
 
-        DB::transaction(function () use ($tryout, $request, $passageId, $questionImage, $type, $correctAnswer, $correctAnswers, $matrixColumns, $order) {
+        DB::transaction(function () use ($tryout, $request, $passageId, $questionImage, $type, $correctAnswer, $correctAnswers, $matrixColumns, $order, $optionValues) {
             // Jika nomor disisipkan di tengah, geser soal setelahnya agar urutan tetap rapi.
             $tryout->questions()
                 ->where('order', '>=', $order)
@@ -316,11 +342,11 @@ class TryoutController extends Controller
                 'question_type'   => $type,
                 'question_text'   => $request->question_text,
                 'question_image'  => $questionImage,
-                'option_a'        => $request->option_a,
-                'option_b'        => $request->option_b,
-                'option_c'        => $request->option_c,
-                'option_d'        => $request->option_d,
-                'option_e'        => $request->option_e,
+                'option_a'        => $optionValues['a'],
+                'option_b'        => $optionValues['b'],
+                'option_c'        => $optionValues['c'],
+                'option_d'        => $optionValues['d'],
+                'option_e'        => $optionValues['e'] !== '' ? $optionValues['e'] : null,
                 'correct_answer'  => $correctAnswer,
                 'correct_answers' => $correctAnswers,
                 'matrix_columns'  => $matrixColumns,

@@ -414,14 +414,65 @@
             </div>
             <div class="modal-content">
                 <form method="POST" action="{{ route('admin.tryouts.questions.store', $tryout) }}" enctype="multipart/form-data"
+                      @submit="if (!validateQuestionForm($event)) $event.preventDefault()"
                       x-data="{
                         qtype: '{{ old('question_type','single') }}',
                         correct: '{{ old('correct_answer','a') }}',
-                        multi: {{ collect((array) old('correct_answers', []))->map(fn($k)=>"'".$k."'")->implode(',') ? '['.collect((array) old('correct_answers', []))->map(fn($k)=>"'".$k."'")->implode(',').']' : '[]' }},
+                        multi: {{ \Illuminate\Support\Js::from(array_values((array) old('correct_answers', []))) }},
+                        matrixCol1: {{ \Illuminate\Support\Js::from(old('matrix_columns.col_1', 'Time Management')) }},
+                        matrixCol2: {{ \Illuminate\Support\Js::from(old('matrix_columns.col_2', 'Self Management')) }},
+                        matrixRows: {
+                            a: {{ \Illuminate\Support\Js::from(old('option_a', '')) }},
+                            b: {{ \Illuminate\Support\Js::from(old('option_b', '')) }},
+                            c: {{ \Illuminate\Support\Js::from(old('option_c', '')) }},
+                            d: {{ \Illuminate\Support\Js::from(old('option_d', '')) }},
+                            e: {{ \Illuminate\Support\Js::from(old('option_e', '')) }}
+                        },
                         toggleMulti(k){ this.multi.includes(k) ? this.multi=this.multi.filter(x=>x!==k) : this.multi.push(k) },
-                        isKey(k){ return this.qtype==='multiple' ? this.multi.includes(k) : (this.qtype==='single' ? this.correct===k : false) }
+                        isKey(k){ return this.qtype==='multiple' ? this.multi.includes(k) : (this.qtype==='single' ? this.correct===k : false) },
+                        optionFilled(form, key){ return ((form.querySelector('[name=option_'+key+']')?.value || '').trim().length > 0) },
+                        validateQuestionForm(event){
+                            const form = event.target;
+                            if (this.qtype === 'single') {
+                                if (!this.optionFilled(form, this.correct)) {
+                                    alert('Kunci jawaban yang dipilih harus memiliki teks opsi jawaban.');
+                                    return false;
+                                }
+                            }
+                            if (this.qtype === 'multiple') {
+                                const validKeys = this.multi.filter(k => this.optionFilled(form, k));
+                                if (validKeys.length < 2) {
+                                    alert('Soal multiple jawaban minimal punya 2 kunci jawaban yang opsinya sudah diisi.');
+                                    return false;
+                                }
+                            }
+                            if (this.qtype === 'matrix') {
+                                const filledRows = Object.entries(this.matrixRows).filter(([k, v]) => (v || '').trim().length > 0).map(([k]) => k);
+                                if (filledRows.length < 2) {
+                                    alert('Soal kategori minimal punya 2 baris/pernyataan. Isi minimal baris A dan B.');
+                                    return false;
+                                }
+                                const missingKeys = filledRows.filter(k => !form.querySelector(`input[name='correct_matrix_answers[${k}]']:checked`));
+                                if (missingKeys.length) {
+                                    alert('Kunci kategori wajib dipilih untuk baris: ' + missingKeys.map(k => k.toUpperCase()).join(', '));
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
                       }">
                     @csrf
+
+                    @if($errors->any())
+                        <div style="border:1px solid #FCA5A5; background:#FEF2F2; color:#991B1B; border-radius:10px; padding:12px 14px; margin-bottom:16px; font-size:13px; line-height:1.55;">
+                            <div style="font-weight:800; margin-bottom:6px;"><i class="fas fa-triangle-exclamation"></i> Periksa input soal terlebih dahulu:</div>
+                            <ul style="margin:0; padding-left:18px;">
+                                @foreach($errors->all() as $message)
+                                    <li>{{ $message }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
                     <div class="question-meta-grid">
                         <div>
@@ -533,9 +584,9 @@
                         <label class="field-label">Kolom Kategori</label>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
                             <input type="text" name="matrix_columns[col_1]" class="field-input" :disabled="qtype!=='matrix'" :required="qtype==='matrix'"
-                                   value="{{ old('matrix_columns.col_1', 'Time Management') }}" placeholder="Contoh: Time Management">
+                                   x-model="matrixCol1" placeholder="Contoh: Time Management">
                             <input type="text" name="matrix_columns[col_2]" class="field-input" :disabled="qtype!=='matrix'" :required="qtype==='matrix'"
-                                   value="{{ old('matrix_columns.col_2', 'Self Management') }}" placeholder="Contoh: Self Management">
+                                   x-model="matrixCol2" placeholder="Contoh: Self Management">
                         </div>
                         <div class="answer-helper" style="margin-bottom:10px;">
                             Isi pernyataan/baris di kolom kiri, lalu pilih kategori yang menjadi kunci pada tiap baris. Minimal baris A dan B wajib diisi.
@@ -543,8 +594,12 @@
                         <div class="matrix-editor">
                             <div class="matrix-row matrix-head">
                                 <div class="matrix-cell">Pernyataan / Teknik</div>
-                                <div class="matrix-cell" style="justify-content:center;">Kategori 1</div>
-                                <div class="matrix-cell" style="justify-content:center;">Kategori 2</div>
+                                <div class="matrix-cell" style="justify-content:center;">
+                                    <span x-text="matrixCol1 || 'Kategori 1'"></span>
+                                </div>
+                                <div class="matrix-cell" style="justify-content:center;">
+                                    <span x-text="matrixCol2 || 'Kategori 2'"></span>
+                                </div>
                             </div>
                             @foreach(['a'=>'A','b'=>'B','c'=>'C (opsional)','d'=>'D (opsional)','e'=>'E (opsional)'] as $key => $label)
                                 <div class="matrix-row">
@@ -553,19 +608,20 @@
                                         <textarea name="option_{{ $key }}" rows="2" class="field-input answer-textarea"
                                                   :disabled="qtype!=='matrix'"
                                                   :required="qtype==='matrix' && ['a','b'].includes('{{ $key }}')"
-                                                  placeholder="Tulis baris {{ $label }}...">{{ old('option_'.$key) }}</textarea>
+                                                  x-model="matrixRows['{{ $key }}']"
+                                                  placeholder="Tulis baris {{ $label }}..."></textarea>
                                     </div>
                                     <label class="matrix-cell matrix-radio-label">
                                         <input type="radio" name="correct_matrix_answers[{{ $key }}]" value="col_1"
                                                :disabled="qtype!=='matrix'"
-                                               :required="qtype==='matrix' && ['a','b'].includes('{{ $key }}')"
+                                               :required="qtype==='matrix' && (matrixRows['{{ $key }}'] || '').trim().length > 0"
                                                {{ old('correct_matrix_answers.'.$key) === 'col_1' ? 'checked' : '' }}>
                                         Kunci
                                     </label>
                                     <label class="matrix-cell matrix-radio-label">
                                         <input type="radio" name="correct_matrix_answers[{{ $key }}]" value="col_2"
                                                :disabled="qtype!=='matrix'"
-                                               :required="qtype==='matrix' && ['a','b'].includes('{{ $key }}')"
+                                               :required="qtype==='matrix' && (matrixRows['{{ $key }}'] || '').trim().length > 0"
                                                {{ old('correct_matrix_answers.'.$key) === 'col_2' ? 'checked' : '' }}>
                                         Kunci
                                     </label>
