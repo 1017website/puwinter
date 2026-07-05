@@ -247,6 +247,10 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
             Route::patch('/{tryout}/toggle-publish', [AdminTryout::class, 'togglePublish'])->name('toggle-publish');
             Route::patch('/{tryout}/calibrate-irt', [AdminTryout::class, 'calibrateIrt'])->name('calibrate-irt');
 
+            // Soal Cerita / Stimulus
+            Route::post('/{tryout}/passages', [AdminTryout::class, 'storePassage'])->name('passages.store');
+            Route::delete('/passages/{passage}', [AdminTryout::class, 'destroyPassage'])->name('passages.destroy');
+
             // Questions
             Route::post('/{tryout}/questions', [AdminTryout::class, 'storeQuestion'])->name('questions.store');
             Route::delete('/questions/{question}', [AdminTryout::class, 'destroyQuestion'])->name('questions.destroy');

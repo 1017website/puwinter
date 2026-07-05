@@ -169,6 +169,26 @@
                     </summary>
 
                     <div style="padding:16px; border-top:1px solid var(--border);">
+                        @if($q->passage)
+                            <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:10px; padding:14px; margin-bottom:14px;">
+                                <div style="font-size:12px; font-weight:800; color:#1D4ED8; margin-bottom:8px;"><i class="fas fa-book-open"></i> Soal Cerita / Stimulus</div>
+                                @if($q->passage->title)
+                                    <div style="font-size:15px; font-weight:800; text-align:center; margin-bottom:10px; color:#0F172A;">{{ $q->passage->title }}</div>
+                                @endif
+                                @if($q->passage->passage_image)
+                                    <img src="{{ asset($q->passage->passage_image) }}" alt="Gambar stimulus" style="max-width:100%; max-height:420px; object-fit:contain; display:block; margin:10px auto; border:1px solid #E2E8F0; border-radius:10px; background:#fff;">
+                                @endif
+                                @if($q->passage->passage_text)
+                                    <div style="font-size:13.5px; color:#334155; line-height:1.75; white-space:pre-wrap;">{{ $q->passage->passage_text }}</div>
+                                @endif
+                                @if($q->passage->source)
+                                    <div style="font-size:12px; color:#64748B; margin-top:8px;">Sumber: {{ $q->passage->source }}</div>
+                                @endif
+                            </div>
+                        @endif
+                        @if($q->question_image)
+                            <img src="{{ asset($q->question_image) }}" alt="Gambar soal" style="max-width:100%; max-height:420px; object-fit:contain; display:block; margin:0 auto 14px; border:1px solid #E2E8F0; border-radius:10px; background:#fff;">
+                        @endif
                         <div style="font-size:14px; color:var(--text); line-height:1.7; margin-bottom:14px; white-space:pre-wrap;">{{ $q->question_text }}</div>
 
                         @foreach($q->options() as $key => $text)

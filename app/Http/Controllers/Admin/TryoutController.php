@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Subject;
 use App\Models\Tryout;
 use App\Models\TryoutQuestion;
+use App\Models\TryoutPassage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -75,7 +77,7 @@ class TryoutController extends Controller
 
     public function show(Tryout $tryout): View
     {
-        $tryout->load(['subject', 'questions.subject']);
+        $tryout->load(['subject', 'questions.subject', 'questions.passage', 'passages.questions']);
         $subjects = Subject::active()->get();
 
         return view('admin.tryouts.show', compact('tryout', 'subjects'));
@@ -172,7 +174,9 @@ class TryoutController extends Controller
     public function storeQuestion(Request $request, Tryout $tryout): RedirectResponse
     {
         $request->validate([
+            'passage_id'       => 'nullable|exists:tryout_passages,id',
             'question_text'    => 'required|string',
+            'question_image'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
             'question_type'    => 'required|in:single,multiple',
             'option_a'         => 'required|string',
             'option_b'         => 'required|string',
@@ -187,6 +191,11 @@ class TryoutController extends Controller
             'subject_id'       => 'required|exists:subjects,id',
             'order'            => 'required|integer|min:1',
         ]);
+
+        $passageId = $request->filled('passage_id') ? (int) $request->passage_id : null;
+        if ($passageId && !$tryout->passages()->whereKey($passageId)->exists()) {
+            return back()->withInput()->with('error', 'Soal cerita yang dipilih tidak valid untuk tryout ini.');
+        }
 
         $type = $request->question_type;
 
@@ -220,16 +229,20 @@ class TryoutController extends Controller
         $maxOrder = (int) $tryout->questions()->max('order');
         $order = min((int) $request->input('order', $maxOrder + 1), $maxOrder + 1);
 
-        DB::transaction(function () use ($tryout, $request, $type, $correctAnswer, $correctAnswers, $order) {
+        $questionImage = $this->uploadTryoutImage($request, 'question_image');
+
+        DB::transaction(function () use ($tryout, $request, $passageId, $questionImage, $type, $correctAnswer, $correctAnswers, $order) {
             // Jika nomor disisipkan di tengah, geser soal setelahnya agar urutan tetap rapi.
             $tryout->questions()
                 ->where('order', '>=', $order)
                 ->increment('order');
 
             $tryout->questions()->create([
+                'passage_id'      => $passageId,
                 'subject_id'      => $request->subject_id,
                 'question_type'   => $type,
                 'question_text'   => $request->question_text,
+                'question_image'  => $questionImage,
                 'option_a'        => $request->option_a,
                 'option_b'        => $request->option_b,
                 'option_c'        => $request->option_c,
@@ -250,9 +263,65 @@ class TryoutController extends Controller
         return back()->with('success', 'Soal berhasil ditambahkan.');
     }
 
+    public function storePassage(Request $request, Tryout $tryout): RedirectResponse
+    {
+        $request->validate([
+            'title'         => 'nullable|string|max:255',
+            'passage_text'  => 'required_without:passage_image|nullable|string',
+            'passage_image' => 'required_without:passage_text|nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+            'source'        => 'nullable|string|max:255',
+            'order'         => 'required|integer|min:1',
+        ], [
+            'passage_text.required_without'  => 'Isi teks soal cerita atau upload gambar stimulus.',
+            'passage_image.required_without' => 'Isi teks soal cerita atau upload gambar stimulus.',
+        ]);
+
+        $maxOrder = (int) $tryout->passages()->max('order');
+        $order = min((int) $request->input('order', $maxOrder + 1), $maxOrder + 1);
+        $imagePath = $this->uploadTryoutImage($request, 'passage_image');
+
+        DB::transaction(function () use ($tryout, $request, $order, $imagePath) {
+            $tryout->passages()
+                ->where('order', '>=', $order)
+                ->increment('order');
+
+            $tryout->passages()->create([
+                'title'         => $request->title,
+                'passage_text'  => $request->passage_text,
+                'passage_image' => $imagePath,
+                'source'        => $request->source,
+                'order'         => $order,
+            ]);
+        });
+
+        return back()->with('success', 'Soal cerita/stimulus berhasil ditambahkan. Sekarang soal bisa dikaitkan ke cerita tersebut.');
+    }
+
+    public function destroyPassage(TryoutPassage $passage): RedirectResponse
+    {
+        $tryoutId = $passage->tryout_id;
+        $tryout = $passage->tryout;
+
+        DB::transaction(function () use ($passage, $tryout) {
+            $passage->questions()->update(['passage_id' => null]);
+            $this->deletePublicUpload($passage->passage_image);
+            $passage->delete();
+
+            if ($tryout) {
+                $tryout->passages()->orderBy('order')->get()->values()->each(function (TryoutPassage $item, int $index) {
+                    $item->update(['order' => $index + 1]);
+                });
+            }
+        });
+
+        return redirect()->route('admin.tryouts.show', $tryoutId)
+            ->with('success', 'Soal cerita/stimulus berhasil dihapus. Soal yang memakai cerita tersebut tidak ikut terhapus.');
+    }
+
     public function destroyQuestion(TryoutQuestion $question): RedirectResponse
     {
         $tryoutId = $question->tryout_id;
+        $this->deletePublicUpload($question->question_image);
         $question->delete();
 
         // Update total dan rapikan kembali nomor soal agar berurutan.
@@ -266,5 +335,36 @@ class TryoutController extends Controller
 
         return redirect()->route('admin.tryouts.show', $tryoutId)
             ->with('success', 'Soal berhasil dihapus.');
+    }
+
+    private function uploadTryoutImage(Request $request, string $field): ?string
+    {
+        if (!$request->hasFile($field)) {
+            return null;
+        }
+
+        $file = $request->file($field);
+        $directory = public_path('uploads/tryouts');
+
+        if (!File::exists($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        $filename = now()->format('YmdHis') . '-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $file->move($directory, $filename);
+
+        return 'uploads/tryouts/' . $filename;
+    }
+
+    private function deletePublicUpload(?string $path): void
+    {
+        if (!$path) {
+            return;
+        }
+
+        $fullPath = public_path($path);
+        if (File::exists($fullPath)) {
+            File::delete($fullPath);
+        }
     }
 }

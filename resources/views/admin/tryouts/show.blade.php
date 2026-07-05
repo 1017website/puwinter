@@ -13,6 +13,14 @@
     .opt-row.correct{background:#ECFDF5; border-color:#A7F3D0;}
     .opt-key{width:24px; height:24px; border-radius:6px; background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;}
     .opt-row.correct .opt-key{background:var(--success); color:#fff;}
+    .passage-card{border:1px solid #BFDBFE; background:#EFF6FF; border-radius:12px; padding:14px; margin-bottom:12px;}
+    .passage-title{font-size:13px; font-weight:800; color:#1D4ED8; margin-bottom:8px; display:flex; align-items:center; gap:8px;}
+    .passage-text{font-size:13.5px; line-height:1.7; color:var(--text-main); white-space:pre-wrap;}
+    .stimulus-image{max-width:100%; height:auto; border:1px solid var(--border); border-radius:10px; display:block; margin:10px 0; background:#fff;}
+    .passage-list{display:grid; grid-template-columns:1fr; gap:12px;}
+    .passage-admin-card{border:1px solid var(--border); border-radius:12px; padding:14px; background:#fff;}
+    .passage-admin-head{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:10px;}
+    .muted-small{font-size:12px; color:var(--muted); line-height:1.5;}
     /* Modal */
     .modal-overlay{position:fixed; inset:0; background:rgba(15,23,42,0.5); z-index:1000; display:flex; align-items:flex-start; justify-content:center; padding:24px 16px; overflow-y:auto;}
     .modal-box{background:#fff; border-radius:14px; width:100%; max-width:1180px; box-shadow:0 16px 50px rgba(0,0,0,0.25);}
@@ -46,7 +54,7 @@
 
 @section('content')
 
-<div x-data="{ showAdd: {{ $errors->any() ? 'true' : 'false' }} }">
+<div x-data="{ showAdd: {{ $errors->any() ? 'true' : 'false' }}, showPassage:false }">
 
 <div class="page-header">
     <div>
@@ -69,6 +77,9 @@
                 </button>
             </form>
         @endif
+        <button @click="showPassage=true" class="btn btn-outline">
+            <i class="fas fa-book-open"></i> Tambah Soal Cerita
+        </button>
         <button @click="showAdd=true" class="btn btn-primary">
             <i class="fas fa-plus"></i> Tambah Soal
         </button>
@@ -88,6 +99,51 @@
     </div>
 </div>
 
+{{-- Soal cerita / stimulus --}}
+<div class="card" style="margin-bottom:16px;">
+    <div style="font-size:15px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <span>Soal Cerita / Stimulus ({{ $tryout->passages->count() }})</span>
+        <button @click="showPassage=true" class="btn btn-outline btn-sm"><i class="fas fa-plus"></i> Tambah Cerita</button>
+    </div>
+    <div class="muted-small" style="margin-bottom:14px;">
+        Gunakan bagian ini untuk teks panjang, cerita, tabel, atau infografik seperti contoh PDF TKA: satu cerita/stimulus dapat dipakai oleh banyak soal.
+    </div>
+
+    @if($tryout->passages->count())
+        <div class="passage-list">
+            @foreach($tryout->passages as $passage)
+                <div class="passage-admin-card">
+                    <div class="passage-admin-head">
+                        <div style="min-width:0;">
+                            <div style="font-weight:800; font-size:14px; color:var(--text-main);">
+                                {{ $passage->order }}. {{ $passage->title ?: 'Tanpa Judul' }}
+                            </div>
+                            <div class="muted-small">
+                                Dipakai oleh {{ $passage->questions->count() }} soal
+                                @if($passage->source) · Sumber: {{ $passage->source }} @endif
+                            </div>
+                        </div>
+                        <form method="POST" action="{{ route('admin.tryouts.passages.destroy', $passage) }}" onsubmit="return confirm('Hapus soal cerita ini? Soal yang memakai cerita ini tidak ikut terhapus, hanya dilepas dari cerita.')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                    @if($passage->passage_image)
+                        <img src="{{ asset($passage->passage_image) }}" alt="Gambar stimulus {{ $passage->title }}" class="stimulus-image" style="max-height:260px; object-fit:contain;">
+                    @endif
+                    @if($passage->passage_text)
+                        <div class="passage-text">{{ Str::limit($passage->passage_text, 420) }}</div>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    @else
+        <div style="text-align:center; padding:28px; color:var(--muted); border:1px dashed var(--border); border-radius:12px; background:var(--bg);">
+            Belum ada soal cerita/stimulus. Klik <strong>Tambah Soal Cerita</strong> untuk membuat teks atau upload gambar stimulus.
+        </div>
+    @endif
+</div>
+
 {{-- Daftar soal full-width --}}
 <div class="card">
     <div style="font-size:15px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between;">
@@ -104,6 +160,12 @@
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
                         <span class="badge badge-gray">Bobot: {{ rtrim(rtrim(number_format($question->scoreWeight(), 2, ',', '.'), '0'), ',') }}</span>
                         <span style="font-size:11.5px; color:var(--muted);">{{ $question->subject->name ?? '' }}</span>
+                        @if($question->passage)
+                            <span class="badge" style="background:#DBEAFE; color:#1D4ED8;"><i class="fas fa-book-open"></i> {{ Str::limit($question->passage->title ?: 'Soal Cerita', 28) }}</span>
+                        @endif
+                        @if($question->question_image)
+                            <span class="badge" style="background:#F0FDF4; color:#047857;"><i class="fas fa-image"></i> Gambar</span>
+                        @endif
                         @if($question->isMultiple())
                             <span class="badge" style="background:#EEF2FF; color:#4F46E5;">Multiple</span>
                             <span style="font-size:11.5px; color:var(--muted);">· Kunci: <strong style="color:var(--success);">{{ strtoupper(implode(', ', $question->correctKeys())) }}</strong></span>
@@ -125,6 +187,23 @@
         </div>
 
         <div class="q-body" x-show="open" x-cloak>
+            @if($question->passage)
+                <div class="passage-card" style="margin-top:14px;">
+                    <div class="passage-title"><i class="fas fa-book-open"></i> {{ $question->passage->title ?: 'Soal Cerita / Stimulus' }}</div>
+                    @if($question->passage->passage_image)
+                        <img src="{{ asset($question->passage->passage_image) }}" alt="Gambar stimulus" class="stimulus-image" style="max-height:320px; object-fit:contain;">
+                    @endif
+                    @if($question->passage->passage_text)
+                        <div class="passage-text">{{ $question->passage->passage_text }}</div>
+                    @endif
+                    @if($question->passage->source)
+                        <div class="muted-small" style="margin-top:8px;">Sumber: {{ $question->passage->source }}</div>
+                    @endif
+                </div>
+            @endif
+            @if($question->question_image)
+                <img src="{{ asset($question->question_image) }}" alt="Gambar soal" class="stimulus-image" style="max-height:320px; object-fit:contain;">
+            @endif
             <div style="font-size:14px; line-height:1.7; color:var(--text-main); margin:14px 0 16px; white-space:pre-wrap;">{{ $question->question_text }}</div>
 
             @php $qKeys = $question->correctKeys(); @endphp
@@ -156,6 +235,63 @@
     @endforelse
 </div>
 
+{{-- ===================== MODAL TAMBAH SOAL CERITA / STIMULUS ===================== --}}
+<template x-teleport="body">
+    <div class="modal-overlay" x-show="showPassage" x-cloak @keydown.escape.window="showPassage=false">
+        <div class="modal-box" style="max-width:900px;" @click.outside="showPassage=false">
+            <div class="modal-head">
+                <div class="modal-title-wrap">
+                    <div style="font-size:16px; font-weight:700;">Tambah Soal Cerita / Stimulus</div>
+                    <span style="font-size:12px; color:var(--muted); background:var(--bg); border:1px solid var(--border); border-radius:999px; padding:5px 10px;">
+                        No. {{ old('passage_order', $tryout->passages->max('order') + 1) }}
+                    </span>
+                </div>
+                <button @click="showPassage=false" style="background:none; border:none; font-size:18px; cursor:pointer; color:var(--muted);">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-content">
+                <form method="POST" action="{{ route('admin.tryouts.passages.store', $tryout) }}" enctype="multipart/form-data">
+                    @csrf
+                    <div style="display:grid; grid-template-columns:120px minmax(0,1fr); gap:14px; margin-bottom:16px;">
+                        <div>
+                            <label class="field-label">Urutan <span style="color:red;">*</span></label>
+                            <input type="number" name="order" min="1" class="field-input" value="{{ old('passage_order', $tryout->passages->max('order') + 1) }}">
+                        </div>
+                        <div>
+                            <label class="field-label">Judul Cerita / Stimulus</label>
+                            <input type="text" name="title" class="field-input" value="{{ old('title') }}" placeholder="Contoh: The Lion and the Mouse / Effective Study Technique">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:16px;">
+                        <label class="field-label">Teks Cerita / Stimulus</label>
+                        <textarea name="passage_text" rows="8" class="field-input" placeholder="Tulis cerita panjang, bacaan, tabel dalam teks, atau stimulus yang akan dipakai beberapa soal...">{{ old('passage_text') }}</textarea>
+                        <div class="answer-helper">Boleh dikosongkan jika stimulus hanya berupa gambar/infografik.</div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; margin-bottom:20px;">
+                        <div>
+                            <label class="field-label">Gambar Stimulus / Infografik</label>
+                            <input type="file" name="passage_image" class="field-input" accept="image/jpeg,image/png,image/webp">
+                            <div class="answer-helper">Format jpg, png, webp. Maksimal 4 MB.</div>
+                        </div>
+                        <div>
+                            <label class="field-label">Sumber (opsional)</label>
+                            <input type="text" name="source" class="field-input" value="{{ old('source') }}" placeholder="URL/sumber adaptasi jika ada">
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:10px; justify-content:flex-end;">
+                        <button type="button" @click="showPassage=false" class="btn btn-outline">Batal</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Soal Cerita</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</template>
+
 {{-- ===================== MODAL TAMBAH SOAL ===================== --}}
 <template x-teleport="body">
     <div class="modal-overlay" x-show="showAdd" x-cloak @keydown.escape.window="showAdd=false">
@@ -172,7 +308,7 @@
                 </button>
             </div>
             <div class="modal-content">
-                <form method="POST" action="{{ route('admin.tryouts.questions.store', $tryout) }}"
+                <form method="POST" action="{{ route('admin.tryouts.questions.store', $tryout) }}" enctype="multipart/form-data"
                       x-data="{
                         qtype: '{{ old('question_type','single') }}',
                         correct: '{{ old('correct_answer','a') }}',
@@ -211,6 +347,19 @@
                     </div>
 
                     <div style="margin-bottom:16px;">
+                        <label class="field-label">Soal Cerita / Stimulus</label>
+                        <select name="passage_id" class="field-input">
+                            <option value="">Tidak memakai soal cerita</option>
+                            @foreach($tryout->passages as $passage)
+                                <option value="{{ $passage->id }}" {{ old('passage_id') == $passage->id ? 'selected' : '' }}>
+                                    {{ $passage->order }}. {{ $passage->title ?: Str::limit($passage->passage_text, 60) }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="answer-helper">Pilih jika soal ini menggunakan bacaan/gambar yang sama dengan soal lain.</div>
+                    </div>
+
+                    <div style="margin-bottom:16px;">
                         <label class="field-label">Tipe Soal <span style="color:red;">*</span></label>
                         <select name="question_type" x-model="qtype" class="field-input">
                             <option value="single">Pilihan Ganda (1 jawaban)</option>
@@ -226,6 +375,12 @@
                         <textarea name="question_text" rows="4" class="field-input {{ $errors->has('question_text') ? 'is-invalid' : '' }}"
                                   placeholder="Tulis soal di sini... (boleh panjang, beberapa paragraf)">{{ old('question_text') }}</textarea>
                         @error('question_text') <div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div style="margin-bottom:16px;">
+                        <label class="field-label">Gambar Soal (opsional)</label>
+                        <input type="file" name="question_image" class="field-input" accept="image/jpeg,image/png,image/webp">
+                        <div class="answer-helper">Gunakan untuk soal yang punya gambar/tabel khusus. Format jpg, png, webp maksimal 4 MB.</div>
                     </div>
 
                     {{-- Opsi jawaban: input jawaban dan tombol kunci dipisah agar lebih mudah diisi --}}

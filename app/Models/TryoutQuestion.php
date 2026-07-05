@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class TryoutQuestion extends Model
 {
     protected $fillable = [
-        'tryout_id', 'subject_id', 'question_type', 'question_text', 'question_image',
+        'tryout_id', 'passage_id', 'subject_id', 'question_type', 'question_text', 'question_image',
         'option_a', 'option_b', 'option_c', 'option_d', 'option_e',
         'correct_answer', 'correct_answers', 'explanation', 'explanation_video_url',
         'difficulty', 'score_weight', 'order', 'correct_rate', 'answered_count',
@@ -183,6 +183,11 @@ class TryoutQuestion extends Model
     public function tryout(): BelongsTo
     {
         return $this->belongsTo(Tryout::class);
+    }
+
+    public function passage(): BelongsTo
+    {
+        return $this->belongsTo(TryoutPassage::class, 'passage_id');
     }
 
     public function subject(): BelongsTo

@@ -61,7 +61,7 @@ class TryoutController extends Controller
     // Mulai tryout — buat attempt record
     public function start(Request $request, int $id): View|RedirectResponse
     {
-        $tryout = Tryout::published()->with('questions.subject')->findOrFail($id);
+        $tryout = Tryout::published()->with(['questions.subject', 'questions.passage'])->findOrFail($id);
 
         // Cek akses kelas/grade
         if (!$request->user()->canAccessGradeId($tryout->grade_id)) {
@@ -258,7 +258,8 @@ class TryoutController extends Controller
         $attempt = UserTryoutAttempt::where('id', $attemptId)
             ->where('user_id', $request->user()->id)
             ->whereNotNull('submitted_at')
-            ->with(['tryout.questions.subject'])
+            ->with(['tryout.questions.subject',
+                'tryout.questions.passage'])
             ->firstOrFail();
 
         $totalParticipants = UserTryoutAttempt::where('tryout_id', $attempt->tryout_id)

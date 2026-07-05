@@ -96,6 +96,11 @@ class Tryout extends Model
         return $this->belongsTo(Grade::class);
     }
 
+    public function passages(): HasMany
+    {
+        return $this->hasMany(TryoutPassage::class)->orderBy('order');
+    }
+
     public function questions(): HasMany
     {
         return $this->hasMany(TryoutQuestion::class)->orderBy('order');

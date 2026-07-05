@@ -105,6 +105,7 @@ class TryoutResultController extends Controller
             'user.grade',
             'tryout.subject',
             'tryout.questions.subject',
+            'tryout.questions.passage',
         ]);
 
         $tryout    = $attempt->tryout;

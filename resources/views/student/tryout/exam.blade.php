@@ -121,6 +121,59 @@
             font-weight: 500;
         }
 
+        .passage-card {
+            background: #FFFFFF;
+            border: 1.5px solid #BFDBFE;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 22px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+        }
+
+        .passage-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #EFF6FF;
+            color: #1D4ED8;
+            border-radius: 999px;
+            padding: 5px 11px;
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .passage-title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 800;
+            color: #0F172A;
+            margin-bottom: 12px;
+        }
+
+        .passage-text {
+            font-size: 14.5px;
+            line-height: 1.8;
+            color: #334155;
+            white-space: pre-wrap;
+        }
+
+        .stimulus-image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            max-height: 560px;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 1px solid #E2E8F0;
+            background: #fff;
+            margin: 12px auto 16px;
+        }
+
+        .question-image-wrap {
+            margin-bottom: 18px;
+        }
+
         /* Answer Options */
         .options-list {
             display: flex;
@@ -434,6 +487,30 @@
                     </button>
                 </div>
             </div>
+
+            @if($question->passage)
+                <div class="passage-card">
+                    <div class="passage-label"><i class="fas fa-book-open"></i> Soal Cerita / Stimulus</div>
+                    @if($question->passage->title)
+                        <div class="passage-title">{{ $question->passage->title }}</div>
+                    @endif
+                    @if($question->passage->passage_image)
+                        <img src="{{ asset($question->passage->passage_image) }}" alt="Gambar stimulus" class="stimulus-image">
+                    @endif
+                    @if($question->passage->passage_text)
+                        <div class="passage-text">{{ $question->passage->passage_text }}</div>
+                    @endif
+                    @if($question->passage->source)
+                        <div style="font-size:12px; color:#64748B; margin-top:12px;">Sumber: {{ $question->passage->source }}</div>
+                    @endif
+                </div>
+            @endif
+
+            @if($question->question_image)
+                <div class="question-image-wrap">
+                    <img src="{{ asset($question->question_image) }}" alt="Gambar soal" class="stimulus-image">
+                </div>
+            @endif
 
             {{-- Question Text --}}
             <div class="question-text">
