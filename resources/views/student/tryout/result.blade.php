@@ -170,10 +170,17 @@
             @php
                 $userAnswer = $answers[$question->id] ?? null;
 
-                // Normalisasi: jawaban bisa string (single) atau array (multiple).
-                $pickedArr = is_array($userAnswer)
-                    ? array_map(fn($v) => strtolower((string) $v), $userAnswer)
-                    : ($userAnswer !== null && $userAnswer !== '' ? [strtolower((string) $userAnswer)] : []);
+                // Normalisasi: jawaban bisa string (single), array numerik (multiple), atau array assoc row=>kategori (matrix).
+                $pickedArr = [];
+                if ($question->isMatrix()) {
+                    $pickedArr = is_array($userAnswer)
+                        ? array_filter($userAnswer, fn($v) => $v !== null && $v !== '')
+                        : [];
+                } else {
+                    $pickedArr = is_array($userAnswer)
+                        ? array_map(fn($v) => strtolower((string) $v), $userAnswer)
+                        : ($userAnswer !== null && $userAnswer !== '' ? [strtolower((string) $userAnswer)] : []);
+                }
 
                 $gradeRes   = count($pickedArr) ? $question->grade($userAnswer, $question->scoreWeight()) : ['status' => 'empty', 'earned' => 0, 'max' => $question->scoreWeight()];
                 $isCorrect  = ($gradeRes['status'] ?? '') === 'correct';
@@ -181,17 +188,17 @@
                 $isEmpty    = count($pickedArr) === 0;
 
                 $keysArr     = $question->correctKeys();
-                $pickedLabel = count($pickedArr) ? strtoupper(implode(', ', $pickedArr)) : '—';
-                $kunciLabel  = strtoupper(implode(', ', $keysArr));
+                $pickedLabel = $question->answerLabel($userAnswer);
+                $kunciLabel  = $question->correctAnswerLabel();
             @endphp
             <div style="border:1px solid var(--border); border-radius:10px; margin-bottom:12px; overflow:hidden;">
                 {{-- Question header --}}
-                <div style="padding:12px 16px; background:{{ $isCorrect ? '#ECFDF5' : ($isEmpty ? '#F8FAFC' : '#FEF2F2') }}; display:flex; align-items:center; justify-content:space-between;">
+                <div style="padding:12px 16px; background:{{ $isCorrect ? '#ECFDF5' : ($isPartial ? '#FFFBEB' : ($isEmpty ? '#F8FAFC' : '#FEF2F2')) }}; display:flex; align-items:center; justify-content:space-between;">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span style="width:28px; height:28px; border-radius:6px; background:{{ $isCorrect ? '#10B981' : ($isEmpty ? '#94A3B8' : '#EF4444') }}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;">
+                        <span style="width:28px; height:28px; border-radius:6px; background:{{ $isCorrect ? '#10B981' : ($isPartial ? '#F59E0B' : ($isEmpty ? '#94A3B8' : '#EF4444')) }}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;">
                             {{ $index + 1 }}
                         </span>
-                        <span style="font-size:13px; font-weight:600; color:{{ $isCorrect ? '#065F46' : ($isEmpty ? '#64748B' : '#991B1B') }};">
+                        <span style="font-size:13px; font-weight:600; color:{{ $isCorrect ? '#065F46' : ($isPartial ? '#92400E' : ($isEmpty ? '#64748B' : '#991B1B')) }};">
                             @if($isCorrect) <i class="fas fa-check-circle"></i> Benar
                             @elseif($isPartial) <i class="fas fa-adjust"></i> Partial
                             @elseif($isEmpty) <i class="fas fa-minus-circle"></i> Tidak Dijawab
@@ -264,23 +271,66 @@
                         <p style="font-size:14px; color:var(--text-main); margin-bottom:14px; line-height:1.7; white-space:pre-wrap;">{{ $question->question_text }}</p>
 
                         {{-- Options --}}
-                        @foreach($question->options() as $key => $text)
-                        @php
-                            $isKey    = in_array($key, $keysArr, true);
-                            $isPicked = in_array($key, $pickedArr, true);
-                            $wrongPick = $isPicked && !$isKey;
-                        @endphp
-                        <div style="padding:10px 14px; border-radius:8px; margin-bottom:6px; display:flex; align-items:flex-start; gap:10px;
-                            background:{{ $isKey ? '#ECFDF5' : ($wrongPick ? '#FEF2F2' : '#F8FAFC') }};
-                            border:1px solid {{ $isKey ? '#6EE7B7' : ($wrongPick ? '#FECACA' : '#E2E8F0') }};">
-                            <span style="width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;
-                                background:{{ $isKey ? '#10B981' : ($isPicked ? '#EF4444' : '#E2E8F0') }};
-                                color:{{ ($isKey || $isPicked) ? '#fff' : '#64748B' }};">
-                                {{ strtoupper($key) }}
-                            </span>
-                            <span style="font-size:13px; color:var(--text-main); padding-top:3px;">{{ $text }}</span>
-                        </div>
-                        @endforeach
+                        @if($question->isMatrix())
+                            @php
+                                $columns = $question->matrixColumns();
+                                $matrixKeys = $question->matrixCorrectAnswers();
+                                $pickedMap = is_array($userAnswer) ? $userAnswer : [];
+                            @endphp
+                            <table style="width:100%; border-collapse:collapse; margin-bottom:10px; font-size:13px;">
+                                <thead>
+                                    <tr>
+                                        <th style="background:#DBEAFE; color:#1E3A8A; padding:10px; border:1px solid #93C5FD; text-align:left;">Pernyataan / Teknik</th>
+                                        @foreach($columns as $columnLabel)
+                                            <th style="background:#DBEAFE; color:#1E3A8A; padding:10px; border:1px solid #93C5FD; text-align:center;">{{ $columnLabel }}</th>
+                                        @endforeach
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($question->options() as $rowKey => $rowText)
+                                        <tr>
+                                            <td style="padding:10px; border:1px solid #E2E8F0; color:#334155;">{{ $rowText }}</td>
+                                            @foreach($columns as $columnKey => $columnLabel)
+                                                @php
+                                                    $isKey = ($matrixKeys[$rowKey] ?? null) === $columnKey;
+                                                    $isPicked = ($pickedMap[$rowKey] ?? null) === $columnKey;
+                                                    $wrongPick = $isPicked && !$isKey;
+                                                @endphp
+                                                <td style="padding:10px; border:1px solid #E2E8F0; text-align:center; background:{{ $isKey ? '#ECFDF5' : ($wrongPick ? '#FEF2F2' : '#fff') }};">
+                                                    @if($isKey)
+                                                        <i class="fas fa-check-circle" style="color:#10B981;"></i>
+                                                    @elseif($wrongPick)
+                                                        <i class="fas fa-times-circle" style="color:#EF4444;"></i>
+                                                    @elseif($isPicked)
+                                                        <i class="fas fa-circle" style="color:#2563EB;"></i>
+                                                    @else
+                                                        <span style="color:#CBD5E1;">○</span>
+                                                    @endif
+                                                </td>
+                                            @endforeach
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @else
+                            @foreach($question->options() as $key => $text)
+                            @php
+                                $isKey    = in_array($key, $keysArr, true);
+                                $isPicked = in_array($key, $pickedArr, true);
+                                $wrongPick = $isPicked && !$isKey;
+                            @endphp
+                            <div style="padding:10px 14px; border-radius:8px; margin-bottom:6px; display:flex; align-items:flex-start; gap:10px;
+                                background:{{ $isKey ? '#ECFDF5' : ($wrongPick ? '#FEF2F2' : '#F8FAFC') }};
+                                border:1px solid {{ $isKey ? '#6EE7B7' : ($wrongPick ? '#FECACA' : '#E2E8F0') }};">
+                                <span style="width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;
+                                    background:{{ $isKey ? '#10B981' : ($isPicked ? '#EF4444' : '#E2E8F0') }};
+                                    color:{{ ($isKey || $isPicked) ? '#fff' : '#64748B' }};">
+                                    {{ strtoupper($key) }}
+                                </span>
+                                <span style="font-size:13px; color:var(--text-main); padding-top:3px;">{{ $text }}</span>
+                            </div>
+                            @endforeach
+                        @endif
 
                         {{-- Explanation --}}
                         @if($question->explanation)

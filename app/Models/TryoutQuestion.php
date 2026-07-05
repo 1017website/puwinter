@@ -12,18 +12,20 @@ class TryoutQuestion extends Model
     protected $fillable = [
         'tryout_id', 'passage_id', 'subject_id', 'question_type', 'question_text', 'question_image',
         'option_a', 'option_b', 'option_c', 'option_d', 'option_e',
-        'correct_answer', 'correct_answers', 'explanation', 'explanation_video_url',
+        'correct_answer', 'correct_answers', 'matrix_columns', 'explanation', 'explanation_video_url',
         'difficulty', 'score_weight', 'order', 'correct_rate', 'answered_count',
     ];
 
     protected $casts = [
         'correct_answers' => 'array',
+        'matrix_columns'  => 'array',
         'score_weight'    => 'float',
     ];
 
     // Tipe soal
     public const TYPE_SINGLE   = 'single';   // pilihan ganda biasa (1 kunci)
     public const TYPE_MULTIPLE = 'multiple'; // multiple jawaban (>1 kunci)
+    public const TYPE_MATRIX   = 'matrix';   // pilihan ganda kompleks kategori/tabel
 
     // -------------------------------------------------------------------------
     // Scopes
@@ -43,17 +45,125 @@ class TryoutQuestion extends Model
         return $this->question_type === self::TYPE_MULTIPLE;
     }
 
+    public function isMatrix(): bool
+    {
+        return $this->question_type === self::TYPE_MATRIX;
+    }
+
     /**
-     * Daftar kunci jawaban yang sudah dinormalisasi (lowercase) untuk tipe multiple.
+     * Daftar kunci jawaban yang sudah dinormalisasi (lowercase) untuk tipe single/multiple.
+     * Untuk tipe matrix, gunakan matrixCorrectAnswers() karena bentuknya row => kategori.
      * @return array<int,string>
      */
     public function correctKeys(): array
     {
+        if ($this->isMatrix()) {
+            return array_map(
+                fn($row, $column) => strtoupper((string) $row) . ': ' . $this->matrixColumnLabel((string) $column),
+                array_keys($this->matrixCorrectAnswers()),
+                array_values($this->matrixCorrectAnswers())
+            );
+        }
+
         if (!$this->isMultiple()) {
             return [strtolower((string) $this->correct_answer)];
         }
+
         $keys = is_array($this->correct_answers) ? $this->correct_answers : [];
         return array_values(array_unique(array_map(fn($k) => strtolower((string) $k), $keys)));
+    }
+
+    /**
+     * Label kolom untuk soal kategori/matrix.
+     * Format disimpan sebagai JSON: {"col_1":"Time Management", "col_2":"Self Management"}.
+     * @return array<string,string>
+     */
+    public function matrixColumns(): array
+    {
+        $columns = is_array($this->matrix_columns) ? $this->matrix_columns : [];
+
+        $normalized = [];
+        foreach ($columns as $key => $label) {
+            $key = (string) $key;
+            if (!str_starts_with($key, 'col_')) {
+                $position = is_numeric($key) ? ((int) $key + 1) : (count($normalized) + 1);
+                $key = 'col_' . $position;
+            }
+            $label = trim((string) $label);
+            if ($label !== '') {
+                $normalized[$key] = $label;
+            }
+        }
+
+        return $normalized ?: [
+            'col_1' => 'Kategori 1',
+            'col_2' => 'Kategori 2',
+        ];
+    }
+
+    public function matrixColumnLabel(?string $columnKey): string
+    {
+        if (!$columnKey) {
+            return '—';
+        }
+
+        return $this->matrixColumns()[$columnKey] ?? $columnKey;
+    }
+
+    /**
+     * Kunci soal matrix: [rowKey => columnKey], contoh ['a' => 'col_2'].
+     * @return array<string,string>
+     */
+    public function matrixCorrectAnswers(): array
+    {
+        $answers = is_array($this->correct_answers) ? $this->correct_answers : [];
+        $rows = array_keys($this->options());
+        $columns = array_keys($this->matrixColumns());
+        $normalized = [];
+
+        foreach ($answers as $rowKey => $columnKey) {
+            $rowKey = strtolower((string) $rowKey);
+            $columnKey = (string) $columnKey;
+            if (in_array($rowKey, $rows, true) && in_array($columnKey, $columns, true)) {
+                $normalized[$rowKey] = $columnKey;
+            }
+        }
+
+        return $normalized;
+    }
+
+    public function answerLabel(mixed $answer): string
+    {
+        if ($this->isMatrix()) {
+            $answerMap = is_array($answer) ? $answer : [];
+            $parts = [];
+            foreach ($this->options() as $rowKey => $rowText) {
+                $columnKey = $answerMap[$rowKey] ?? null;
+                if ($columnKey) {
+                    $parts[] = strtoupper((string) $rowKey) . ': ' . $this->matrixColumnLabel((string) $columnKey);
+                }
+            }
+            return $parts ? implode(', ', $parts) : '—';
+        }
+
+        if (is_array($answer)) {
+            return count($answer) ? strtoupper(implode(', ', array_values($answer))) : '—';
+        }
+
+        return ($answer !== null && $answer !== '') ? strtoupper((string) $answer) : '—';
+    }
+
+    public function correctAnswerLabel(): string
+    {
+        if ($this->isMatrix()) {
+            $parts = [];
+            foreach ($this->matrixCorrectAnswers() as $rowKey => $columnKey) {
+                $parts[] = strtoupper((string) $rowKey) . ': ' . $this->matrixColumnLabel((string) $columnKey);
+            }
+            return $parts ? implode(', ', $parts) : '—';
+        }
+
+        return strtoupper(implode(', ', $this->correctKeys()));
     }
 
     // -------------------------------------------------------------------------
@@ -106,6 +216,32 @@ class TryoutQuestion extends Model
      */
     public function grade(mixed $userAnswer, float $fullPoint = 1.0, float $penaltyPerWrong = 0.0): array
     {
+        // ---- MATRIX / KATEGORI ----
+        if ($this->isMatrix()) {
+            $keys = $this->matrixCorrectAnswers();
+            $totalRows = max(1, count($keys));
+            $picked = is_array($userAnswer) ? $userAnswer : [];
+            $picked = array_filter($picked, fn($value) => $value !== null && $value !== '');
+
+            if (count($picked) === 0) {
+                return ['status' => 'empty', 'earned' => 0.0, 'max' => $fullPoint];
+            }
+
+            $right = 0;
+            foreach ($keys as $rowKey => $columnKey) {
+                if (($picked[$rowKey] ?? null) === $columnKey) {
+                    $right++;
+                }
+            }
+
+            $earned = max(0.0, min($fullPoint, round(($right / $totalRows) * $fullPoint, 2)));
+            $status = $right === $totalRows
+                ? 'correct'
+                : ($earned > 0 ? 'partial' : 'wrong');
+
+            return ['status' => $status, 'earned' => $earned, 'max' => $fullPoint];
+        }
+
         $keys = $this->correctKeys();
         $totalKeys = max(1, count($keys));
 

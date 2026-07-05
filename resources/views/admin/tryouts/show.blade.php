@@ -42,6 +42,17 @@
     .answer-key-btn.active{border-color:var(--success); color:var(--success); background:#F0FDF4;}
     .answer-key-btn input{cursor:pointer; margin:0;}
     .answer-textarea{min-height:52px; height:52px;}
+    .matrix-editor{border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px;}
+    .matrix-row{display:grid; grid-template-columns:minmax(0,1fr) 160px 160px; gap:0; border-top:1px solid var(--border); align-items:stretch;}
+    .matrix-row:first-child{border-top:none;}
+    .matrix-head{background:#EFF6FF; color:#1D4ED8; font-weight:800; font-size:12px;}
+    .matrix-cell{padding:10px 12px; border-left:1px solid var(--border); display:flex; align-items:center; gap:8px;}
+    .matrix-cell:first-child{border-left:none;}
+    .matrix-radio-label{justify-content:center; cursor:pointer; font-size:12.5px; font-weight:700;}
+    .matrix-preview{width:100%; border-collapse:collapse; margin-bottom:12px; font-size:13px;}
+    .matrix-preview th{background:#DBEAFE; color:#1E3A8A; padding:10px; border:1px solid #93C5FD; text-align:center;}
+    .matrix-preview td{padding:10px; border:1px solid var(--border); vertical-align:middle;}
+    .matrix-preview td:not(:first-child){text-align:center;}
     @media(max-width:900px){
         .modal-box{max-width:96vw;}
         .question-meta-grid{grid-template-columns:1fr;}
@@ -224,7 +235,10 @@
                         @if($question->question_image)
                             <span class="badge" style="background:#F0FDF4; color:#047857;"><i class="fas fa-image"></i> Gambar</span>
                         @endif
-                        @if($question->isMultiple())
+                        @if($question->isMatrix())
+                            <span class="badge" style="background:#FEF3C7; color:#92400E;">Kategori</span>
+                            <span style="font-size:11.5px; color:var(--muted);">· {{ count($question->options()) }} baris kategori</span>
+                        @elseif($question->isMultiple())
                             <span class="badge" style="background:#EEF2FF; color:#4F46E5;">Multiple</span>
                             <span style="font-size:11.5px; color:var(--muted);">· Kunci: <strong style="color:var(--success);">{{ strtoupper(implode(', ', $question->correctKeys())) }}</strong></span>
                         @else
@@ -264,18 +278,51 @@
             @endif
             <div style="font-size:14px; line-height:1.7; color:var(--text-main); margin:14px 0 16px; white-space:pre-wrap;">{{ $question->question_text }}</div>
 
-            @php $qKeys = $question->correctKeys(); @endphp
-            @foreach($opts as $key => $val)
-                @if(!is_null($val) && $val !== '')
-                <div class="opt-row {{ in_array($key, $qKeys) ? 'correct' : '' }}">
-                    <span class="opt-key">{{ strtoupper($key) }}</span>
-                    <span style="white-space:pre-wrap; flex:1;">{{ $val }}</span>
-                    @if(in_array($key, $qKeys))
-                        <i class="fas fa-check-circle" style="color:var(--success); flex-shrink:0; margin-top:2px;"></i>
+            @if($question->isMatrix())
+                @php
+                    $columns = $question->matrixColumns();
+                    $matrixKeys = $question->matrixCorrectAnswers();
+                @endphp
+                <table class="matrix-preview">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; width:55%;">Pernyataan / Teknik</th>
+                            @foreach($columns as $columnLabel)
+                                <th>{{ $columnLabel }}</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($question->options() as $rowKey => $rowText)
+                            <tr>
+                                <td style="white-space:pre-wrap;">{{ $rowText }}</td>
+                                @foreach($columns as $columnKey => $columnLabel)
+                                    <td>
+                                        @if(($matrixKeys[$rowKey] ?? null) === $columnKey)
+                                            <i class="fas fa-check-circle" style="color:var(--success);"></i>
+                                        @else
+                                            <span style="color:var(--muted);">—</span>
+                                        @endif
+                                    </td>
+                                @endforeach
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @else
+                @php $qKeys = $question->correctKeys(); @endphp
+                @foreach($opts as $key => $val)
+                    @if(!is_null($val) && $val !== '')
+                    <div class="opt-row {{ in_array($key, $qKeys) ? 'correct' : '' }}">
+                        <span class="opt-key">{{ strtoupper($key) }}</span>
+                        <span style="white-space:pre-wrap; flex:1;">{{ $val }}</span>
+                        @if(in_array($key, $qKeys))
+                            <i class="fas fa-check-circle" style="color:var(--success); flex-shrink:0; margin-top:2px;"></i>
+                        @endif
+                    </div>
                     @endif
-                </div>
-                @endif
-            @endforeach
+                @endforeach
+            @endif
 
             @if($question->explanation)
             <div style="margin-top:14px; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:8px; padding:12px 14px;">
@@ -372,7 +419,7 @@
                         correct: '{{ old('correct_answer','a') }}',
                         multi: {{ collect((array) old('correct_answers', []))->map(fn($k)=>"'".$k."'")->implode(',') ? '['.collect((array) old('correct_answers', []))->map(fn($k)=>"'".$k."'")->implode(',').']' : '[]' }},
                         toggleMulti(k){ this.multi.includes(k) ? this.multi=this.multi.filter(x=>x!==k) : this.multi.push(k) },
-                        isKey(k){ return this.qtype==='multiple' ? this.multi.includes(k) : this.correct===k }
+                        isKey(k){ return this.qtype==='multiple' ? this.multi.includes(k) : (this.qtype==='single' ? this.correct===k : false) }
                       }">
                     @csrf
 
@@ -422,9 +469,13 @@
                         <select name="question_type" x-model="qtype" class="field-input">
                             <option value="single">Pilihan Ganda (1 jawaban)</option>
                             <option value="multiple">Multiple Jawaban (beberapa benar)</option>
+                            <option value="matrix">Pilihan Ganda Kompleks - Kategori</option>
                         </select>
                         <div x-show="qtype==='multiple'" style="font-size:11.5px; color:var(--muted); margin-top:6px;">
                             <i class="fas fa-info-circle"></i> Pilih minimal 2 kunci. Penilaian partial credit: nilai proporsional dari bobot soal sesuai jumlah kunci benar yang dipilih, tanpa penalti opsi salah.
+                        </div>
+                        <div x-show="qtype==='matrix'" x-cloak style="font-size:11.5px; color:var(--muted); margin-top:6px;">
+                            <i class="fas fa-table-list"></i> Cocok untuk soal tabel kategori seperti Time Management / Self Management. Nilai partial dihitung per baris yang benar.
                         </div>
                     </div>
 
@@ -441,36 +492,88 @@
                         <div class="answer-helper">Gunakan untuk soal yang punya gambar/tabel khusus. Format jpg, png, webp maksimal 4 MB.</div>
                     </div>
 
-                    {{-- Opsi jawaban: input jawaban dan tombol kunci dipisah agar lebih mudah diisi --}}
-                    <label class="field-label">Opsi Jawaban</label>
-                    <div class="answer-helper" style="margin-bottom:10px;">
-                        <span x-show="qtype==='single'">Isi jawaban di kolom tengah, lalu pilih tombol <strong>Kunci</strong> pada jawaban yang benar.</span>
-                        <span x-show="qtype==='multiple'" x-cloak>Isi jawaban di kolom tengah, lalu centang semua tombol <strong>Kunci</strong> yang benar. Minimal 2 kunci.</span>
-                    </div>
-                    <div class="answer-list">
-                        @foreach(['a'=>'A','b'=>'B','c'=>'C','d'=>'D','e'=>'E (opsional)'] as $key => $label)
-                        <div class="answer-item" :class="isKey('{{ $key }}') ? 'active' : ''">
-                            <div class="answer-letter">{{ strtoupper($key[0]) }}</div>
-                            <textarea name="option_{{ $key }}" rows="2" class="field-input answer-textarea"
-                                      {{ $key !== 'e' ? 'required' : '' }}
-                                      placeholder="Tulis jawaban {{ $label }}...">{{ old('option_'.$key) }}</textarea>
-                            <label class="answer-key-btn" :class="isKey('{{ $key }}') ? 'active' : ''">
-                                {{-- single --}}
-                                <input type="radio" name="correct_answer" value="{{ $key }}" x-model="correct"
-                                       x-show="qtype==='single'"
-                                       {{ old('correct_answer','a') === $key ? 'checked' : '' }}>
-                                {{-- multiple --}}
-                                <input type="checkbox" name="correct_answers[]" value="{{ $key }}"
-                                       x-show="qtype==='multiple'" x-cloak
-                                       :checked="multi.includes('{{ $key }}')"
-                                       @change="toggleMulti('{{ $key }}')">
-                                <span x-show="!isKey('{{ $key }}')">Jadikan Kunci</span>
-                                <span x-show="isKey('{{ $key }}')"><i class="fas fa-check"></i> Kunci</span>
-                            </label>
+                    {{-- Opsi jawaban biasa --}}
+                    <div x-show="qtype!=='matrix'">
+                        <label class="field-label">Opsi Jawaban</label>
+                        <div class="answer-helper" style="margin-bottom:10px;">
+                            <span x-show="qtype==='single'">Isi jawaban di kolom tengah, lalu pilih tombol <strong>Kunci</strong> pada jawaban yang benar.</span>
+                            <span x-show="qtype==='multiple'" x-cloak>Isi jawaban di kolom tengah, lalu centang semua tombol <strong>Kunci</strong> yang benar. Minimal 2 kunci.</span>
                         </div>
-                        @endforeach
+                        <div class="answer-list">
+                            @foreach(['a'=>'A','b'=>'B','c'=>'C','d'=>'D','e'=>'E (opsional)'] as $key => $label)
+                            <div class="answer-item" :class="isKey('{{ $key }}') ? 'active' : ''">
+                                <div class="answer-letter">{{ strtoupper($key[0]) }}</div>
+                                <textarea name="option_{{ $key }}" rows="2" class="field-input answer-textarea"
+                                          :disabled="qtype==='matrix'"
+                                          :required="qtype !== 'matrix' && '{{ $key }}' !== 'e'"
+                                          placeholder="Tulis jawaban {{ $label }}...">{{ old('option_'.$key) }}</textarea>
+                                <label class="answer-key-btn" :class="isKey('{{ $key }}') ? 'active' : ''">
+                                    {{-- single --}}
+                                    <input type="radio" name="correct_answer" value="{{ $key }}" x-model="correct"
+                                           x-show="qtype==='single'"
+                                           :disabled="qtype!=='single'"
+                                           {{ old('correct_answer','a') === $key ? 'checked' : '' }}>
+                                    {{-- multiple --}}
+                                    <input type="checkbox" name="correct_answers[]" value="{{ $key }}"
+                                           x-show="qtype==='multiple'" x-cloak
+                                           :disabled="qtype!=='multiple'"
+                                           :checked="multi.includes('{{ $key }}')"
+                                           @change="toggleMulti('{{ $key }}')">
+                                    <span x-show="!isKey('{{ $key }}')">Jadikan Kunci</span>
+                                    <span x-show="isKey('{{ $key }}')"><i class="fas fa-check"></i> Kunci</span>
+                                </label>
+                            </div>
+                            @endforeach
+                        </div>
+                        @error('correct_answers') <div style="color:var(--danger); font-size:12px; margin-top:-8px; margin-bottom:12px;">{{ $message }}</div> @enderror
                     </div>
-                    @error('correct_answers') <div style="color:var(--danger); font-size:12px; margin-top:-8px; margin-bottom:12px;">{{ $message }}</div> @enderror
+
+                    {{-- Opsi kategori / matrix --}}
+                    <div x-show="qtype==='matrix'" x-cloak>
+                        <label class="field-label">Kolom Kategori</label>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                            <input type="text" name="matrix_columns[col_1]" class="field-input" :disabled="qtype!=='matrix'" :required="qtype==='matrix'"
+                                   value="{{ old('matrix_columns.col_1', 'Time Management') }}" placeholder="Contoh: Time Management">
+                            <input type="text" name="matrix_columns[col_2]" class="field-input" :disabled="qtype!=='matrix'" :required="qtype==='matrix'"
+                                   value="{{ old('matrix_columns.col_2', 'Self Management') }}" placeholder="Contoh: Self Management">
+                        </div>
+                        <div class="answer-helper" style="margin-bottom:10px;">
+                            Isi pernyataan/baris di kolom kiri, lalu pilih kategori yang menjadi kunci pada tiap baris. Minimal baris A dan B wajib diisi.
+                        </div>
+                        <div class="matrix-editor">
+                            <div class="matrix-row matrix-head">
+                                <div class="matrix-cell">Pernyataan / Teknik</div>
+                                <div class="matrix-cell" style="justify-content:center;">Kategori 1</div>
+                                <div class="matrix-cell" style="justify-content:center;">Kategori 2</div>
+                            </div>
+                            @foreach(['a'=>'A','b'=>'B','c'=>'C (opsional)','d'=>'D (opsional)','e'=>'E (opsional)'] as $key => $label)
+                                <div class="matrix-row">
+                                    <div class="matrix-cell">
+                                        <span class="answer-letter" style="width:34px;height:34px;font-size:12px;">{{ strtoupper($key) }}</span>
+                                        <textarea name="option_{{ $key }}" rows="2" class="field-input answer-textarea"
+                                                  :disabled="qtype!=='matrix'"
+                                                  :required="qtype==='matrix' && ['a','b'].includes('{{ $key }}')"
+                                                  placeholder="Tulis baris {{ $label }}...">{{ old('option_'.$key) }}</textarea>
+                                    </div>
+                                    <label class="matrix-cell matrix-radio-label">
+                                        <input type="radio" name="correct_matrix_answers[{{ $key }}]" value="col_1"
+                                               :disabled="qtype!=='matrix'"
+                                               :required="qtype==='matrix' && ['a','b'].includes('{{ $key }}')"
+                                               {{ old('correct_matrix_answers.'.$key) === 'col_1' ? 'checked' : '' }}>
+                                        Kunci
+                                    </label>
+                                    <label class="matrix-cell matrix-radio-label">
+                                        <input type="radio" name="correct_matrix_answers[{{ $key }}]" value="col_2"
+                                               :disabled="qtype!=='matrix'"
+                                               :required="qtype==='matrix' && ['a','b'].includes('{{ $key }}')"
+                                               {{ old('correct_matrix_answers.'.$key) === 'col_2' ? 'checked' : '' }}>
+                                        Kunci
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                        @error('correct_matrix_answers') <div style="color:var(--danger); font-size:12px; margin-top:-8px; margin-bottom:12px;">{{ $message }}</div> @enderror
+                    </div>
 
                     <div style="margin-bottom:20px;">
                         <label class="field-label">Pembahasan (opsional)</label>

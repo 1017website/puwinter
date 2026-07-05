@@ -231,6 +231,65 @@
             padding-top: 4px;
         }
 
+        .matrix-answer-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #D7E7FF;
+            margin-bottom: 32px;
+        }
+
+        .matrix-answer-table th {
+            background: #DBEAFE;
+            color: #1E3A8A;
+            border: 1px solid #93C5FD;
+            padding: 14px 12px;
+            font-size: 13px;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .matrix-answer-table th:first-child,
+        .matrix-answer-table td:first-child { text-align: left; }
+
+        .matrix-answer-table td {
+            border: 1px solid #E2E8F0;
+            padding: 14px 12px;
+            font-size: 14px;
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        .matrix-choice {
+            width: 34px;
+            height: 34px;
+            border: 2px solid #CBD5E1;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all .15s;
+            background:#fff;
+        }
+
+        .matrix-choice:hover,
+        .matrix-choice.selected {
+            border-color: #2563EB;
+            background: #EFF6FF;
+        }
+
+        .matrix-choice.selected::after {
+            content: '';
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #2563EB;
+            display: block;
+        }
+
         /* Nav buttons */
         .question-nav-btns {
             display: flex;
@@ -514,7 +573,11 @@
 
             {{-- Question Text --}}
             <div class="question-text">
-                @if($question->isMultiple())
+                @if($question->isMatrix())
+                    <span style="display:inline-block; background:#FEF3C7; color:#92400E; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; margin-bottom:8px;">
+                        <i class="fas fa-table-list"></i> Pilih satu kategori pada setiap baris
+                    </span><br>
+                @elseif($question->isMultiple())
                     <span style="display:inline-block; background:#EEF2FF; color:#4F46E5; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; margin-bottom:8px;">
                         <i class="fas fa-list-check"></i> Pilih beberapa jawaban
                     </span><br>
@@ -523,20 +586,51 @@
             </div>
 
             {{-- Options --}}
-            <div class="options-list">
-                @foreach($question->options() as $key => $text)
-                <label class="option-item" id="opt-{{ $question->id }}-{{ $key }}"
-       onclick="event.preventDefault(); selectAnswer({{ $question->id }}, '{{ $key }}', this, {{ $question->isMultiple() ? 'true' : 'false' }})">
-                    @if($question->isMultiple())
-                        <input type="checkbox" name="answer_{{ $question->id }}[]" value="{{ $key }}" style="display:none;">
-                    @else
-                        <input type="radio" name="answer_{{ $question->id }}" value="{{ $key }}">
-                    @endif
-                    <div class="option-key">{{ strtoupper($key) }}</div>
-                    <div class="option-text">{{ $text }}</div>
-                </label>
-                @endforeach
-            </div>
+            @if($question->isMatrix())
+                @php $columns = $question->matrixColumns(); @endphp
+                <table class="matrix-answer-table">
+                    <thead>
+                        <tr>
+                            <th style="width:56%;">Pernyataan / Teknik</th>
+                            @foreach($columns as $columnLabel)
+                                <th>{{ $columnLabel }}</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($question->options() as $rowKey => $rowText)
+                            <tr>
+                                <td>{{ $rowText }}</td>
+                                @foreach($columns as $columnKey => $columnLabel)
+                                    <td style="text-align:center;">
+                                        <label class="matrix-choice"
+                                               id="opt-{{ $question->id }}-{{ $rowKey }}-{{ $columnKey }}"
+                                               data-matrix-option="{{ $question->id }}-{{ $rowKey }}"
+                                               onclick="event.preventDefault(); selectMatrixAnswer({{ $question->id }}, '{{ $rowKey }}', '{{ $columnKey }}', this)">
+                                            <input type="radio" name="answer_{{ $question->id }}[{{ $rowKey }}]" value="{{ $columnKey }}" style="display:none;">
+                                        </label>
+                                    </td>
+                                @endforeach
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @else
+                <div class="options-list">
+                    @foreach($question->options() as $key => $text)
+                    <label class="option-item" id="opt-{{ $question->id }}-{{ $key }}"
+                           onclick="event.preventDefault(); selectAnswer({{ $question->id }}, '{{ $key }}', this, {{ $question->isMultiple() ? 'true' : 'false' }})">
+                        @if($question->isMultiple())
+                            <input type="checkbox" name="answer_{{ $question->id }}[]" value="{{ $key }}" style="display:none;">
+                        @else
+                            <input type="radio" name="answer_{{ $question->id }}" value="{{ $key }}">
+                        @endif
+                        <div class="option-key">{{ strtoupper($key) }}</div>
+                        <div class="option-text">{{ $text }}</div>
+                    </label>
+                    @endforeach
+                </div>
+            @endif
 
             {{-- Nav buttons --}}
             <div class="question-nav-btns">
@@ -669,11 +763,11 @@
 
     const questions = @json($tryout->questions->pluck('id')->values());
 
-    // Peta tipe soal: { questionId: true } jika multiple jawaban.
-    const isMultiQ = @json($tryout->questions->mapWithKeys(fn($q) => [$q->id => $q->isMultiple()]));
+    // Peta tipe soal: single | multiple | matrix.
+    const questionTypes = @json($tryout->questions->mapWithKeys(fn($q) => [$q->id => $q->question_type ?? 'single']));
 
     let currentIndex = 0;
-    let answers  = {}; // single: { qId: 'a' }  |  multiple: { qId: ['a','c'] }
+    let answers  = {}; // single: { qId: 'a' } | multiple: { qId: ['a','c'] } | matrix: { qId: {a:'col_1'} }
     let flagged  = {}; // { questionId: true }
     let timeLeft = DURATION;
     let leaveCount = 0; // jumlah kali meninggalkan jendela tryout
@@ -695,11 +789,17 @@
 
         // Restore UI
         Object.entries(answers).forEach(([qId, val]) => {
-            const vals = Array.isArray(val) ? val : [val];
-            vals.forEach(v => {
-                document.getElementById(`opt-${qId}-${v}`)?.classList.add('selected');
-            });
-            if (vals.length > 0) {
+            if (val && typeof val === 'object' && !Array.isArray(val)) {
+                Object.entries(val).forEach(([rowKey, columnKey]) => {
+                    document.getElementById(`opt-${qId}-${rowKey}-${columnKey}`)?.classList.add('selected');
+                });
+            } else {
+                const vals = Array.isArray(val) ? val : [val];
+                vals.forEach(v => {
+                    document.getElementById(`opt-${qId}-${v}`)?.classList.add('selected');
+                });
+            }
+            if (hasAnswer(qId)) {
                 document.getElementById(`num-${qId}`)?.classList.add('answered');
             }
         });
@@ -742,6 +842,13 @@
         numBtn?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
+    function hasAnswer(qId) {
+        const val = answers[qId];
+        if (Array.isArray(val)) return val.length > 0;
+        if (val && typeof val === 'object') return Object.keys(val).length > 0;
+        return !!val;
+    }
+
     // =========================================================================
     // SELECT ANSWER
     // =========================================================================
@@ -771,10 +878,29 @@
         }
 
         const numBtn = document.getElementById(`num-${qId}`);
-        const hasAns = Array.isArray(answers[qId]) ? answers[qId].length > 0 : !!answers[qId];
+        const hasAns = hasAnswer(qId);
         if (numBtn && !flagged[qId]) {
             numBtn.classList.remove('flagged');
             numBtn.classList.toggle('answered', hasAns);
+        }
+
+        saveState();
+        updateCounts();
+    }
+
+    function selectMatrixAnswer(qId, rowKey, columnKey, el) {
+        const rowSelector = `[data-matrix-option="${qId}-${rowKey}"]`;
+        document.querySelectorAll(rowSelector).forEach(item => item.classList.remove('selected'));
+        el.classList.add('selected');
+
+        const current = (answers[qId] && typeof answers[qId] === 'object' && !Array.isArray(answers[qId])) ? answers[qId] : {};
+        current[rowKey] = columnKey;
+        answers[qId] = current;
+
+        const numBtn = document.getElementById(`num-${qId}`);
+        if (numBtn && !flagged[qId]) {
+            numBtn.classList.remove('flagged');
+            numBtn.classList.add('answered');
         }
 
         saveState();
@@ -791,7 +917,7 @@
         if (flagged[qId]) {
             delete flagged[qId];
             btn?.classList.remove('flagged');
-            if (answers[qId]) numBtn?.classList.add('answered');
+            if (hasAnswer(qId)) numBtn?.classList.add('answered');
             numBtn?.classList.remove('flagged');
         } else {
             flagged[qId] = true;
@@ -884,6 +1010,15 @@
                     input.value = v;
                     inputs.appendChild(input);
                 });
+            } else if (val && typeof val === 'object') {
+                // matrix: kirim answers[qId][row] = col_1/col_2
+                Object.entries(val).forEach(([rowKey, columnKey]) => {
+                    const input = document.createElement('input');
+                    input.type  = 'hidden';
+                    input.name  = `answers[${qId}][${rowKey}]`;
+                    input.value = columnKey;
+                    inputs.appendChild(input);
+                });
             } else {
                 const input = document.createElement('input');
                 input.type  = 'hidden';
@@ -949,7 +1084,7 @@
         if (['a','b','c','d','e'].includes(e.key)) {
             const qId  = questions[currentIndex];
             const opt  = document.getElementById(`opt-${qId}-${e.key}`);
-            if (opt) selectAnswer(qId, e.key, opt);
+            if (opt) selectAnswer(qId, e.key, opt, questionTypes[qId] === 'multiple');
         }
     });
 

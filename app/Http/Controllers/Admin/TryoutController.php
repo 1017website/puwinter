@@ -191,23 +191,49 @@ class TryoutController extends Controller
 
     public function storeQuestion(Request $request, Tryout $tryout): RedirectResponse
     {
-        $request->validate([
+        $type = (string) $request->input('question_type', 'single');
+
+        $rules = [
             'passage_id'       => 'nullable|exists:tryout_passages,id',
             'question_text'    => 'required|string',
             'question_image'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
-            'question_type'    => 'required|in:single,multiple',
-            'option_a'         => 'required|string',
-            'option_b'         => 'required|string',
-            'option_c'         => 'required|string',
-            'option_d'         => 'required|string',
-            'option_e'         => 'nullable|string',
-            'correct_answer'   => 'required_if:question_type,single|nullable|in:a,b,c,d,e',
-            'correct_answers'  => 'required_if:question_type,multiple|nullable|array|min:2',
-            'correct_answers.*'=> 'in:a,b,c,d,e',
+            'question_type'    => 'required|in:single,multiple,matrix',
             'explanation'      => 'nullable|string',
             'score_weight'     => 'required|numeric|min:0.01|max:9999',
             'subject_id'       => 'required|exists:subjects,id',
             'order'            => 'required|integer|min:1',
+        ];
+
+        if ($type === 'matrix') {
+            $rules += [
+                'option_a'                   => 'required|string',
+                'option_b'                   => 'required|string',
+                'option_c'                   => 'nullable|string',
+                'option_d'                   => 'nullable|string',
+                'option_e'                   => 'nullable|string',
+                'matrix_columns'             => 'required|array',
+                'matrix_columns.col_1'       => 'required|string|max:100',
+                'matrix_columns.col_2'       => 'required|string|max:100',
+                'correct_matrix_answers'     => 'required|array',
+                'correct_matrix_answers.*'   => 'nullable|in:col_1,col_2',
+            ];
+        } else {
+            $rules += [
+                'option_a'          => 'required|string',
+                'option_b'          => 'required|string',
+                'option_c'          => 'required|string',
+                'option_d'          => 'required|string',
+                'option_e'          => 'nullable|string',
+                'correct_answer'    => 'required_if:question_type,single|nullable|in:a,b,c,d,e',
+                'correct_answers'   => 'required_if:question_type,multiple|nullable|array|min:2',
+                'correct_answers.*' => 'in:a,b,c,d,e',
+            ];
+        }
+
+        $request->validate($rules, [
+            'matrix_columns.col_1.required' => 'Nama kategori kolom pertama wajib diisi.',
+            'matrix_columns.col_2.required' => 'Nama kategori kolom kedua wajib diisi.',
+            'correct_matrix_answers.required' => 'Kunci kategori wajib dipilih untuk setiap baris yang terisi.',
         ]);
 
         $passageId = $request->filled('passage_id') ? (int) $request->passage_id : null;
@@ -215,10 +241,39 @@ class TryoutController extends Controller
             return back()->withInput()->with('error', 'Soal cerita yang dipilih tidak valid untuk tryout ini.');
         }
 
-        $type = $request->question_type;
-
         // Normalisasi kunci jawaban sesuai tipe.
-        if ($type === 'multiple') {
+        $matrixColumns = null;
+        if ($type === 'matrix') {
+            $availableRows = array_keys(array_filter([
+                'a' => $request->option_a,
+                'b' => $request->option_b,
+                'c' => $request->option_c,
+                'd' => $request->option_d,
+                'e' => $request->option_e,
+            ], fn($value) => filled($value)));
+
+            $matrixKeys = [];
+            foreach ($availableRows as $rowKey) {
+                $selectedColumn = $request->input("correct_matrix_answers.$rowKey");
+                if (!in_array($selectedColumn, ['col_1', 'col_2'], true)) {
+                    return back()->withInput()
+                        ->with('error', 'Setiap baris kategori yang terisi wajib dipilih kuncinya.');
+                }
+                $matrixKeys[$rowKey] = $selectedColumn;
+            }
+
+            if (count($availableRows) < 2) {
+                return back()->withInput()
+                    ->with('error', 'Soal kategori minimal punya 2 baris/pernyataan.');
+            }
+
+            $matrixColumns = [
+                'col_1' => trim((string) $request->input('matrix_columns.col_1')),
+                'col_2' => trim((string) $request->input('matrix_columns.col_2')),
+            ];
+            $correctAnswer  = 'a'; // fallback untuk kolom legacy correct_answer
+            $correctAnswers = $matrixKeys;
+        } elseif ($type === 'multiple') {
             $keys = collect($request->input('correct_answers', []))
                 ->map(fn($k) => strtolower((string) $k))
                 ->unique()
@@ -229,7 +284,7 @@ class TryoutController extends Controller
                 'a' => $request->option_a, 'b' => $request->option_b,
                 'c' => $request->option_c, 'd' => $request->option_d,
                 'e' => $request->option_e,
-            ]));
+            ], fn($value) => filled($value)));
             $keys = array_values(array_intersect($keys, $available));
 
             if (count($keys) < 2) {
@@ -249,7 +304,7 @@ class TryoutController extends Controller
 
         $questionImage = $this->uploadTryoutImage($request, 'question_image');
 
-        DB::transaction(function () use ($tryout, $request, $passageId, $questionImage, $type, $correctAnswer, $correctAnswers, $order) {
+        DB::transaction(function () use ($tryout, $request, $passageId, $questionImage, $type, $correctAnswer, $correctAnswers, $matrixColumns, $order) {
             // Jika nomor disisipkan di tengah, geser soal setelahnya agar urutan tetap rapi.
             $tryout->questions()
                 ->where('order', '>=', $order)
@@ -268,6 +323,7 @@ class TryoutController extends Controller
                 'option_e'        => $request->option_e,
                 'correct_answer'  => $correctAnswer,
                 'correct_answers' => $correctAnswers,
+                'matrix_columns'  => $matrixColumns,
                 'explanation'     => $request->explanation,
                 'difficulty'      => 'sedang',
                 'score_weight'    => (float) $request->score_weight,

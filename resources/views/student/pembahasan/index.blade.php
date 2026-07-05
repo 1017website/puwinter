@@ -90,10 +90,8 @@
                     <div style="font-size:13.5px; line-height:1.6; margin-bottom:10px;">{{ $q->question_text }}</div>
                     <div style="display:flex; gap:16px; font-size:12px; flex-wrap:wrap;">
                         @php
-                            $uaLabel = is_array($userAnswer)
-                                ? strtoupper(implode(', ', $userAnswer))
-                                : ($userAnswer ? strtoupper($userAnswer) : '—');
-                            $kunci = strtoupper(implode(', ', $q->correctKeys()));
+                            $uaLabel = $q->answerLabel($userAnswer);
+                            $kunci = $q->correctAnswerLabel();
                         @endphp
                         <span>Jawaban kamu: <strong style="color:{{ $isCorrect ? 'var(--success)':'var(--danger)' }};">{{ $uaLabel }}</strong></span>
                         <span>Jawaban benar: <strong style="color:var(--success);">{{ $kunci }}</strong></span>

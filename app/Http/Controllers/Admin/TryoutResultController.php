@@ -153,13 +153,20 @@ class TryoutResultController extends Controller
             $subjectStats[$subjectName][$status] = ($subjectStats[$subjectName][$status] ?? 0) + 1;
             $subjectStats[$subjectName]['earned'] += $earned;
 
-            $picked = is_array($userAnswer)
-                ? array_values(array_map(fn($v) => strtolower((string) $v), $userAnswer))
-                : (($userAnswer !== null && $userAnswer !== '') ? [strtolower((string) $userAnswer)] : []);
+            if ($question->isMatrix()) {
+                $picked = is_array($userAnswer)
+                    ? array_filter($userAnswer, fn($v) => $v !== null && $v !== '')
+                    : [];
+            } else {
+                $picked = is_array($userAnswer)
+                    ? array_values(array_map(fn($v) => strtolower((string) $v), $userAnswer))
+                    : (($userAnswer !== null && $userAnswer !== '') ? [strtolower((string) $userAnswer)] : []);
+            }
 
             $answerRows[] = [
                 'number' => $index + 1,
                 'question' => $question,
+                'user_answer' => $userAnswer,
                 'status' => $status,
                 'earned' => $earned,
                 'max' => $question->scoreWeight(),
