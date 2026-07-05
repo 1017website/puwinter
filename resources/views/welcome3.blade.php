@@ -1510,7 +1510,7 @@
             @endif
             <div class="pricing-name">{{ $plan->name }}</div>
             <div class="pricing-price"><sup>Rp</sup>{{ $priceK }}</div>
-            <div class="pricing-period">/ {{ $plan->duration_months }} bulan</div>
+            
             @if($plan->periodLabel())
                 <div style="font-size:11px; color:#94A3B8; font-weight:600; margin-top:2px;"><i class="far fa-calendar-alt"></i> {{ $plan->periodLabel() }}</div>
             @endif
@@ -1529,7 +1529,7 @@
             @endif
             <a href="{{ route('register') }}"
                class="btn-pricing {{ $plan->is_popular ? 'btn-pricing-filled' : 'btn-pricing-outline' }}">
-                {{ $plan->is_popular ? 'Pilih Program Ini' : 'Mulai Sekarang' }}
+                {{ $plan->is_popular ? 'Pilih Program Ini' : 'Daftar Sekarang' }}
             </a>
         </div>
         @empty

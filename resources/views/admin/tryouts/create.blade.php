@@ -41,12 +41,15 @@
 
                 <div class="form-group">
                     <label>Kelas / Tingkat</label>
-                    <select name="grade" class="form-control">
+                    <select name="grade_id" class="form-control">
                         <option value="">Semua Kelas</option>
-                        @foreach(['10','11','12'] as $g)
-                        <option value="{{ $g }}" {{ old('grade') == $g ? 'selected' : '' }}>Kelas {{ $g }}</option>
+                        @foreach($grades as $grade)
+                        <option value="{{ $grade->id }}" {{ old('grade_id') == $grade->id ? 'selected' : '' }}>
+                            {{ $grade->name }}
+                        </option>
                         @endforeach
                     </select>
+                    <small style="font-size:12px; color:var(--muted);">Data kelas diambil dari menu Master Kelas.</small>
                 </div>
 
                 <div class="form-group">

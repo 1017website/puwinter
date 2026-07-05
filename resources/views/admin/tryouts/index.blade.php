@@ -28,10 +28,18 @@
         </option>
         @endforeach
     </select>
+    <select name="grade_id" class="form-control" style="width:180px;" onchange="this.form.submit()">
+        <option value="">Semua Kelas</option>
+        @foreach($grades as $grade)
+        <option value="{{ $grade->id }}" {{ request('grade_id') == $grade->id ? 'selected' : '' }}>
+            {{ $grade->name }}
+        </option>
+        @endforeach
+    </select>
     <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari tryout..."
            style="padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; outline:none; width:240px;">
     <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
-    @if(request()->hasAny(['search','subject_id']))
+    @if(request()->hasAny(['search','subject_id','grade_id']))
         <a href="{{ route('admin.tryouts.index') }}" class="btn btn-outline btn-sm">Reset</a>
     @endif
 </form>
@@ -43,6 +51,7 @@
                 <tr>
                     <th>Judul</th>
                     <th>Mapel</th>
+                    <th>Kelas</th>
                     <th>Soal</th>
                     <th>Durasi</th>
                     <th>Peserta</th>
@@ -61,6 +70,7 @@
                         @endif
                     </td>
                     <td style="font-size:13px;">{{ $tryout->subject->name ?? 'Semua' }}</td>
+                    <td style="font-size:13px;">{{ $tryout->gradeLabel() }}</td>
                     <td style="text-align:center; font-weight:700;">{{ $tryout->total_questions }}</td>
                     <td style="font-size:13px;">{{ $tryout->duration_minutes }} mnt</td>
                     <td style="text-align:center; font-weight:700;">{{ number_format($tryout->attempts_count) }}</td>
@@ -96,7 +106,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" style="text-align:center; padding:40px; color:var(--muted);">
+                    <td colspan="9" style="text-align:center; padding:40px; color:var(--muted);">
                         Belum ada tryout.
                     </td>
                 </tr>

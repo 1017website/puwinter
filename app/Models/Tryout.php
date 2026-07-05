@@ -53,12 +53,60 @@ class Tryout extends Model
 
     public function scopeForUser($query, $user)
     {
-        if (!$user || in_array($user->role, ['superadmin', 'admin', 'mentor']) || empty($user->grade)) {
+        if (!$user || in_array($user->role, ['superadmin', 'admin', 'mentor'])) {
             return $query;
         }
-        return $query->where(function ($q) use ($user) {
-            $q->whereNull('grade')->orWhere('grade', (string) $user->grade);
+
+        $userGradeId = $user->grade_id ? (int) $user->grade_id : null;
+        $legacyGrade = filled($user->grade) ? (string) $user->grade : null;
+
+        // Jika siswa belum punya kelas, jangan blokir agar data lama tetap aman.
+        if (!$userGradeId && !$legacyGrade) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($userGradeId, $legacyGrade) {
+            $q->where(function ($allGrades) {
+                $allGrades->whereNull('grade_id')->whereNull('grade');
+            });
+
+            if ($userGradeId) {
+                $q->orWhere('grade_id', $userGradeId);
+            }
+
+            if ($legacyGrade) {
+                $q->orWhere('grade', $legacyGrade);
+            }
         });
+    }
+
+    public function gradeLabel(): string
+    {
+        $grade = $this->relationLoaded('gradeLevel')
+            ? $this->getRelation('gradeLevel')
+            : $this->gradeLevel()->first();
+
+        if ($grade) {
+            return $grade->name;
+        }
+
+        $legacyGrade = $this->getAttribute('grade');
+        return $legacyGrade ? 'Kelas ' . $legacyGrade : 'Semua Kelas';
+    }
+
+
+    public function gradeIdForForm(): ?int
+    {
+        if (!empty($this->grade_id)) {
+            return (int) $this->grade_id;
+        }
+
+        $legacyGrade = $this->getAttribute('grade');
+        if (!$legacyGrade) {
+            return null;
+        }
+
+        return Grade::where('code', (string) $legacyGrade)->value('id');
     }
 
     // -------------------------------------------------------------------------
@@ -83,17 +131,30 @@ class Tryout extends Model
         if (!$user) return false;
         if (in_array($user->role, ['superadmin', 'admin', 'mentor'])) return true;
 
-        // Grade (jika di-set)
-        if ($this->grade_id !== null && (int) $user->grade_id !== (int) $this->grade_id) {
+        // Kelas/grade dari Master Kelas (grade_id), dengan fallback field lama grade.
+        if (!$user->canAccessGradeId($this->grade_id)) {
+            return false;
+        }
+
+        if ($this->grade_id === null && filled($this->grade) && filled($user->grade) && (string) $this->grade !== (string) $user->grade) {
             return false;
         }
 
         return $user->canAccessContent($this->plan_id, $this->access_tier ?? 'both');
     }
 
+    /**
+     * Relasi ke Master Kelas. Dipisah dari nama `grade` karena field legacy
+     * `tryouts.grade` masih ada dan dapat bentrok dengan relasi Eloquent.
+     */
+    public function gradeLevel(): BelongsTo
+    {
+        return $this->belongsTo(Grade::class, 'grade_id');
+    }
+
     public function grade(): BelongsTo
     {
-        return $this->belongsTo(Grade::class);
+        return $this->gradeLevel();
     }
 
     public function passages(): HasMany

@@ -81,9 +81,6 @@
                     <span style="font-size:26px; font-weight:800; color:var(--text-main);">
                         Rp {{ number_format($plan->price, 0, ',', '.') }}
                     </span>
-                    <span style="font-size:11px; color:var(--text-muted);">
-                        @if($plan->duration_months > 1) / {{ $plan->duration_months }} bulan @else / bulan @endif
-                    </span>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
                     <span style="font-size:12px; color:var(--text-muted); text-decoration:line-through;">

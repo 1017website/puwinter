@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Grade;
 use App\Models\Subject;
+use App\Models\SubscriptionPlan;
 use App\Models\Tryout;
 use App\Models\TryoutQuestion;
 use App\Models\TryoutPassage;
@@ -18,7 +20,7 @@ class TryoutController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Tryout::with('subject')->withCount(['questions', 'attempts']);
+        $query = Tryout::with(['subject', 'gradeLevel', 'plan'])->withCount(['questions', 'attempts']);
 
         if ($request->filled('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
@@ -28,17 +30,24 @@ class TryoutController extends Controller
             $query->where('subject_id', $request->subject_id);
         }
 
+        if ($request->filled('grade_id')) {
+            $query->where('grade_id', (int) $request->grade_id);
+        }
+
         $tryouts  = $query->latest()->paginate(15)->withQueryString();
         $subjects = Subject::active()->get();
+        $grades   = Grade::active()->get();
 
-        return view('admin.tryouts.index', compact('tryouts', 'subjects'));
+        return view('admin.tryouts.index', compact('tryouts', 'subjects', 'grades'));
     }
 
     public function create(): View
     {
         $subjects = Subject::active()->get();
-        $plans = \App\Models\SubscriptionPlan::active()->orderBy('order')->get();
-        return view('admin.tryouts.create', compact('subjects', 'plans'));
+        $grades   = Grade::active()->get();
+        $plans    = SubscriptionPlan::active()->with('grades')->orderBy('order')->get();
+
+        return view('admin.tryouts.create', compact('subjects', 'grades', 'plans'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -46,7 +55,7 @@ class TryoutController extends Controller
         $request->validate([
             'title'            => 'required|string|max:255',
             'subject_id'       => 'nullable|exists:subjects,id',
-            'grade'            => 'nullable|in:10,11,12',
+            'grade_id'         => 'nullable|exists:grades,id',
             'description'      => 'nullable|string',
             'duration_minutes' => 'required|integer|min:1',
             'series'           => 'nullable|string|max:100',
@@ -60,11 +69,12 @@ class TryoutController extends Controller
             'title'            => $request->title,
             'slug'             => Str::slug($request->title) . '-' . time(),
             'subject_id'       => $request->subject_id,
-            'grade'            => $request->filled('grade') ? $request->grade : null,
+            'grade_id'         => $request->filled('grade_id') ? (int) $request->grade_id : null,
+            'grade'            => $this->legacyGradeCode($request->input('grade_id')),
             'description'      => $request->description,
             'duration_minutes' => $request->duration_minutes,
             'series'           => $request->series,
-            'is_premium'       => $request->boolean('is_premium'),
+            'is_premium'       => $request->input('access_tier') === 'paid' || $request->boolean('is_premium'),
             'plan_id'          => $request->filled('plan_id') ? (int) $request->plan_id : null,
             'access_tier'      => $request->input('access_tier', 'both'),
             'scoring_mode'     => $request->input('scoring_mode', 'regular'),
@@ -77,7 +87,7 @@ class TryoutController extends Controller
 
     public function show(Tryout $tryout): View
     {
-        $tryout->load(['subject', 'questions.subject', 'questions.passage', 'passages.questions']);
+        $tryout->load(['subject', 'gradeLevel', 'plan', 'questions.subject', 'questions.passage', 'passages.questions']);
         $subjects = Subject::active()->get();
 
         return view('admin.tryouts.show', compact('tryout', 'subjects'));
@@ -86,7 +96,10 @@ class TryoutController extends Controller
     public function edit(Tryout $tryout): View
     {
         $subjects = Subject::active()->get();
-        return view('admin.tryouts.edit', compact('tryout', 'subjects'));
+        $grades   = Grade::active()->get();
+        $plans    = SubscriptionPlan::active()->with('grades')->orderBy('order')->get();
+
+        return view('admin.tryouts.edit', compact('tryout', 'subjects', 'grades', 'plans'));
     }
 
     public function update(Request $request, Tryout $tryout): RedirectResponse
@@ -94,12 +107,14 @@ class TryoutController extends Controller
         $request->validate([
             'title'            => 'required|string|max:255',
             'subject_id'       => 'nullable|exists:subjects,id',
-            'grade'            => 'nullable|in:10,11,12',
+            'grade_id'         => 'nullable|exists:grades,id',
             'description'      => 'nullable|string',
             'duration_minutes' => 'required|integer|min:1',
             'series'           => 'nullable|string|max:100',
             'is_premium'       => 'boolean',
             'is_published'     => 'boolean',
+            'plan_id'          => 'nullable|exists:subscription_plans,id',
+            'access_tier'      => 'required|in:free,paid,both',
             'scoring_mode'     => 'nullable|in:regular,irt',
         ]);
 
@@ -108,12 +123,15 @@ class TryoutController extends Controller
         $payload = [
             'title'            => $request->title,
             'subject_id'       => $request->subject_id,
-            'grade'            => $request->filled('grade') ? $request->grade : null,
+            'grade_id'         => $request->filled('grade_id') ? (int) $request->grade_id : null,
+            'grade'            => $this->legacyGradeCode($request->input('grade_id')),
             'description'      => $request->description,
             'duration_minutes' => $request->duration_minutes,
             'series'           => $request->series,
-            'is_premium'       => $request->boolean('is_premium'),
+            'is_premium'       => $request->input('access_tier') === 'paid' || $request->boolean('is_premium'),
             'is_published'     => $request->boolean('is_published'),
+            'plan_id'          => $request->filled('plan_id') ? (int) $request->plan_id : null,
+            'access_tier'      => $request->input('access_tier', 'both'),
             'scoring_mode'     => $newMode,
         ];
 
@@ -297,6 +315,71 @@ class TryoutController extends Controller
         return back()->with('success', 'Soal cerita/stimulus berhasil ditambahkan. Sekarang soal bisa dikaitkan ke cerita tersebut.');
     }
 
+    public function updatePassage(Request $request, TryoutPassage $passage): RedirectResponse
+    {
+        $request->validate([
+            'title'         => 'nullable|string|max:255',
+            'passage_text'  => 'nullable|string',
+            'passage_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+            'source'        => 'nullable|string|max:255',
+            'order'         => 'required|integer|min:1',
+            'remove_image'  => 'nullable|boolean',
+        ]);
+
+        $tryout = $passage->tryout;
+        if (!$tryout) {
+            return back()->with('error', 'Data tryout untuk soal cerita ini tidak ditemukan.');
+        }
+
+        $hasNewImage = $request->hasFile('passage_image');
+        $willRemoveImage = $request->boolean('remove_image');
+        $hasFinalImage = $hasNewImage || (!$willRemoveImage && filled($passage->passage_image));
+
+        if (!filled($request->passage_text) && !$hasFinalImage) {
+            return back()->withInput()
+                ->with('error', 'Isi teks soal cerita, upload gambar stimulus, atau jangan hapus gambar yang sudah ada.');
+        }
+
+        $newImagePath = $hasNewImage ? $this->uploadTryoutImage($request, 'passage_image') : null;
+        $targetOrder = min((int) $request->input('order', $passage->order), max(1, (int) $tryout->passages()->count()));
+        $oldOrder = (int) $passage->order;
+
+        DB::transaction(function () use ($request, $passage, $tryout, $targetOrder, $oldOrder, $newImagePath, $willRemoveImage) {
+            if ($targetOrder < $oldOrder) {
+                $tryout->passages()
+                    ->where('id', '!=', $passage->id)
+                    ->whereBetween('order', [$targetOrder, $oldOrder - 1])
+                    ->increment('order');
+            } elseif ($targetOrder > $oldOrder) {
+                $tryout->passages()
+                    ->where('id', '!=', $passage->id)
+                    ->whereBetween('order', [$oldOrder + 1, $targetOrder])
+                    ->decrement('order');
+            }
+
+            $imagePath = $passage->passage_image;
+
+            if ($newImagePath) {
+                $this->deletePublicUpload($passage->passage_image);
+                $imagePath = $newImagePath;
+            } elseif ($willRemoveImage) {
+                $this->deletePublicUpload($passage->passage_image);
+                $imagePath = null;
+            }
+
+            $passage->update([
+                'title'         => $request->title,
+                'passage_text'  => $request->passage_text,
+                'passage_image' => $imagePath,
+                'source'        => $request->source,
+                'order'         => $targetOrder,
+            ]);
+        });
+
+        return redirect()->route('admin.tryouts.show', $tryout)
+            ->with('success', 'Soal cerita/stimulus berhasil diperbarui.');
+    }
+
     public function destroyPassage(TryoutPassage $passage): RedirectResponse
     {
         $tryoutId = $passage->tryout_id;
@@ -356,6 +439,7 @@ class TryoutController extends Controller
         return 'uploads/tryouts/' . $filename;
     }
 
+
     private function deletePublicUpload(?string $path): void
     {
         if (!$path) {
@@ -367,4 +451,13 @@ class TryoutController extends Controller
             File::delete($fullPath);
         }
     }
+    private function legacyGradeCode(?string $gradeId): ?string
+    {
+        if (!$gradeId) {
+            return null;
+        }
+
+        return Grade::whereKey((int) $gradeId)->value('code');
+    }
+
 }

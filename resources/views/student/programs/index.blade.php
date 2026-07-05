@@ -66,9 +66,11 @@
             <div style="font-size:20px; font-weight:800; color:var(--primary); margin-top:6px;">
                 Rp {{ number_format($plan->price, 0, ',', '.') }}
             </div>
+            @if($plan->bonus)
             <div style="font-size:12px; color:var(--text-muted);">
-                {{ $plan->duration_months }} bulan @if($plan->bonus) • {{ $plan->bonus }} @endif
+                {{ $plan->bonus }}
             </div>
+            @endif
             @if(!is_null($plan->quota))
             <div style="font-size:12px; font-weight:600; margin-top:6px; color:{{ $plan->isQuotaFull() ? '#EF4444' : 'var(--success)' }};">
                 @if($plan->isQuotaFull())<i class="fas fa-circle-xmark"></i> Kuota penuh

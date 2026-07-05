@@ -107,19 +107,56 @@ class SubscriptionPlan extends Model
     }
 
     /**
-     * Label periode untuk ditampilkan (mis. "Agu 2026 - Okt 2026").
+     * Label masa aktif program dengan tanggal lengkap untuk ditampilkan
+     * (mis. "Masa aktif: 01 Agustus 2026 - 31 Oktober 2026").
      */
     public function periodLabel(): ?string
     {
         if (!$this->start_date && !$this->end_date) {
             return null;
         }
-        $start = $this->start_date?->translatedFormat('M Y');
-        $end   = $this->end_date?->translatedFormat('M Y');
+
+        $start = $this->formatIndonesianDate($this->start_date);
+        $end   = $this->formatIndonesianDate($this->end_date);
+
         if ($start && $end) {
-            return $start . ' - ' . $end;
+            return 'Masa aktif: ' . $start . ' - ' . $end;
         }
-        return $start ?: $end;
+
+        if ($start) {
+            return 'Mulai: ' . $start;
+        }
+
+        return 'Berakhir: ' . $end;
+    }
+
+    protected function formatIndonesianDate($date): ?string
+    {
+        if (!$date) {
+            return null;
+        }
+
+        $months = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember',
+        ];
+
+        return sprintf(
+            '%02d %s %s',
+            (int) $date->format('d'),
+            $months[(int) $date->format('n')] ?? $date->format('F'),
+            $date->format('Y')
+        );
     }
 
     public function discountPercentage(): int

@@ -59,8 +59,11 @@
 <div class="page-header">
     <div>
         <h2>{{ $tryout->title }}</h2>
-        <p>{{ $tryout->questions->count() }} soal · {{ $tryout->duration_minutes }} menit ·
-            <span style="color:{{ $tryout->is_published ? 'var(--success)' : 'var(--muted)' }}; font-weight:600;">
+        <p>{{ $tryout->questions->count() }} soal · {{ $tryout->duration_minutes }} menit · {{ $tryout->gradeLabel() }}
+            @if($tryout->plan)
+                · {{ $tryout->plan->name }}
+            @endif
+            · <span style="color:{{ $tryout->is_published ? 'var(--success)' : 'var(--muted)' }}; font-weight:600;">
                 {{ $tryout->is_published ? 'Dipublikasikan' : 'Draft' }}
             </span>
         </p>
@@ -112,7 +115,7 @@
     @if($tryout->passages->count())
         <div class="passage-list">
             @foreach($tryout->passages as $passage)
-                <div class="passage-admin-card">
+                <div class="passage-admin-card" x-data="{ edit:false }">
                     <div class="passage-admin-head">
                         <div style="min-width:0;">
                             <div style="font-weight:800; font-size:14px; color:var(--text-main);">
@@ -123,17 +126,72 @@
                                 @if($passage->source) · Sumber: {{ $passage->source }} @endif
                             </div>
                         </div>
-                        <form method="POST" action="{{ route('admin.tryouts.passages.destroy', $passage) }}" onsubmit="return confirm('Hapus soal cerita ini? Soal yang memakai cerita ini tidak ikut terhapus, hanya dilepas dari cerita.')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+                            <button type="button" class="btn btn-outline btn-sm" @click="edit=!edit">
+                                <i class="fas fa-pen"></i> <span x-text="edit ? 'Tutup' : 'Edit'"></span>
+                            </button>
+                            <form method="POST" action="{{ route('admin.tryouts.passages.destroy', $passage) }}" onsubmit="return confirm('Hapus soal cerita ini? Soal yang memakai cerita ini tidak ikut terhapus, hanya dilepas dari cerita.')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div x-show="!edit">
+                        @if($passage->passage_image)
+                            <img src="{{ asset($passage->passage_image) }}" alt="Gambar stimulus {{ $passage->title }}" class="stimulus-image" style="max-height:260px; object-fit:contain;">
+                        @endif
+                        @if($passage->passage_text)
+                            <div class="passage-text">{{ Str::limit($passage->passage_text, 420) }}</div>
+                        @endif
+                    </div>
+
+                    <div x-show="edit" x-cloak style="margin-top:14px; border-top:1px dashed var(--border); padding-top:14px;">
+                        <form method="POST" action="{{ route('admin.tryouts.passages.update', $passage) }}" enctype="multipart/form-data">
+                            @csrf @method('PUT')
+
+                            <div style="display:grid; grid-template-columns:120px minmax(0,1fr); gap:14px; margin-bottom:14px;">
+                                <div>
+                                    <label class="field-label">Urutan <span style="color:red;">*</span></label>
+                                    <input type="number" name="order" min="1" class="field-input" value="{{ $passage->order }}">
+                                </div>
+                                <div>
+                                    <label class="field-label">Judul Cerita / Stimulus</label>
+                                    <input type="text" name="title" class="field-input" value="{{ $passage->title }}" placeholder="Judul cerita/stimulus">
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom:14px;">
+                                <label class="field-label">Teks Cerita / Stimulus</label>
+                                <textarea name="passage_text" rows="7" class="field-input" placeholder="Tulis cerita panjang, bacaan, tabel dalam teks, atau stimulus...">{{ $passage->passage_text }}</textarea>
+                                <div class="answer-helper">Boleh dikosongkan jika stimulus masih memakai gambar.</div>
+                            </div>
+
+                            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; margin-bottom:14px;">
+                                <div>
+                                    <label class="field-label">Gambar Stimulus / Infografik</label>
+                                    @if($passage->passage_image)
+                                        <img src="{{ asset($passage->passage_image) }}" alt="Gambar stimulus saat ini" class="stimulus-image" style="max-height:160px; object-fit:contain; margin-bottom:8px;">
+                                        <label style="font-size:12.5px; color:var(--muted); display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                                            <input type="checkbox" name="remove_image" value="1">
+                                            Hapus gambar saat ini
+                                        </label>
+                                    @endif
+                                    <input type="file" name="passage_image" class="field-input" accept="image/jpeg,image/png,image/webp">
+                                    <div class="answer-helper">Upload gambar baru jika ingin mengganti. Format jpg, png, webp maksimal 4 MB.</div>
+                                </div>
+                                <div>
+                                    <label class="field-label">Sumber (opsional)</label>
+                                    <input type="text" name="source" class="field-input" value="{{ $passage->source }}" placeholder="URL/sumber adaptasi jika ada">
+                                </div>
+                            </div>
+
+                            <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+                                <button type="button" @click="edit=false" class="btn btn-outline">Batal</button>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Perubahan</button>
+                            </div>
                         </form>
                     </div>
-                    @if($passage->passage_image)
-                        <img src="{{ asset($passage->passage_image) }}" alt="Gambar stimulus {{ $passage->title }}" class="stimulus-image" style="max-height:260px; object-fit:contain;">
-                    @endif
-                    @if($passage->passage_text)
-                        <div class="passage-text">{{ Str::limit($passage->passage_text, 420) }}</div>
-                    @endif
                 </div>
             @endforeach
         </div>

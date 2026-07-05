@@ -249,6 +249,7 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
 
             // Soal Cerita / Stimulus
             Route::post('/{tryout}/passages', [AdminTryout::class, 'storePassage'])->name('passages.store');
+            Route::put('/passages/{passage}', [AdminTryout::class, 'updatePassage'])->name('passages.update');
             Route::delete('/passages/{passage}', [AdminTryout::class, 'destroyPassage'])->name('passages.destroy');
 
             // Questions

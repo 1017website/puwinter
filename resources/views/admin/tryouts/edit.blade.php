@@ -41,12 +41,15 @@
 
                 <div class="form-group">
                     <label>Kelas / Tingkat</label>
-                    <select name="grade" class="form-control">
+                    <select name="grade_id" class="form-control">
                         <option value="">Semua Kelas</option>
-                        @foreach(['10','11','12'] as $g)
-                        <option value="{{ $g }}" {{ old('grade', $tryout->grade) == $g ? 'selected' : '' }}>Kelas {{ $g }}</option>
+                        @foreach($grades as $grade)
+                        <option value="{{ $grade->id }}" {{ old('grade_id', $tryout->gradeIdForForm()) == $grade->id ? 'selected' : '' }}>
+                            {{ $grade->name }}
+                        </option>
                         @endforeach
                     </select>
+                    <small style="font-size:12px; color:var(--muted);">Data kelas diambil dari menu Master Kelas.</small>
                 </div>
 
                 <div class="form-group">
@@ -62,13 +65,28 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Program <span style="color:red;">*</span></label>
+                    <select name="plan_id" class="form-control">
+                        <option value="">— Pilih Program —</option>
+                        @foreach($plans as $pl)
+                        <option value="{{ $pl->id }}" {{ old('plan_id', $tryout->plan_id) == $pl->id ? 'selected' : '' }}>{{ $pl->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Akses Untuk <span style="color:red;">*</span></label>
+                    <select name="access_tier" class="form-control">
+                        <option value="both" {{ old('access_tier', $tryout->access_tier ?? 'both') == 'both' ? 'selected' : '' }}>Semua peserta program</option>
+                        <option value="free" {{ old('access_tier', $tryout->access_tier ?? '') == 'free' ? 'selected' : '' }}>Hanya gratis</option>
+                        <option value="paid" {{ old('access_tier', $tryout->access_tier ?? '') == 'paid' ? 'selected' : '' }}>Hanya BERBAYAR</option>
+                    </select>
+                    <input type="hidden" name="is_premium" value="0">
+                </div>
+
+                <div class="form-group" style="grid-column:span 2;">
                     <label>Pengaturan</label>
                     <div style="display:flex; flex-direction:column; gap:10px; padding-top:8px;">
-                        <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; cursor:pointer; font-weight:400;">
-                            <input type="checkbox" name="is_premium" value="1" {{ old('is_premium', $tryout->is_premium) ? 'checked' : '' }}
-                                   style="width:16px; height:16px; accent-color:var(--primary);">
-                            Konten Premium
-                        </label>
                         <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; cursor:pointer; font-weight:400;">
                             <input type="checkbox" name="is_published" value="1" {{ old('is_published', $tryout->is_published) ? 'checked' : '' }}
                                    style="width:16px; height:16px; accent-color:var(--primary);">

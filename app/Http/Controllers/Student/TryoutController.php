@@ -22,7 +22,7 @@ class TryoutController extends Controller
 
         $query = Tryout::published()
             ->forUser($request->user())
-            ->with(['subject', 'attempts' => fn($q) => $q->where('user_id', auth()->id())]);
+            ->with(['subject', 'gradeLevel', 'attempts' => fn($q) => $q->where('user_id', auth()->id())]);
 
         if ($filter === 'gratis') {
             $query->free();
@@ -30,7 +30,9 @@ class TryoutController extends Controller
             $query->premium();
         }
 
-        $tryouts = $query->get();
+        $tryouts = $query->get()
+            ->filter(fn (Tryout $tryout) => $tryout->isAccessibleBy($request->user()))
+            ->values();
 
         // Stats real dari DB
         $totalSoal      = \App\Models\TryoutQuestion::count();
@@ -51,7 +53,7 @@ class TryoutController extends Controller
         $stats = [
             'total_soal'      => $totalSoal,
             'soal_dijawab'    => $soalDijawab,
-            'total_tryout'    => Tryout::published()->count(),
+            'total_tryout'    => $tryouts->count(),
             'total_peserta'   => $totalPeserta,
         ];
 
@@ -61,19 +63,24 @@ class TryoutController extends Controller
     // Mulai tryout — buat attempt record
     public function start(Request $request, int $id): View|RedirectResponse
     {
-        $tryout = Tryout::published()->with(['questions.subject', 'questions.passage'])->findOrFail($id);
+        $tryout = Tryout::published()->with(['gradeLevel', 'questions.subject', 'questions.passage'])->findOrFail($id);
 
-        // Cek akses kelas/grade
+        // Cek akses kelas dari Master Kelas.
         if (!$request->user()->canAccessGradeId($tryout->grade_id)) {
-            $gradeName = optional($tryout->grade)->name ?? $tryout->grade ?? 'tertentu';
+            $gradeName = $tryout->gradeLabel();
             return redirect()->route('student.tryout.index')
-                ->with('error', 'Tryout ini untuk kelas ' . $gradeName . ', tidak tersedia untuk kelasmu.');
+                ->with('error', 'Tryout ini untuk ' . $gradeName . ', tidak tersedia untuk kelasmu.');
         }
 
-        // Cek akses: tryout premium hanya untuk user premium
-        if ($tryout->is_premium && !$request->user()->isPremium()) {
-            return redirect()->route('upgrade.index')
-                ->with('error', 'Tryout ini hanya tersedia untuk member Premium.');
+        // Cek akses program dan tier (gratis/berbayar) sesuai pengaturan tryout.
+        if (!$tryout->isAccessibleBy($request->user())) {
+            if (($tryout->access_tier ?? 'both') === 'paid' || $tryout->is_premium) {
+                return redirect()->route('upgrade.index')
+                    ->with('error', 'Tryout ini hanya tersedia untuk peserta berbayar pada program terkait.');
+            }
+
+            return redirect()->route('student.program.index')
+                ->with('error', 'Daftar ke program terkait terlebih dahulu untuk membuka tryout ini.');
         }
 
         // Cek apakah ada attempt yang belum selesai
