@@ -69,6 +69,11 @@
                     @else Persiapan terbaik untuk hasil maksimal.
                     @endif
                 </div>
+                @if($plan->periodLabel())
+                <div style="font-size:11.5px; color:var(--text-muted); margin-top:6px; line-height:1.5;">
+                    <i class="far fa-calendar-alt"></i> {{ $plan->periodLabel() }}
+                </div>
+                @endif
             </div>
 
             <div style="margin-bottom:16px;">
@@ -140,15 +145,6 @@
                 </div>
             </div>
             @endforeach
-        </div>
-    </div>
-
-    {{-- Garansi --}}
-    <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:12px; padding:16px 20px; display:flex; align-items:center; gap:14px; margin-bottom:24px;">
-        <i class="fas fa-shield-halved" style="font-size:28px; color:var(--primary);"></i>
-        <div>
-            <div style="font-size:14px; font-weight:700; color:var(--text-main);">Garansi 7 Hari Uang Kembali</div>
-            <div style="font-size:12.5px; color:var(--text-muted); margin-top:2px;">Jika kamu merasa tidak puas dengan layanan kami, ajukan refund dalam 7 hari setelah pembelian dan uangmu akan kami kembalikan 100%.</div>
         </div>
     </div>
 

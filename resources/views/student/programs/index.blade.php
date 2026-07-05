@@ -61,7 +61,7 @@
             </div>
             <div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i class="fas fa-graduation-cap"></i> {{ $plan->gradeLabel() }}</div>
             @if($plan->periodLabel())
-            <div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i class="far fa-calendar"></i> {{ $plan->periodLabel() }}</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:4px;"><i class="far fa-calendar-alt"></i> {{ $plan->periodLabel() }}</div>
             @endif
             <div style="font-size:20px; font-weight:800; color:var(--primary); margin-top:6px;">
                 Rp {{ number_format($plan->price, 0, ',', '.') }}

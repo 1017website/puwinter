@@ -342,7 +342,7 @@
 
     <div class="left-hero">
         <h1>Bergabung dengan <span>24.560+</span> Pejuang UTBK</h1>
-        <p>Daftar gratis dan mulai belajar hari ini. Akses ratusan materi, tryout, dan kelas online terbaik.</p>
+        <p>Daftar gratis dan mulai belajar hari ini. Akses materi, tryout, dan kelas online terbaik.</p>
 
         <div class="benefit-list">
             <div class="benefit-item">

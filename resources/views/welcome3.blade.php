@@ -1434,11 +1434,11 @@
 <div class="section">
     <div class="section-label">Featured Programs</div>
     <h2 class="section-title">Everything You Need to Learn English, <br> <span class="hl">All in One Place.</span></h2>
-    <p class="section-desc">Dari kelas online interaktif hingga analisis belajar detail — semua tersedia dalam satu platform.</p>
+    <p class="section-desc">Dari kelas online (live) interaktif hingga analisis belajar detail — semua tersedia dalam satu platform.</p>
 
     <div class="feature-grid">
         @foreach([
-            ['icon'=>'fa-video','color'=>'rgba(37,99,235,0.15)','icolor'=>'#60A5FA','title'=>'Kelas Online Interaktif','desc'=>'Belajar langsung bersama mentor terbaik via Zoom. Tanya jawab real-time dan rekaman tersedia setelahnya.'],
+            ['icon'=>'fa-video','color'=>'rgba(37,99,235,0.15)','icolor'=>'#60A5FA','title'=>'Kelas Online (Live) Interaktif','desc'=>'Belajar langsung bersama mentor terbaik via Zoom. Tanya jawab real-time dan rekaman tersedia setelahnya.'],
             ['icon'=>'fa-bullseye','color'=>'rgba(239,68,68,0.15)','icolor'=>'#F87171','title'=>'Tryout Literasi dalam Bahasa Inggris UTBK SNBT','desc'=>'Simulasi ujian persis seperti UTBK asli. Timer, navigasi soal, dan hasil skor instan setelah submit.'],
             ['icon'=>'fa-lightbulb','color'=>'rgba(245,158,11,0.15)','icolor'=>'#FBBF24','title'=>'Pembahasan Lengkap','desc'=>'Setiap soal ada pembahasan teks dan video tutor. Pahami konsep, bukan hanya hafal jawaban.'],
             ['icon'=>'fa-file-pdf','color'=>'rgba(16,185,129,0.15)','icolor'=>'#34D399','title'=>'Materi PDF Premium','desc'=>'245+ dokumen materi ringkas dan terstruktur. Download dan belajar kapan saja, di mana saja.'],
@@ -1470,7 +1470,7 @@
         <div class="steps-grid">
             @foreach([
                 ['n'=>'1','title'=>'Daftar Gratis','desc'=>'Buat akun dalam 30 detik. Tidak perlu kartu kredit.'],
-                ['n'=>'2','title'=>'Pilih Materi','desc'=>'Akses ratusan materi dan soal sesuai kebutuhan belajarmu.'],
+                ['n'=>'2','title'=>'Pilih Materi','desc'=>'Akses materi dan soal sesuai kebutuhan belajarmu.'],
                 ['n'=>'3','title'=>'Ikuti Kelas Online','desc'=>'Bergabung ke kelas online dan tanya langsung ke mentor.'],
                 ['n'=>'4','title'=>'Pantau Progress','desc'=>'Cek leaderboard dan analisis belajarmu secara berkala.'],
             ] as $s)
@@ -1491,7 +1491,7 @@
     <div style="text-align:center; margin-bottom:56px;">
         <div class="section-label" style="justify-content:center;">Harga</div>
         <h2 class="section-title">Investasi terbaik untuk <span class="hl">masa depanmu</span></h2>
-        <p class="section-desc" style="margin:14px auto 0; text-align:center;">Mulai gratis, upgrade kapan saja. Garansi uang kembali 7 hari.</p>
+        <p class="section-desc" style="margin:14px auto 0; text-align:center;">Mulai gratis, upgrade kapan saja.</p>
     </div>
 
     <div class="pricing-grid">
@@ -1511,6 +1511,9 @@
             <div class="pricing-name">{{ $plan->name }}</div>
             <div class="pricing-price"><sup>Rp</sup>{{ $priceK }}</div>
             <div class="pricing-period">/ {{ $plan->duration_months }} bulan</div>
+            @if($plan->periodLabel())
+                <div style="font-size:11px; color:#94A3B8; font-weight:600; margin-top:2px;"><i class="far fa-calendar-alt"></i> {{ $plan->periodLabel() }}</div>
+            @endif
             @if($plan->original_price > $plan->price)
                 <div class="pricing-strike">Rp {{ number_format($plan->original_price) }}{{ $discount }}</div>
             @endif
@@ -1535,12 +1538,6 @@
             <p style="color:#94A3B8;">Program belum tersedia. Hubungi admin.</p>
         </div>
         @endforelse
-    </div>
-
-    {{-- Garansi --}}
-    <div style="text-align:center; margin-top:36px; display:flex; align-items:center; justify-content:center; gap:10px; color:#64748B; font-size:13.5px;" class="reveal">
-        <i class="fas fa-shield-halved" style="color:#10B981;"></i>
-        Garansi uang kembali 7 hari — tidak puas, kami kembalikan 100%.
     </div>
 </div>
 
@@ -1628,8 +1625,6 @@
                 <h4>Perusahaan</h4>
                 <ul>
                     <li><a href="#">Tentang Kami</a></li>
-                    <li><a href="#">Blog</a></li>
-                    <li><a href="#">Karir</a></li>
                     <li><a href="#">Hubungi Kami</a></li>
                 </ul>
             </div>
@@ -1639,7 +1634,6 @@
                 <ul>
                     <li><a href="#">Syarat & Ketentuan</a></li>
                     <li><a href="#">Kebijakan Privasi</a></li>
-                    <li><a href="#">Kebijakan Refund</a></li>
                 </ul>
             </div>
         </div>

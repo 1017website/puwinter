@@ -30,8 +30,14 @@
                     <span class="badge" style="background:#DBEAFE; color:#1E40AF;">Status: Gratis</span>
                 @endif
             </div>
-            <p style="font-size:13px; color:var(--text-muted); margin-top:8px;">
-                {{ $plan->duration_months }} bulan @if($plan->bonus) • {{ $plan->bonus }} @endif
+            <p style="font-size:13px; color:var(--text-muted); margin-top:8px; line-height:1.7;">
+                <span><i class="far fa-clock"></i> Durasi: {{ $plan->duration_months }} bulan</span>
+                @if($plan->periodLabel())
+                    <br><span><i class="far fa-calendar-alt"></i> {{ $plan->periodLabel() }}</span>
+                @endif
+                @if($plan->bonus)
+                    <br><span><i class="fas fa-gift"></i> {{ $plan->bonus }}</span>
+                @endif
             </p>
         </div>
         <div style="text-align:right;">

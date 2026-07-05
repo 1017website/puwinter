@@ -1350,7 +1350,7 @@
             <div class="hero-right">
                 <div class="hero-stack">
                     <div class="float-card">
-                        <div class="float-title">Kelas Live Berlangsung</div>
+                        <div class="float-title">Kelas Online Berlangsung</div>
                         <p>142 peserta online</p><strong>Grammar Bahasa Inggris — Tenses & Latihan Berbicara</strong>
                     </div>
                     <div class="float-card">
@@ -1387,10 +1387,10 @@
     <div id="fitur" class="section">
         <div class="section-label">Program Unggulan</div>
         <h2 class="section-title">Semua yang Kamu Butuhkan untuk Belajar Bahasa Inggris, <br> <span class="highlight">dalam Satu Platform.</span></h2>
-        <p class="section-desc">Dari kelas live interaktif hingga analisis belajar detail — semua tersedia dalam satu platform.</p>
+        <p class="section-desc">Dari kelas online (live) interaktif hingga analisis belajar detail — semua tersedia dalam satu platform.</p>
         <div class="feature-grid">@foreach([
-            ['icon'=>'fa-video','color'=>'rgba(83,55,236,0.15)','icolor'=>'#9f91ff','title'=>'Kelas Live Interaktif','desc'=>'Belajar langsung bersama mentor terbaik via Zoom. Tanya jawab langsung dan rekaman tersedia setelahnya.'],
-            ['icon'=>'fa-bullseye','color'=>'rgba(239,68,68,0.15)','icolor'=>'#F87171','title'=>'Latihan Literasi Bahasa Inggris','desc'=>'Simulasi latihan bahasa Inggris dengan timer, navigasi soal, dan hasil skor langsung setelah dikirim.'],
+            ['icon'=>'fa-video','color'=>'rgba(83,55,236,0.15)','icolor'=>'#9f91ff','title'=>'Kelas Online (Live) Interaktif','desc'=>'Belajar langsung bersama mentor terbaik via Zoom. Tanya jawab langsung dan rekaman tersedia setelahnya.'],
+            ['icon'=>'fa-bullseye','color'=>'rgba(239,68,68,0.15)','icolor'=>'#F87171','title'=>'Latihan Soal Literasi Bahasa Inggris','desc'=>'Simulasi latihan bahasa Inggris dengan timer, navigasi soal, dan hasil skor langsung setelah dikirim.'],
             ['icon'=>'fa-lightbulb','color'=>'rgba(245,158,11,0.15)','icolor'=>'#FBBF24','title'=>'Pembahasan Lengkap','desc'=>'Setiap latihan ada pembahasan teks dan video tutor. Pahami konsep bahasa Inggris, bukan hanya hafal jawaban.'],
             ['icon'=>'fa-file-pdf','color'=>'rgba(16,185,129,0.15)','icolor'=>'#34D399','title'=>'Materi PDF Bahasa Inggris Premium','desc'=>'245+ dokumen belajar ringkas dan terstruktur. Unduh dan belajar kapan saja, di mana saja.'],
             ['icon'=>'fa-chart-bar','color'=>'rgba(83,55,236,0.15)','icolor'=>'#9f91ff','title'=>'Papan Peringkat','desc'=>'Pantau progresmu di antara ribuan siswa bahasa Inggris lain. Saring per sekolah, kota, atau provinsi.'],
@@ -1404,7 +1404,7 @@
     <div id="cara-kerja" class="steps-section">
         <div class="section-label">Cara Kerja</div>
         <h2 class="section-title">Mulai dalam <span class="highlight">4 langkah mudah</span></h2>
-        <div class="steps-grid">@foreach([['n'=>'1','title'=>'Daftar Gratis','desc'=>'Buat akun dalam 30 detik. Tidak perlu kartu kredit.'],['n'=>'2','title'=>'Pilih Materi','desc'=>'Akses ratusan materi dan latihan bahasa Inggris sesuai kebutuhan belajarmu.'],['n'=>'3','title'=>'Ikuti Kelas Live','desc'=>'Bergabung ke kelas live dan tanya langsung ke mentor.'],['n'=>'4','title'=>'Pantau Progres','desc'=>'Cek papan peringkat dan analisis belajarmu secara berkala.']] as $s)<div class="step-item reveal">
+        <div class="steps-grid">@foreach([['n'=>'1','title'=>'Daftar Gratis','desc'=>'Buat akun dalam 30 detik. Tidak perlu kartu kredit.'],['n'=>'2','title'=>'Pilih Materi','desc'=>'Akses materi dan latihan bahasa Inggris sesuai kebutuhan belajarmu.'],['n'=>'3','title'=>'Ikuti Kelas Online','desc'=>'Bergabung ke kelas online dan tanya langsung ke mentor.'],['n'=>'4','title'=>'Pantau Progres','desc'=>'Cek papan peringkat dan analisis belajarmu secara berkala.']] as $s)<div class="step-item reveal">
                 <div class="step-number">{{ $s['n'] }}</div>
                 <h3>{{ $s['title'] }}</h3>
                 <p>{{ $s['desc'] }}</p>
@@ -1413,7 +1413,7 @@
     <div id="harga" class="pricing-section">
         <div class="section-label">Harga</div>
         <h2 class="section-title">Investasi terbaik untuk <span class="highlight">masa depanmu</span></h2>
-        <p class="section-desc">Mulai gratis, tingkatkan program kapan saja. Garansi uang kembali 7 hari.</p>
+        <p class="section-desc">Mulai gratis, tingkatkan program kapan saja.</p>
         <div class="pricing-grid">@forelse($plans as $plan)
             @php
             $priceK = $plan->price >= 1000
@@ -1428,7 +1428,6 @@
             </div>@empty<div class="pricing-card reveal" style="grid-column:1/-1;text-align:center;padding:40px;">
                 <p style="color:#94A3B8;">Program belum tersedia. Hubungi admin.</p>
             </div>@endforelse</div>
-        <div style="margin-top:34px;color:#94A3B8;font-size:13.5px" class="reveal"><i class="fas fa-shield-halved" style="color:#10B981;"></i> Garansi uang kembali 7 hari — tidak puas, kami kembalikan 100%.</div>
     </div>
     <div id="testimoni" class="testi-section">
         <div class="section-label">Testimoni</div>
@@ -1468,13 +1467,13 @@
         </div>
         <div class="footer-links">
             <div>
-                <h4>Platform</h4><a href="#">Kelas Live</a><a href="#">Tryout</a><a href="#">Bank Latihan</a><a href="#">Materi PDF Bahasa Inggris</a><a href="#">Papan Peringkat</a>
+                <h4>Platform</h4><a href="#">Kelas Online</a><a href="#">Tryout</a><a href="#">Bank Soal</a><a href="#">Materi PDF Bahasa Inggris</a><a href="#">Papan Peringkat</a>
             </div>
             <div>
-                <h4>Perusahaan</h4><a href="#">Tentang Kami</a><a href="#">Blog</a><a href="#">Karir</a><a href="#">Hubungi Kami</a>
+                <h4>Perusahaan</h4><a href="#">Tentang Kami</a><a href="#">Hubungi Kami</a>
             </div>
             <div>
-                <h4>Legal</h4><a href="#">Syarat & Ketentuan</a><a href="#">Kebijakan Privasi</a><a href="#">Kebijakan Pengembalian Dana</a>
+                <h4>Legal</h4><a href="#">Syarat & Ketentuan</a><a href="#">Kebijakan Privasi</a>
             </div>
         </div>
         <div class="footer-bottom"><span>© {{ date('Y') }} Puwinter. Seluruh hak cipta dilindungi.</span>

@@ -1221,9 +1221,9 @@
     <div id="fitur" class="section">
         <div class="section-label">Featured Programs</div>
         <h2 class="section-title">Everything You Need to Learn English, <br> <span class="highlight">All in One Place.</span></h2>
-        <p class="section-desc">Dari kelas online interaktif hingga analisis belajar detail — semua tersedia dalam satu platform.</p>
+        <p class="section-desc">Dari kelas online (live) interaktif hingga analisis belajar detail — semua tersedia dalam satu platform.</p>
         <div class="feature-grid">@foreach([
-            ['icon'=>'fa-video','color'=>'rgba(83,55,236,0.15)','icolor'=>'#8b7dff','title'=>'Kelas Online Interaktif','desc'=>'Belajar langsung bersama mentor terbaik via Zoom. Tanya jawab real-time dan rekaman tersedia setelahnya.'],
+            ['icon'=>'fa-video','color'=>'rgba(83,55,236,0.15)','icolor'=>'#8b7dff','title'=>'Kelas Online (Live) Interaktif','desc'=>'Belajar langsung bersama mentor terbaik via Zoom. Tanya jawab real-time dan rekaman tersedia setelahnya.'],
             ['icon'=>'fa-bullseye','color'=>'rgba(239,68,68,0.15)','icolor'=>'#F87171','title'=>'English Proficiency Assessment','desc'=>'Simulasi English assessment dengan timer, navigasi soal, dan hasil skor instan setelah submit.'],
             ['icon'=>'fa-lightbulb','color'=>'rgba(245,158,11,0.15)','icolor'=>'#FBBF24','title'=>'Complete Learning Review','desc'=>'Setiap latihan dilengkapi pembahasan teks dan video tutor. Pahami grammar, vocabulary, dan context dengan lebih jelas.'],
             ['icon'=>'fa-file-pdf','color'=>'rgba(16,185,129,0.15)','icolor'=>'#34D399','title'=>'Premium English Materials','desc'=>'245+ dokumen materi English yang ringkas dan terstruktur. Download dan belajar kapan saja, di mana saja.'],
@@ -1239,7 +1239,7 @@
         <div class="steps-inner">
             <div class="section-label">Cara Kerja</div>
             <h2 class="section-title">Mulai dalam <span class="highlight">4 langkah mudah</span></h2>
-            <div class="steps-grid">@foreach([['n'=>'1','title'=>'Daftar Gratis','desc'=>'Buat akun dalam 30 detik. Tidak perlu kartu kredit.'],['n'=>'2','title'=>'Pilih Materi','desc'=>'Akses ratusan materi dan latihan English sesuai kebutuhan belajarmu.'],['n'=>'3','title'=>'Ikuti Kelas Online','desc'=>'Bergabung ke kelas online dan tanya langsung ke mentor.'],['n'=>'4','title'=>'Pantau Progress','desc'=>'Cek leaderboard dan analisis belajarmu secara berkala.']] as $s)<div class="step-item reveal">
+            <div class="steps-grid">@foreach([['n'=>'1','title'=>'Daftar Gratis','desc'=>'Buat akun dalam 30 detik. Tidak perlu kartu kredit.'],['n'=>'2','title'=>'Pilih Materi','desc'=>'Akses materi dan latihan English sesuai kebutuhan belajarmu.'],['n'=>'3','title'=>'Ikuti Kelas Online','desc'=>'Bergabung ke kelas online dan tanya langsung ke mentor.'],['n'=>'4','title'=>'Pantau Progress','desc'=>'Cek leaderboard dan analisis belajarmu secara berkala.']] as $s)<div class="step-item reveal">
                     <div class="step-number">{{ $s['n'] }}</div>
                     <h3>{{ $s['title'] }}</h3>
                     <p>{{ $s['desc'] }}</p>
@@ -1250,7 +1250,7 @@
         <div style="text-align:center">
             <div class="section-label">Harga</div>
             <h2 class="section-title">Investasi terbaik untuk <span class="highlight">kemampuan English-mu</span></h2>
-            <p class="section-desc" style="margin:auto">Mulai gratis, upgrade kapan saja. Garansi uang kembali 7 hari.</p>
+            <p class="section-desc" style="margin:auto">Mulai gratis, upgrade kapan saja.</p>
         </div>
         <div class="pricing-grid">@forelse($plans as $plan)
             @php
@@ -1262,11 +1262,10 @@
             : '';
             @endphp<div class="pricing-card {{ $plan->is_popular ? 'popular' : '' }} reveal">@if($plan->is_popular)<div class="popular-tag">PALING POPULER</div>@endif<div class="pricing-name">{{ $plan->name }}</div>
                 <div class="pricing-price"><sup>Rp</sup>{{ $priceK }}</div>
-                <div class="pricing-period">/ {{ $plan->duration_months }} bulan</div>@if($plan->original_price > $plan->price)<div class="pricing-strike">Rp {{ number_format($plan->original_price) }}{{ $discount }}</div>@endif @if($plan->bonus)<div style="font-size:12px;color:var(--accent);font-weight:800;margin:6px 0;">🎁 {{ $plan->bonus }}</div>@endif @if($plan->features)<ul class="pricing-features">@foreach($plan->features as $f)<li><i class="fas fa-check-circle"></i> {{ $f }}</li>@endforeach</ul>@endif<a href="{{ route('register') }}" class="btn-pricing {{ $plan->is_popular ? 'btn-pricing-filled' : 'btn-pricing-outline' }}">{{ $plan->is_popular ? 'Pilih Program Ini' : 'Mulai Sekarang' }}</a>
+                <div class="pricing-period">/ {{ $plan->duration_months }} bulan</div>@if($plan->periodLabel())<div style="font-size:11px;color:#94A3B8;font-weight:600;margin-top:2px;"><i class="far fa-calendar-alt"></i> {{ $plan->periodLabel() }}</div>@endif @if($plan->original_price > $plan->price)<div class="pricing-strike">Rp {{ number_format($plan->original_price) }}{{ $discount }}</div>@endif @if($plan->bonus)<div style="font-size:12px;color:var(--accent);font-weight:800;margin:6px 0;">🎁 {{ $plan->bonus }}</div>@endif @if($plan->features)<ul class="pricing-features">@foreach($plan->features as $f)<li><i class="fas fa-check-circle"></i> {{ $f }}</li>@endforeach</ul>@endif<a href="{{ route('register') }}" class="btn-pricing {{ $plan->is_popular ? 'btn-pricing-filled' : 'btn-pricing-outline' }}">{{ $plan->is_popular ? 'Pilih Program Ini' : 'Mulai Sekarang' }}</a>
             </div>@empty<div class="pricing-card reveal" style="grid-column:1/-1;text-align:center;padding:40px;">
                 <p style="color:#94A3B8;">Program belum tersedia. Hubungi admin.</p>
             </div>@endforelse</div>
-        <div style="text-align:center;margin-top:34px;color:#64748B;font-size:13.5px" class="reveal"><i class="fas fa-shield-halved" style="color:#10B981;"></i> Garansi uang kembali 7 hari — tidak puas, kami kembalikan 100%.</div>
     </div>
     <div id="testimoni" class="testi-section">
         <div class="testi-inner">
@@ -1308,13 +1307,13 @@
         </div>
         <div class="footer-links">
             <div>
-                <h4>Platform</h4><a href="#">Kelas Online</a><a href="#">English Assessment</a><a href="#">Practice Bank</a><a href="#">English Materials</a><a href="#">Leaderboard</a>
+                <h4>Platform</h4><a href="#">Kelas Online</a><a href="#">Tryout</a><a href="#">Bank Soal</a><a href="#">Materi Bahasa Inggris</a><a href="#">Leaderboard</a>
             </div>
             <div>
-                <h4>Perusahaan</h4><a href="#">Tentang Kami</a><a href="#">Blog</a><a href="#">Karir</a><a href="#">Hubungi Kami</a>
+                <h4>Perusahaan</h4><a href="#">Tentang Kami</a><a href="#">Hubungi Kami</a>
             </div>
             <div>
-                <h4>Legal</h4><a href="#">Syarat & Ketentuan</a><a href="#">Kebijakan Privasi</a><a href="#">Kebijakan Refund</a>
+                <h4>Legal</h4><a href="#">Syarat & Ketentuan</a><a href="#">Kebijakan Privasi</a>
             </div>
         </div>
         <div class="footer-bottom"><span>© {{ date('Y') }} Puwinter. All rights reserved.</span>
