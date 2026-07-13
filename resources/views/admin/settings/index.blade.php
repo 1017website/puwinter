@@ -179,25 +179,12 @@
             $cmdGroups = [
                 'Database' => [
                     'migrate'          => ['label'=>'migrate',          'desc'=>'Jalankan semua migration baru',             'color'=>'blue',  'icon'=>'fa-database'],
-                    'migrate:rollback' => ['label'=>'migrate:rollback', 'desc'=>'Rollback migration terakhir',               'color'=>'yellow','icon'=>'fa-rotate-left'],
-                    'db:seed'          => ['label'=>'db:seed',          'desc'=>'Jalankan semua database seeder',            'color'=>'green', 'icon'=>'fa-seedling'],
                 ],
                 'Cache & Optimasi' => [
-                    'optimize'         => ['label'=>'optimize',         'desc'=>'Cache config, route, dan view sekaligus',   'color'=>'green', 'icon'=>'fa-bolt'],
                     'optimize:clear'   => ['label'=>'optimize:clear',   'desc'=>'Hapus semua cache sekaligus',               'color'=>'yellow','icon'=>'fa-broom'],
-                    'cache:clear'      => ['label'=>'cache:clear',      'desc'=>'Hapus application cache',                   'color'=>'yellow','icon'=>'fa-trash-can'],
-                    'config:cache'     => ['label'=>'config:cache',     'desc'=>'Cache semua file konfigurasi',              'color'=>'blue',  'icon'=>'fa-gear'],
-                    'config:clear'     => ['label'=>'config:clear',     'desc'=>'Hapus config cache',                        'color'=>'yellow','icon'=>'fa-gear'],
-                    'route:cache'      => ['label'=>'route:cache',      'desc'=>'Cache semua routes',                        'color'=>'blue',  'icon'=>'fa-route'],
-                    'route:clear'      => ['label'=>'route:clear',      'desc'=>'Hapus route cache',                         'color'=>'yellow','icon'=>'fa-route'],
-                    'view:cache'       => ['label'=>'view:cache',       'desc'=>'Compile semua Blade views',                 'color'=>'blue',  'icon'=>'fa-eye'],
-                    'view:clear'       => ['label'=>'view:clear',       'desc'=>'Hapus compiled view cache',                 'color'=>'yellow','icon'=>'fa-eye'],
                 ],
                 'Storage & Lainnya' => [
                     'storage:link'     => ['label'=>'storage:link',     'desc'=>'Buat symlink public/storage → storage/app/public', 'color'=>'green','icon'=>'fa-link'],
-                    'queue:restart'    => ['label'=>'queue:restart',    'desc'=>'Restart queue worker setelah deploy',       'color'=>'blue',  'icon'=>'fa-refresh'],
-                    'schedule:run'     => ['label'=>'schedule:run',     'desc'=>'Jalankan scheduled tasks sekarang',         'color'=>'blue',  'icon'=>'fa-clock'],
-                    'event:clear'      => ['label'=>'event:clear',      'desc'=>'Hapus event & listener cache',              'color'=>'yellow','icon'=>'fa-bolt'],
                 ],
             ];
             $colorMap = [
@@ -239,12 +226,6 @@
             </div>
             @endforeach
 
-            <div style="background:#FEF3C7; border:1px solid #FCD34D; border-radius:8px; padding:10px 12px; display:flex; gap:8px; margin-top:4px;">
-                <i class="fas fa-triangle-exclamation" style="color:#F59E0B; flex-shrink:0; margin-top:1px;"></i>
-                <div style="font-size:11px; color:#92400E; line-height:1.5;">
-                    Setelah <strong>config:cache</strong> atau <strong>route:cache</strong>, jalankan <strong>optimize:clear</strong> jika ada perubahan kode.
-                </div>
-            </div>
         </div>
 
         {{-- SYSTEM INFO --}}

@@ -57,7 +57,25 @@
             flex-direction: column;
             z-index: 50;
             overflow-y: auto;
+            overflow-x: hidden;
+            overscroll-behavior: contain;
+            scrollbar-gutter: stable;
+            scrollbar-width: thin;
+            scrollbar-color: #475569 rgba(2, 6, 23, 0.32);
         }
+
+        .sidebar::-webkit-scrollbar { width: 7px; }
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(2, 6, 23, 0.32);
+            border-radius: 999px;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #475569;
+            border: 1px solid rgba(2, 6, 23, 0.55);
+            border-radius: 999px;
+        }
+        .sidebar::-webkit-scrollbar-thumb:hover { background: #64748B; }
+        .sidebar::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
 
         .sidebar-logo {
             padding: 20px 16px 16px;

@@ -7,8 +7,8 @@ use App\Models\Grade;
 use App\Models\RegistrationCode;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Tests\TestCase;
-use ZipArchive;
 
 class RegistrationCodeAndTryoutSettingsTest extends TestCase
 {
@@ -115,18 +115,35 @@ class RegistrationCodeAndTryoutSettingsTest extends TestCase
         $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
         $file = $response->baseResponse->getFile()->getPathname();
-        $zip = new ZipArchive;
-        $this->assertTrue($zip->open($file) === true);
+        $workbook = IOFactory::load($file);
+        $worksheet = $workbook->getSheetByName('Data User');
 
-        $worksheet = $zip->getFromName('xl/worksheets/sheet1.xml');
-        $zip->close();
+        $this->assertNotNull($worksheet);
+        $this->assertSame('Siswa Excel', $worksheet->getCell('B5')->getValue());
+        $this->assertSame('excel@example.com', $worksheet->getCell('C5')->getValue());
+        $this->assertSame('A4:R5', $worksheet->getAutoFilter()->getRange());
+        $this->assertSame('A5', $worksheet->getFreezePane());
+
+        $workbook->disconnectWorksheets();
         @unlink($file);
+    }
 
-        $this->assertIsString($worksheet);
-        $this->assertStringContainsString('Siswa Excel', $worksheet);
-        $this->assertStringContainsString('excel@example.com', $worksheet);
-        $this->assertStringNotContainsString('Mentor Tidak Ikut', $worksheet);
-        $this->assertStringContainsString('autoFilter', $worksheet);
-        $this->assertStringContainsString('state="frozen"', $worksheet);
+    public function test_artisan_panel_only_exposes_three_allowed_commands(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->get(route('admin.settings.index'))
+            ->assertOk()
+            ->assertSee('php artisan migrate')
+            ->assertSee('php artisan optimize:clear')
+            ->assertSee('php artisan storage:link')
+            ->assertDontSee('php artisan db:seed')
+            ->assertDontSee('php artisan migrate:rollback')
+            ->assertDontSee('php artisan cache:clear')
+            ->assertDontSee('php artisan route:cache');
+
+        $this->actingAs($admin)->post(route('admin.settings.artisan'), [
+            'command' => 'cache:clear',
+        ])->assertSessionHas('error', 'Command tidak diizinkan.');
     }
 }

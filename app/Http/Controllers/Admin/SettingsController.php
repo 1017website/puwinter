@@ -106,22 +106,9 @@ class SettingsController extends Controller
         // karena Artisan::call() memperlakukan key numerik sebagai nama argument
         // (itulah penyebab error "The '1' argument does not exist").
         $allowed = [
-            'migrate' => ['migrate',          ['--force' => true]],
-            'migrate:rollback' => ['migrate:rollback', ['--force' => true]],
-            'db:seed' => ['db:seed',          ['--force' => true]],
-            'storage:link' => ['storage:link',     []],
-            'optimize' => ['optimize',         []],
-            'optimize:clear' => ['optimize:clear',   []],
-            'cache:clear' => ['cache:clear',      []],
-            'config:clear' => ['config:clear',     []],
-            'config:cache' => ['config:cache',     []],
-            'route:clear' => ['route:clear',      []],
-            'route:cache' => ['route:cache',      []],
-            'view:clear' => ['view:clear',       []],
-            'view:cache' => ['view:cache',       []],
-            'queue:restart' => ['queue:restart',    []],
-            'schedule:run' => ['schedule:run',     []],
-            'event:clear' => ['event:clear',      []],
+            'migrate' => ['migrate', ['--force' => true]],
+            'optimize:clear' => ['optimize:clear', []],
+            'storage:link' => ['storage:link', []],
         ];
 
         if (! array_key_exists($command, $allowed)) {

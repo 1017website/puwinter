@@ -5,9 +5,15 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use RuntimeException;
-use XMLWriter;
-use ZipArchive;
 
 class UserExcelExportService
 {
@@ -28,30 +34,18 @@ class UserExcelExportService
         $path = $basePath.'.xlsx';
         @unlink($basePath);
 
-        $zip = new ZipArchive;
-        if ($zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            throw new RuntimeException('Gagal membuat file Excel.');
-        }
+        $spreadsheet = new Spreadsheet;
+        $spreadsheet->getProperties()
+            ->setCreator('Puwinter Admin')
+            ->setTitle('Data User Puwinter')
+            ->setSubject('Export data user')
+            ->setDescription('Data user yang diekspor dari halaman admin Puwinter.');
 
-        $zip->addFromString('[Content_Types].xml', $this->contentTypes());
-        $zip->addFromString('_rels/.rels', $this->rootRelationships());
-        $zip->addFromString('docProps/app.xml', $this->appProperties());
-        $zip->addFromString('docProps/core.xml', $this->coreProperties());
-        $zip->addFromString('xl/workbook.xml', $this->workbook());
-        $zip->addFromString('xl/_rels/workbook.xml.rels', $this->workbookRelationships());
-        $zip->addFromString('xl/styles.xml', $this->styles());
-        $zip->addFromString('xl/worksheets/sheet1.xml', $this->worksheet($users, $filters));
-        $zip->close();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data User');
+        $sheet->setShowGridlines(false);
+        $sheet->freezePane('A5');
 
-        return $path;
-    }
-
-    /**
-     * @param  Collection<int, User>  $users
-     * @param  array<string, string|null>  $filters
-     */
-    private function worksheet(Collection $users, array $filters): string
-    {
         $headers = [
             'No.', 'Nama', 'Email', 'Role', 'Status', 'Telepon', 'Sekolah', 'Kota',
             'Provinsi', 'Kelas', 'Kode Pendaftar', 'Kelompok Pendaftar', 'Kode Affiliate',
@@ -59,57 +53,34 @@ class UserExcelExportService
             'Tanggal Bergabung',
         ];
 
-        $lastColumn = $this->columnName(count($headers));
-        $lastRow = max(4, $users->count() + 4);
-        $filterText = $this->filterDescription($filters);
+        $sheet->mergeCells('A1:R1');
+        $sheet->setCellValue('A1', 'Data User Puwinter');
+        $sheet->getStyle('A1:R1')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2563EB']],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getRowDimension(1)->setRowHeight(30);
 
-        $xml = new XMLWriter;
-        $xml->openMemory();
-        $xml->startDocument('1.0', 'UTF-8', 'yes');
-        $xml->startElement('worksheet');
-        $xml->writeAttribute('xmlns', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+        $sheet->mergeCells('A2:R2');
+        $sheet->setCellValue('A2', 'Diekspor '.now()->format('d M Y H:i').' WIB · '.$this->filterDescription($filters));
+        $sheet->getStyle('A2:R2')->applyFromArray([
+            'font' => ['italic' => true, 'size' => 10, 'color' => ['rgb' => '64748B']],
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+        ]);
+        $sheet->getRowDimension(2)->setRowHeight(22);
 
-        $xml->startElement('sheetViews');
-        $xml->startElement('sheetView');
-        $xml->writeAttribute('workbookViewId', '0');
-        $xml->writeAttribute('showGridLines', '0');
-        $xml->startElement('pane');
-        $xml->writeAttribute('ySplit', '4');
-        $xml->writeAttribute('topLeftCell', 'A5');
-        $xml->writeAttribute('activePane', 'bottomLeft');
-        $xml->writeAttribute('state', 'frozen');
-        $xml->endElement();
-        $xml->endElement();
-        $xml->endElement();
-
-        $xml->writeElement('sheetFormatPr');
-        $xml->startElement('cols');
-        $widths = [7, 25, 30, 14, 18, 18, 27, 18, 18, 16, 20, 28, 20, 25, 15, 18, 20, 22];
-        foreach ($widths as $index => $width) {
-            $xml->startElement('col');
-            $xml->writeAttribute('min', (string) ($index + 1));
-            $xml->writeAttribute('max', (string) ($index + 1));
-            $xml->writeAttribute('width', (string) $width);
-            $xml->writeAttribute('customWidth', '1');
-            $xml->endElement();
-        }
-        $xml->endElement();
-
-        $xml->startElement('sheetData');
-
-        $this->startRow($xml, 1, 30);
-        $this->inlineCell($xml, 'A1', 'Data User Puwinter', 1);
-        $xml->endElement();
-
-        $this->startRow($xml, 2, 22);
-        $this->inlineCell($xml, 'A2', 'Diekspor '.now()->format('d M Y H:i').' WIB · '.$filterText, 2);
-        $xml->endElement();
-
-        $this->startRow($xml, 4, 24);
-        foreach ($headers as $index => $header) {
-            $this->inlineCell($xml, $this->columnName($index + 1).'4', $header, 3);
-        }
-        $xml->endElement();
+        $sheet->fromArray($headers, null, 'A4');
+        $sheet->getStyle('A4:R4')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 10, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2563EB']],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+                'wrapText' => true,
+            ],
+        ]);
+        $sheet->getRowDimension(4)->setRowHeight(28);
 
         foreach ($users->values() as $index => $user) {
             $row = $index + 5;
@@ -118,111 +89,79 @@ class UserExcelExportService
                 ? 'Nonaktif'
                 : ($activeSubscription ? 'Premium'.($activeSubscription->plan?->name ? ' - '.$activeSubscription->plan->name : '') : 'Gratis');
 
-            $this->startRow($xml, $row, 20);
-            $this->numberCell($xml, 'A'.$row, $index + 1, 5);
-            $this->inlineCell($xml, 'B'.$row, $user->name);
-            $this->inlineCell($xml, 'C'.$row, $user->email);
-            $this->inlineCell($xml, 'D'.$row, ucfirst($user->role));
-            $this->inlineCell($xml, 'E'.$row, $status);
-            $this->inlineCell($xml, 'F'.$row, $user->phone ?: '-');
-            $this->inlineCell($xml, 'G'.$row, $user->school ?: '-');
-            $this->inlineCell($xml, 'H'.$row, $user->city ?: '-');
-            $this->inlineCell($xml, 'I'.$row, $user->province ?: '-');
-            $this->inlineCell($xml, 'J'.$row, $user->grade?->name ?? $user->grade ?? '-');
-            $this->inlineCell($xml, 'K'.$row, $user->registrationCode?->code ?? '-');
-            $this->inlineCell($xml, 'L'.$row, $user->registrationCode?->name ?? '-');
-            $this->inlineCell($xml, 'M'.$row, $user->affiliate_code ?: '-');
-            $this->inlineCell($xml, 'N'.$row, $user->referredBy?->name ?? '-');
-            $this->numberCell($xml, 'O'.$row, (int) $user->enrollments_count, 5);
-            $this->numberCell($xml, 'P'.$row, (int) $user->tryout_attempts_count, 5);
-            $this->inlineCell($xml, 'Q'.$row, $user->email_verified_at ? 'Terverifikasi' : 'Belum terverifikasi');
-            $this->dateCell($xml, 'R'.$row, $user->created_at);
-            $xml->endElement();
+            $sheet->setCellValue('A'.$row, $index + 1);
+            $this->setText($sheet, 'B'.$row, $user->name);
+            $this->setText($sheet, 'C'.$row, $user->email);
+            $this->setText($sheet, 'D'.$row, ucfirst($user->role));
+            $this->setText($sheet, 'E'.$row, $status);
+            $this->setText($sheet, 'F'.$row, $user->phone ?: '-');
+            $this->setText($sheet, 'G'.$row, $user->school ?: '-');
+            $this->setText($sheet, 'H'.$row, $user->city ?: '-');
+            $this->setText($sheet, 'I'.$row, $user->province ?: '-');
+            $this->setText($sheet, 'J'.$row, $user->grade?->name ?? $user->grade ?? '-');
+            $this->setText($sheet, 'K'.$row, $user->registrationCode?->code ?? '-');
+            $this->setText($sheet, 'L'.$row, $user->registrationCode?->name ?? '-');
+            $this->setText($sheet, 'M'.$row, $user->affiliate_code ?: '-');
+            $this->setText($sheet, 'N'.$row, $user->referredBy?->name ?? '-');
+            $sheet->setCellValue('O'.$row, (int) $user->enrollments_count);
+            $sheet->setCellValue('P'.$row, (int) $user->tryout_attempts_count);
+            $this->setText($sheet, 'Q'.$row, $user->email_verified_at ? 'Terverifikasi' : 'Belum terverifikasi');
+
+            if ($user->created_at) {
+                $sheet->setCellValue('R'.$row, Date::PHPToExcel($user->created_at));
+                $sheet->getStyle('R'.$row)->getNumberFormat()->setFormatCode('dd mmm yyyy hh:mm');
+            }
+
+            $sheet->getRowDimension($row)->setRowHeight(21);
         }
 
-        $xml->endElement();
-
-        $xml->startElement('mergeCells');
-        $xml->writeAttribute('count', '2');
-        foreach (["A1:{$lastColumn}1", "A2:{$lastColumn}2"] as $range) {
-            $xml->startElement('mergeCell');
-            $xml->writeAttribute('ref', $range);
-            $xml->endElement();
+        $lastRow = max(5, $users->count() + 4);
+        if ($users->isEmpty()) {
+            $sheet->mergeCells('A5:R5');
+            $sheet->setCellValue('A5', 'Tidak ada data user untuk filter yang dipilih.');
+            $sheet->getStyle('A5:R5')->applyFromArray([
+                'font' => ['italic' => true, 'color' => ['rgb' => '64748B']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+            ]);
         }
-        $xml->endElement();
 
-        $xml->startElement('autoFilter');
-        $xml->writeAttribute('ref', "A4:{$lastColumn}{$lastRow}");
-        $xml->endElement();
+        $sheet->setAutoFilter('A4:R'.$lastRow);
+        $sheet->getStyle('A5:R'.$lastRow)->applyFromArray([
+            'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => [
+                'bottom' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'DCE5F0']],
+            ],
+        ]);
+        $sheet->getStyle('A5:A'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('O5:P'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('F5:F'.$lastRow)->getNumberFormat()->setFormatCode('@');
+        $sheet->getStyle('K5:N'.$lastRow)->getNumberFormat()->setFormatCode('@');
 
-        $xml->startElement('sheetProtection');
-        $xml->writeAttribute('sheet', '0');
-        $xml->endElement();
-        $xml->startElement('pageMargins');
-        $xml->writeAttribute('left', '0.25');
-        $xml->writeAttribute('right', '0.25');
-        $xml->writeAttribute('top', '0.5');
-        $xml->writeAttribute('bottom', '0.5');
-        $xml->writeAttribute('header', '0.2');
-        $xml->writeAttribute('footer', '0.2');
-        $xml->endElement();
-        $xml->endElement();
+        $widths = [
+            'A' => 7, 'B' => 25, 'C' => 30, 'D' => 14, 'E' => 18, 'F' => 18,
+            'G' => 27, 'H' => 18, 'I' => 18, 'J' => 16, 'K' => 20, 'L' => 28,
+            'M' => 20, 'N' => 25, 'O' => 15, 'P' => 18, 'Q' => 20, 'R' => 22,
+        ];
+        foreach ($widths as $column => $width) {
+            $sheet->getColumnDimension($column)->setWidth($width);
+        }
 
-        return $xml->outputMemory();
+        $sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(4, 4);
+        $sheet->getPageSetup()->setFitToWidth(1)->setFitToHeight(0);
+        $sheet->getPageMargins()->setTop(0.5)->setBottom(0.5)->setLeft(0.25)->setRight(0.25);
+        $sheet->setSelectedCell('A1');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->setPreCalculateFormulas(false);
+        $writer->save($path);
+        $spreadsheet->disconnectWorksheets();
+
+        return $path;
     }
 
-    private function startRow(XMLWriter $xml, int $row, int $height): void
+    private function setText(Worksheet $sheet, string $cell, string $value): void
     {
-        $xml->startElement('row');
-        $xml->writeAttribute('r', (string) $row);
-        $xml->writeAttribute('ht', (string) $height);
-        $xml->writeAttribute('customHeight', '1');
-    }
-
-    private function inlineCell(XMLWriter $xml, string $reference, string $value, int $style = 0): void
-    {
-        $xml->startElement('c');
-        $xml->writeAttribute('r', $reference);
-        $xml->writeAttribute('t', 'inlineStr');
-        if ($style > 0) {
-            $xml->writeAttribute('s', (string) $style);
-        }
-        $xml->startElement('is');
-        $xml->startElement('t');
-        $xml->writeAttribute('xml:space', 'preserve');
-        $xml->text($value);
-        $xml->endElement();
-        $xml->endElement();
-        $xml->endElement();
-    }
-
-    private function numberCell(XMLWriter $xml, string $reference, int $value, int $style = 0): void
-    {
-        $xml->startElement('c');
-        $xml->writeAttribute('r', $reference);
-        $xml->writeAttribute('t', 'n');
-        if ($style > 0) {
-            $xml->writeAttribute('s', (string) $style);
-        }
-        $xml->writeElement('v', (string) $value);
-        $xml->endElement();
-    }
-
-    private function dateCell(XMLWriter $xml, string $reference, $date): void
-    {
-        if (! $date) {
-            $this->inlineCell($xml, $reference, '-');
-
-            return;
-        }
-
-        $excelSerial = ($date->getTimestamp() / 86400) + 25569;
-        $xml->startElement('c');
-        $xml->writeAttribute('r', $reference);
-        $xml->writeAttribute('t', 'n');
-        $xml->writeAttribute('s', '4');
-        $xml->writeElement('v', number_format($excelSerial, 8, '.', ''));
-        $xml->endElement();
+        $sheet->setCellValueExplicit($cell, $value, DataType::TYPE_STRING);
     }
 
     /** @param array<string, string|null> $filters */
@@ -240,102 +179,5 @@ class UserExcelExportService
         }
 
         return $parts ? implode(' · ', $parts) : 'Semua user';
-    }
-
-    private function columnName(int $number): string
-    {
-        $name = '';
-        while ($number > 0) {
-            $number--;
-            $name = chr(65 + ($number % 26)).$name;
-            $number = intdiv($number, 26);
-        }
-
-        return $name;
-    }
-
-    private function contentTypes(): string
-    {
-        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            .'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
-            .'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
-            .'<Default Extension="xml" ContentType="application/xml"/>'
-            .'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
-            .'<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-            .'<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
-            .'<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>'
-            .'<Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>'
-            .'</Types>';
-    }
-
-    private function rootRelationships(): string
-    {
-        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            .'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-            .'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
-            .'<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>'
-            .'<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>'
-            .'</Relationships>';
-    }
-
-    private function workbook(): string
-    {
-        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            .'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
-            .'<sheets><sheet name="Data User" sheetId="1" r:id="rId1"/></sheets>'
-            .'</workbook>';
-    }
-
-    private function workbookRelationships(): string
-    {
-        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            .'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-            .'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
-            .'<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
-            .'</Relationships>';
-    }
-
-    private function styles(): string
-    {
-        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            .'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
-            .'<numFmts count="1"><numFmt numFmtId="164" formatCode="dd mmm yyyy hh:mm"/></numFmts>'
-            .'<fonts count="5">'
-            .'<font><sz val="11"/><name val="Aptos"/><family val="2"/></font>'
-            .'<font><b/><sz val="16"/><color rgb="FFFFFFFF"/><name val="Aptos Display"/></font>'
-            .'<font><i/><sz val="10"/><color rgb="FF64748B"/><name val="Aptos"/></font>'
-            .'<font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Aptos"/></font>'
-            .'<font><sz val="11"/><name val="Aptos"/></font>'
-            .'</fonts>'
-            .'<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF2563EB"/><bgColor indexed="64"/></patternFill></fill></fills>'
-            .'<borders count="2"><border/><border><bottom style="thin"><color rgb="FFDCE5F0"/></bottom></border></borders>'
-            .'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
-            .'<cellXfs count="6">'
-            .'<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"><alignment vertical="center"/></xf>'
-            .'<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFill="1" applyFont="1"><alignment vertical="center"/></xf>'
-            .'<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"><alignment vertical="center"/></xf>'
-            .'<xf numFmtId="0" fontId="3" fillId="2" borderId="0" xfId="0" applyFill="1" applyFont="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>'
-            .'<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"><alignment vertical="center"/></xf>'
-            .'<xf numFmtId="1" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"><alignment horizontal="right" vertical="center"/></xf>'
-            .'</cellXfs>'
-            .'<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>'
-            .'</styleSheet>';
-    }
-
-    private function appProperties(): string
-    {
-        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            .'<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">'
-            .'<Application>Puwinter</Application></Properties>';
-    }
-
-    private function coreProperties(): string
-    {
-        $created = now()->utc()->format('Y-m-d\TH:i:s\Z');
-
-        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            .'<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
-            .'<dc:title>Data User Puwinter</dc:title><dc:creator>Puwinter Admin</dc:creator>'
-            .'<dcterms:created xsi:type="dcterms:W3CDTF">'.$created.'</dcterms:created></cp:coreProperties>';
     }
 }
