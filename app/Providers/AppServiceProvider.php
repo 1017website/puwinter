@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Notification;
+use App\Models\AppSetting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -68,6 +69,7 @@ class AppServiceProvider extends ServiceProvider
         View::composer('*', function ($view) {
             $notifCount   = 0;
             $recentNotifs = collect();
+            $studentTryoutEnabled = true;
 
             try {
                 if (Auth::check() && Schema::hasTable('app_notifications')) {
@@ -75,13 +77,16 @@ class AppServiceProvider extends ServiceProvider
                     $notifCount   = Notification::forUser($userId)->unread()->count();
                     $recentNotifs = Notification::forUser($userId)->latest()->take(5)->get();
                 }
+                $studentTryoutEnabled = AppSetting::studentTryoutEnabled();
             } catch (\Throwable $e) {
                 // Diamkan: badge notif tidak boleh menjatuhkan seluruh aplikasi.
                 $notifCount   = 0;
                 $recentNotifs = collect();
+                $studentTryoutEnabled = true;
             }
 
             $view->with('notifCount', $notifCount);
+            $view->with('studentTryoutEnabled', $studentTryoutEnabled);
 
             if (!array_key_exists('recentNotifs', $view->getData())) {
                 $view->with('recentNotifs', $recentNotifs);

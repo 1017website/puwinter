@@ -425,6 +425,9 @@
             <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                 <i class="fas fa-users"></i> User
             </a>
+            <a href="{{ route('admin.registration-codes.index') }}" class="nav-item {{ request()->routeIs('admin.registration-codes.*') ? 'active' : '' }}">
+                <i class="fas fa-ticket"></i> Kode Pendaftar
+            </a>
             <a href="{{ route('admin.courses.index') }}" class="nav-item {{ request()->routeIs('admin.courses.*') ? 'active' : '' }}">
                 <i class="fas fa-book-open"></i> Kelas & Materi
             </a>

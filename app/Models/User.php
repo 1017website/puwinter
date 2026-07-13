@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use App\Services\EmailVerificationMailService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -19,7 +20,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'name', 'email', 'password', 'role',
         'avatar', 'phone', 'phone_verified_at',
         'school', 'city', 'province', 'birth_date', 'grade', 'grade_id', 'grade_locked',
-        'is_active', 'last_login_at', 'affiliate_code', 'referred_by_user_id',
+        'is_active', 'last_login_at', 'affiliate_code', 'referred_by_user_id', 'registration_code_id',
     ];
 
     protected $hidden = [
@@ -27,13 +28,14 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     protected $casts = [
-        'email_verified_at'  => 'datetime',
-        'phone_verified_at'  => 'datetime',
-        'last_login_at'      => 'datetime',
-        'birth_date'         => 'date',
-        'is_active'          => 'boolean',
-        'grade_locked'       => 'boolean',
-        'referred_by_user_id'=> 'integer',
+        'email_verified_at' => 'datetime',
+        'phone_verified_at' => 'datetime',
+        'last_login_at' => 'datetime',
+        'birth_date' => 'date',
+        'is_active' => 'boolean',
+        'grade_locked' => 'boolean',
+        'referred_by_user_id' => 'integer',
+        'registration_code_id' => 'integer',
     ];
 
     protected static function booted(): void
@@ -52,7 +54,7 @@ class User extends Authenticatable implements MustVerifyEmail
         $prefix = Str::limit($prefix, 6, '');
 
         do {
-            $code = $prefix . random_int(1000, 9999);
+            $code = $prefix.random_int(1000, 9999);
         } while (static::where('affiliate_code', $code)->exists());
 
         return $code;
@@ -126,6 +128,7 @@ class User extends Authenticatable implements MustVerifyEmail
             return 'exclusive';
         }
         $sub = $this->activeSubscription();
+
         return $sub?->tier;
     }
 
@@ -152,6 +155,7 @@ class User extends Authenticatable implements MustVerifyEmail
         if ($planId === null) {
             return true; // konten tanpa program = umum
         }
+
         return $this->programEnrollments()->where('plan_id', $planId)->exists();
     }
 
@@ -167,6 +171,7 @@ class User extends Authenticatable implements MustVerifyEmail
             return true;
         }
         $enr = $this->programEnrollments()->where('plan_id', $planId)->first();
+
         return $enr ? $enr->isPaidActive() : false;
     }
 
@@ -188,12 +193,13 @@ class User extends Authenticatable implements MustVerifyEmail
         if ($planId === null) {
             return true;
         }
-        if (!$this->isEnrolledInProgram($planId)) {
+        if (! $this->isEnrolledInProgram($planId)) {
             return false;
         }
         if ($accessTier === 'paid') {
             return $this->hasPaidProgram($planId);
         }
+
         // free / both
         return true;
     }
@@ -208,7 +214,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function liveClassesAttendedCount(): int
     {
-        return \App\Models\LiveClassAttendance::where('user_id', $this->id)
+        return LiveClassAttendance::where('user_id', $this->id)
             ->distinct('live_class_id')
             ->count('live_class_id');
     }
@@ -227,7 +233,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
         // Jika live class ini sudah pernah diikuti, akses ulang diperbolehkan.
         if ($liveClassId !== null) {
-            $already = \App\Models\LiveClassAttendance::where('user_id', $this->id)
+            $already = LiveClassAttendance::where('user_id', $this->id)
                 ->where('live_class_id', $liveClassId)
                 ->exists();
             if ($already) {
@@ -260,6 +266,7 @@ class User extends Authenticatable implements MustVerifyEmail
         if (empty($this->grade_id)) {
             return true;
         }
+
         return (int) $this->grade_id === (int) $gradeId;
     }
 
@@ -275,7 +282,7 @@ class User extends Authenticatable implements MustVerifyEmail
     // Relationships
     // -------------------------------------------------------------------------
 
-    public function referredBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function referredBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'referred_by_user_id');
     }
@@ -283,6 +290,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function referrals(): HasMany
     {
         return $this->hasMany(User::class, 'referred_by_user_id');
+    }
+
+    public function registrationCode(): BelongsTo
+    {
+        return $this->belongsTo(RegistrationCode::class);
     }
 
     public function subscriptions(): HasMany
@@ -295,7 +307,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(ProgramEnrollment::class);
     }
 
-    public function grade(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function grade(): BelongsTo
     {
         return $this->belongsTo(Grade::class);
     }
@@ -372,7 +384,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function sendEmailVerificationNotification(): void
     {
-        app(\App\Services\EmailVerificationMailService::class)->send($this, null, 'system');
+        app(EmailVerificationMailService::class)->send($this, null, 'system');
     }
 
     public function emailVerifications(): HasMany

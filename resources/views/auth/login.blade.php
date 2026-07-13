@@ -468,11 +468,6 @@
             Belum punya akun? <a href="{{ route('register') }}">Daftar sekarang</a>
         </div>
 
-        <div style="margin-top:14px; text-align:center; font-size:12.5px; color:#94A3B8;">
-            Admin atau Mentor?
-            <a href="{{ route('staff.login') }}" style="color:#2563EB; font-weight:600; text-decoration:none;">Masuk lewat Login Staff</a>
-        </div>
-
     </div>
 </div>
 

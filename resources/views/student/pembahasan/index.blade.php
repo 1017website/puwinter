@@ -55,9 +55,11 @@
         <i class="fas fa-lightbulb" style="font-size:40px; opacity:0.2; display:block; margin-bottom:12px;"></i>
         <p style="font-size:14px; font-weight:600;">Belum ada soal yang dikerjakan.</p>
         <p style="font-size:12px; margin-top:4px;">Selesaikan tryout untuk melihat pembahasan di sini.</p>
-        <a href="{{ route('student.tryout.index') }}" class="btn btn-primary" style="margin-top:16px; display:inline-flex;">
-            Mulai Tryout
-        </a>
+        @if($studentTryoutEnabled ?? true)
+            <a href="{{ route('student.tryout.index') }}" class="btn btn-primary" style="margin-top:16px; display:inline-flex;">
+                Mulai Tryout
+            </a>
+        @endif
     </div>
 @else
     <div style="display:flex; flex-direction:column; gap:12px;">

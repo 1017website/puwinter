@@ -5,20 +5,22 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\EmailVerification;
+use App\Models\Grade;
+use App\Models\RegistrationCode;
 use App\Models\User;
+use App\Services\EmailVerificationMailService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use App\Models\Grade;
-use App\Services\EmailVerificationMailService;
 
 class RegisterController extends Controller
 {
     public function create(): View
     {
         $grades = Grade::active()->get();
+
         return view('auth.register', compact('grades'));
     }
 
@@ -32,26 +34,30 @@ class RegisterController extends Controller
                 ->where('role', 'student')
                 ->first();
         }
+        $registrationCode = $request->filled('registration_code')
+            ? RegistrationCode::available()->where('code', $request->registration_code)->first()
+            : null;
 
         $user = User::create([
-            'name'         => $request->name,
-            'email'        => $request->email,
-            'password'     => Hash::make($request->password),
-            'role'         => 'student',
-            'school'       => $request->school,
-            'city'         => $request->city,
-            'grade_id'     => $request->grade_id,
-            'grade'        => $grade?->code,   // jaga kompatibilitas kolom lama
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'student',
+            'school' => $request->school,
+            'city' => $request->city,
+            'grade_id' => $request->grade_id,
+            'grade' => $grade?->code,   // jaga kompatibilitas kolom lama
             'grade_locked' => true,            // dikunci; ganti kelas harus via request admin
             'referred_by_user_id' => $referrer?->id,
+            'registration_code_id' => $registrationCode?->id,
         ]);
 
         // Buat token verifikasi email custom
         $token = Str::random(64);
 
         $verification = EmailVerification::create([
-            'user_id'    => $user->id,
-            'token'      => $token,
+            'user_id' => $user->id,
+            'token' => $token,
             'expires_at' => now()->addHours(24),
         ]);
 

@@ -498,6 +498,25 @@
                 </div>
             </div>
 
+            {{-- Kode Pendaftar --}}
+            <div class="section-divider" style="margin-top:8px;">Kode Pendaftar <span style="font-size:10px; font-weight:400; color:#94A3B8;">(opsional)</span></div>
+            <div class="form-group">
+                <label>Kode Pendaftar <span class="optional">(opsional)</span></label>
+                <div class="input-wrap">
+                    <i class="fas fa-user-group input-icon"></i>
+                    <input type="text" name="registration_code" value="{{ old('registration_code') }}"
+                           placeholder="Contoh: PWIN-AB12CD34"
+                           class="{{ $errors->has('registration_code') ? 'is-invalid' : '' }}"
+                           style="text-transform:uppercase;">
+                </div>
+                @error('registration_code')
+                    <div class="invalid-feedback"><i class="fas fa-circle-exclamation"></i> {{ $message }}</div>
+                @enderror
+                <small class="optional" style="display:block;margin-top:6px;line-height:1.5;">
+                    Isi jika kamu mendapat kode khusus dari sekolah, kelas, komunitas, atau panitia.
+                </small>
+            </div>
+
 
             {{-- Affiliate --}}
             <div class="section-divider" style="margin-top:8px;">Affiliate <span style="font-size:10px; font-weight:400; color:#94A3B8;">(opsional)</span></div>

@@ -82,6 +82,33 @@
     {{-- KANAN --}}
     <div style="display:flex; flex-direction:column; gap:20px;">
 
+        {{-- FITUR SISWA --}}
+        <div class="card">
+            <div style="font-size:14px; font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-toggle-on" style="color:var(--primary);"></i> Fitur Siswa
+            </div>
+            <p style="font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.6;">
+                Atur fitur yang tampil dan dapat diakses dari akun siswa.
+            </p>
+            <form method="POST" action="{{ route('admin.settings.features') }}">
+                @csrf
+                <label style="display:flex; align-items:flex-start; gap:10px; padding:12px; border:1px solid var(--border); border-radius:8px; cursor:pointer; margin-bottom:14px;">
+                    <input type="checkbox" name="student_tryout_enabled" value="1"
+                           {{ ($features['student_tryout_enabled'] ?? true) ? 'checked' : '' }}
+                           style="margin-top:2px; width:16px; height:16px;">
+                    <span>
+                        <strong style="display:block; font-size:13px;">Aktifkan halaman Tryout</strong>
+                        <small style="display:block; color:var(--muted); margin-top:3px; line-height:1.5;">
+                            Jika dimatikan, menu dan konten tryout disembunyikan serta URL tryout siswa tidak dapat diakses.
+                        </small>
+                    </span>
+                </label>
+                <button type="submit" class="btn btn-primary btn-sm" style="width:100%; justify-content:center;">
+                    <i class="fas fa-save"></i> Simpan Pengaturan Fitur
+                </button>
+            </form>
+        </div>
+
         {{-- REKENING TRANSFER MANUAL --}}
         <div class="card">
             <div style="font-size:14px; font-weight:700; margin-bottom:4px;">Rekening Transfer Manual</div>

@@ -1,42 +1,41 @@
 <?php
 
+use App\Http\Controllers\Admin\CourseController as AdminCourse;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
+use App\Http\Controllers\Admin\EmailLogController as AdminEmailLog;
+use App\Http\Controllers\Admin\GradeChangeRequestController as AdminGradeRequest;
+use App\Http\Controllers\Admin\GradeController as AdminGrade;
+use App\Http\Controllers\Admin\LiveClassController as AdminLiveClass;
+use App\Http\Controllers\Admin\PlanController as AdminPlan;
+use App\Http\Controllers\Admin\RegistrationCodeController as AdminRegistrationCode;
+use App\Http\Controllers\Admin\SettingsController as AdminSettings;
+use App\Http\Controllers\Admin\SubjectController as AdminSubject;
+use App\Http\Controllers\Admin\SubscriptionController as AdminSubscription;
+use App\Http\Controllers\Admin\TryoutController as AdminTryout;
+use App\Http\Controllers\Admin\TryoutResultController as AdminTryoutResult;
+use App\Http\Controllers\Admin\UserController as AdminUser;
 use App\Http\Controllers\Auth\EmailVerificationController;
-use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Payment\SubscriptionController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\SystemMaintenanceController;
 use App\Http\Controllers\Student\AchievementController;
+use App\Http\Controllers\Student\BankSoalController;
 use App\Http\Controllers\Student\CourseController;
 use App\Http\Controllers\Student\DashboardController;
+use App\Http\Controllers\Student\ExtraClassController;
+use App\Http\Controllers\Student\GradeChangeController;
 use App\Http\Controllers\Student\LeaderboardController;
 use App\Http\Controllers\Student\LiveClassController;
+use App\Http\Controllers\Student\MateriPdfController;
+use App\Http\Controllers\Student\PembahasanController;
+use App\Http\Controllers\Student\ProgramController;
+use App\Http\Controllers\Student\SettingsController as StudentSettings;
 use App\Http\Controllers\Student\StudyHistoryController;
 use App\Http\Controllers\Student\TryoutController;
 use App\Http\Controllers\Student\TryoutHistoryController;
-use App\Http\Controllers\Student\ProgramController;
-use App\Http\Controllers\Student\BankSoalController;
-use App\Http\Controllers\Student\MateriPdfController;
-use App\Http\Controllers\Student\ExtraClassController;
-use App\Http\Controllers\Student\PembahasanController;
-use App\Http\Controllers\Student\SettingsController as StudentSettings;
-use App\Http\Controllers\Student\GradeChangeController;
-use App\Http\Controllers\Admin\LiveClassController as AdminLiveClass;
-use App\Http\Controllers\Admin\SettingsController as AdminSettings;
-use App\Http\Controllers\Admin\SubjectController as AdminSubject;
-use App\Http\Controllers\Admin\GradeController as AdminGrade;
-use App\Http\Controllers\Admin\GradeChangeRequestController as AdminGradeRequest;
-use App\Http\Controllers\Admin\PlanController as AdminPlan;
-use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
-use App\Http\Controllers\Admin\UserController as AdminUser;
-use App\Http\Controllers\Admin\CourseController as AdminCourse;
-use App\Http\Controllers\Admin\TryoutController as AdminTryout;
-use App\Http\Controllers\Admin\TryoutResultController as AdminTryoutResult;
-use App\Http\Controllers\Admin\SubscriptionController as AdminSubscription;
-use App\Http\Controllers\Admin\EmailLogController as AdminEmailLog;
-use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\SystemMaintenanceController;
 use App\Http\Controllers\WelcomeController;
+use Illuminate\Support\Facades\Route;
 
 // ============================================================================
 // PUBLIC
@@ -62,7 +61,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/system/maintenance/run', [SystemMaintenanceController::class, 'run'])->name('system.maintenance.run');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
 
 // ============================================================================
 // EMAIL VERIFICATION
@@ -121,7 +120,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Tryout
-    Route::prefix('tryout')->name('student.tryout.')->group(function () {
+    Route::middleware('feature.tryout')->prefix('tryout')->name('student.tryout.')->group(function () {
         Route::get('/', [TryoutController::class, 'index'])->name('index');
         Route::get('/riwayat', [TryoutHistoryController::class, 'index'])->name('history');
         Route::get('/{id}/mulai', [TryoutController::class, 'start'])->name('start');
@@ -286,6 +285,15 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
         Route::post('/settings/artisan', [AdminSettings::class, 'runArtisan'])->name('settings.artisan');
         Route::post('/settings/bank', [AdminSettings::class, 'updateBank'])->name('settings.bank');
         Route::post('/settings/affiliate', [AdminSettings::class, 'updateAffiliate'])->name('settings.affiliate');
+        Route::post('/settings/features', [AdminSettings::class, 'updateFeatures'])->name('settings.features');
+
+        // Kode khusus untuk mengelompokkan siswa saat registrasi
+        Route::prefix('registration-codes')->name('registration-codes.')->group(function () {
+            Route::get('/', [AdminRegistrationCode::class, 'index'])->name('index');
+            Route::post('/', [AdminRegistrationCode::class, 'store'])->name('store');
+            Route::get('/{registrationCode}', [AdminRegistrationCode::class, 'show'])->name('show');
+            Route::patch('/{registrationCode}/toggle-active', [AdminRegistrationCode::class, 'toggleActive'])->name('toggle-active');
+        });
 
         // Mata Pelajaran
         Route::prefix('subjects')->name('subjects.')->group(function () {
@@ -330,5 +338,5 @@ Route::middleware(['auth', 'verified', 'role:mentor,admin,superadmin'])
     ->prefix('mentor')
     ->name('mentor.')
     ->group(function () {
-        Route::get('/dashboard', fn() => view('mentor.dashboard'))->name('dashboard');
+        Route::get('/dashboard', fn () => view('mentor.dashboard'))->name('dashboard');
     });

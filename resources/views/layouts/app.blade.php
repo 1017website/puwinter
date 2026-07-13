@@ -578,10 +578,12 @@
            class="nav-item {{ request()->routeIs('student.course.*') ? 'active' : '' }}">
             <i class="fas fa-book-open"></i> Kelas Saya
         </a>
+        @if($studentTryoutEnabled ?? true)
         <a href="{{ route('student.tryout.index') }}"
            class="nav-item {{ request()->routeIs('student.tryout.*') ? 'active' : '' }}">
             <i class="fas fa-bullseye"></i> Tryout
         </a>
+        @endif
         {{-- Bank Soal disembunyikan sementara
         <a href="#"
            class="nav-item {{ request()->routeIs('student.bank.*') ? 'active' : '' }}">

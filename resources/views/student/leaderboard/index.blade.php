@@ -70,9 +70,11 @@
         <div style="font-size:13px; color:var(--text-muted);">
             Kamu belum masuk leaderboard. Selesaikan tryout untuk mendapatkan skor.
         </div>
-        <a href="{{ route('student.tryout.index') }}" class="btn btn-primary" style="flex-shrink:0; font-size:12px; padding:8px 14px;">
-            Mulai Tryout
-        </a>
+        @if($studentTryoutEnabled ?? true)
+            <a href="{{ route('student.tryout.index') }}" class="btn btn-primary" style="flex-shrink:0; font-size:12px; padding:8px 14px;">
+                Mulai Tryout
+            </a>
+        @endif
     </div>
 @endif
 

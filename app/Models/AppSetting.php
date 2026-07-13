@@ -15,11 +15,12 @@ class AppSetting extends Model
      */
     public static function get(string $key, $default = null)
     {
-        if (!Schema::hasTable('app_settings')) {
+        if (! Schema::hasTable('app_settings')) {
             return $default;
         }
 
         $row = static::where('key', $key)->first();
+
         return $row ? $row->value : $default;
     }
 
@@ -28,13 +29,12 @@ class AppSetting extends Model
      */
     public static function set(string $key, $value): void
     {
-        if (!Schema::hasTable('app_settings')) {
+        if (! Schema::hasTable('app_settings')) {
             return;
         }
 
         static::updateOrCreate(['key' => $key], ['value' => $value]);
     }
-
 
     /**
      * Konfigurasi affiliate/referral.
@@ -45,8 +45,13 @@ class AppSetting extends Model
     {
         return [
             'affiliate_discount_amount' => 0,
-            'affiliate_reward_amount'   => (int) static::get('affiliate_reward_amount', 0),
+            'affiliate_reward_amount' => (int) static::get('affiliate_reward_amount', 0),
         ];
+    }
+
+    public static function studentTryoutEnabled(): bool
+    {
+        return filter_var(static::get('student_tryout_enabled', '1'), FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
@@ -55,10 +60,10 @@ class AppSetting extends Model
     public static function bankInfo(): array
     {
         return [
-            'bank_name'      => static::get('bank_name', ''),
-            'bank_account'   => static::get('bank_account', ''),
-            'bank_holder'    => static::get('bank_holder', ''),
-            'payment_note'   => static::get('payment_note', ''),
+            'bank_name' => static::get('bank_name', ''),
+            'bank_account' => static::get('bank_account', ''),
+            'bank_holder' => static::get('bank_holder', ''),
+            'payment_note' => static::get('payment_note', ''),
         ];
     }
 }

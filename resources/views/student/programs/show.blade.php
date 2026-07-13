@@ -99,6 +99,7 @@
 </div>
 
 {{-- TRYOUT --}}
+@if($studentTryoutEnabled ?? true)
 <div class="card" style="margin-bottom:18px;">
     <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;"><i class="fas fa-bullseye"></i> Tryout</h3>
     @forelse($tryouts as $t)
@@ -116,6 +117,7 @@
     <p style="font-size:13px; color:var(--text-muted);">Belum ada tryout di program ini.</p>
     @endforelse
 </div>
+@endif
 
 {{-- LIVE CLASS --}}
 <div class="card">

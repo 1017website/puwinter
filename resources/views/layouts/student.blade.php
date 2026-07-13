@@ -775,6 +775,7 @@
                 class="nav-item {{ request()->routeIs('student.course.*') ? 'active' : '' }}">
                 <i class="fas fa-book-open"></i> Kelas Saya
             </a>
+            @if($studentTryoutEnabled ?? true)
             <a href="{{ route('student.tryout.index') }}"
                 class="nav-item {{ request()->routeIs('student.tryout.index') || request()->routeIs('student.tryout.start') || request()->routeIs('student.tryout.result') ? 'active' : '' }}">
                 <i class="fas fa-bullseye"></i> Tryout
@@ -783,6 +784,7 @@
                 class="nav-item {{ request()->routeIs('student.tryout.history') ? 'active' : '' }}">
                 <i class="fas fa-clipboard-list"></i> Riwayat Tryout
             </a>
+            @endif
             {{-- Bank Soal disembunyikan sementara (uncomment untuk mengaktifkan kembali)
             <a href="{{ route('student.bank.index') }}" class="nav-item {{ request()->routeIs('student.bank.*') ? 'active' : '' }}">
                 <i class="fas fa-database"></i> Bank Soal

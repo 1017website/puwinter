@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\AppSetting;
+use App\Models\Course;
+use App\Models\LiveClass;
 use App\Models\ProgramEnrollment;
 use App\Models\SubscriptionPlan;
+use App\Models\Tryout;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -40,7 +44,7 @@ class ProgramController extends Controller
         $user = $request->user();
         $plan = SubscriptionPlan::active()->findOrFail($planId);
 
-        if (!$plan->appliesToGrade($user->grade_id)) {
+        if (! $plan->appliesToGrade($user->grade_id)) {
             return redirect()->route('student.program.index')
                 ->with('error', 'Program ini tidak tersedia untuk kelasmu.');
         }
@@ -51,7 +55,7 @@ class ProgramController extends Controller
         );
 
         return redirect()->route('student.program.show', $plan->id)
-            ->with('success', 'Kamu berhasil terdaftar di program ' . $plan->name . '. Selamat belajar!');
+            ->with('success', 'Kamu berhasil terdaftar di program '.$plan->name.'. Selamat belajar!');
     }
 
     /**
@@ -62,27 +66,29 @@ class ProgramController extends Controller
         $user = $request->user();
         $plan = SubscriptionPlan::active()->findOrFail($planId);
 
-        if (!$plan->appliesToGrade($user->grade_id)) {
+        if (! $plan->appliesToGrade($user->grade_id)) {
             abort(403, 'Program ini tidak tersedia untuk kelasmu.');
         }
 
         $enrollment = $user->programEnrollments()->where('plan_id', $plan->id)->first();
         $isEnrolled = $enrollment !== null;
-        $isPaid     = $enrollment ? $enrollment->isPaidActive() : false;
+        $isPaid = $enrollment ? $enrollment->isPaidActive() : false;
 
         // Konten dalam program ini
-        $courses = \App\Models\Course::published()
+        $courses = Course::published()
             ->where('plan_id', $plan->id)
             ->with(['subject', 'modules.materials'])
             ->orderBy('order')
             ->get();
 
-        $tryouts = \App\Models\Tryout::published()
-            ->where('plan_id', $plan->id)
-            ->orderBy('order')
-            ->get();
+        $tryouts = AppSetting::studentTryoutEnabled()
+            ? Tryout::published()
+                ->where('plan_id', $plan->id)
+                ->orderBy('order')
+                ->get()
+            : collect();
 
-        $liveClasses = \App\Models\LiveClass::where('plan_id', $plan->id)
+        $liveClasses = LiveClass::where('plan_id', $plan->id)
             ->orderBy('scheduled_at')
             ->get();
 
