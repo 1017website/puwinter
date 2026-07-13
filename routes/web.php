@@ -198,6 +198,7 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
         // Users
         Route::prefix('users')->name('users.')->group(function () {
             Route::get('/', [AdminUser::class, 'index'])->name('index');
+            Route::get('/export', [AdminUser::class, 'export'])->name('export');
             Route::get('/create', [AdminUser::class, 'create'])->name('create');
             Route::post('/', [AdminUser::class, 'store'])->name('store');
             Route::get('/{user}', [AdminUser::class, 'show'])->name('show');

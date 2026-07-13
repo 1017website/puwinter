@@ -8,6 +8,7 @@ use App\Models\RegistrationCode;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use ZipArchive;
 
 class RegistrationCodeAndTryoutSettingsTest extends TestCase
 {
@@ -97,5 +98,35 @@ class RegistrationCodeAndTryoutSettingsTest extends TestCase
             ->assertOk()
             ->assertDontSee(route('staff.login'))
             ->assertDontSee('Login Staff');
+    }
+
+    public function test_admin_can_export_filtered_users_as_a_real_xlsx_file(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'name' => 'Admin Export']);
+        User::factory()->create(['role' => 'student', 'name' => 'Siswa Excel', 'email' => 'excel@example.com']);
+        User::factory()->create(['role' => 'mentor', 'name' => 'Mentor Tidak Ikut']);
+
+        $response = $this->actingAs($admin)->get(route('admin.users.export', [
+            'role' => 'student',
+            'search' => 'Siswa Excel',
+        ]));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+        $file = $response->baseResponse->getFile()->getPathname();
+        $zip = new ZipArchive;
+        $this->assertTrue($zip->open($file) === true);
+
+        $worksheet = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+        @unlink($file);
+
+        $this->assertIsString($worksheet);
+        $this->assertStringContainsString('Siswa Excel', $worksheet);
+        $this->assertStringContainsString('excel@example.com', $worksheet);
+        $this->assertStringNotContainsString('Mentor Tidak Ikut', $worksheet);
+        $this->assertStringContainsString('autoFilter', $worksheet);
+        $this->assertStringContainsString('state="frozen"', $worksheet);
     }
 }

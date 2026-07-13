@@ -8,7 +8,12 @@
         <h2>Manajemen User</h2>
         <p>Kelola semua akun user platform.</p>
     </div>
-    <a href="{{ route('admin.users.create') }}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Tambah User</a>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="{{ route('admin.users.export', request()->query()) }}" class="btn btn-outline">
+            <i class="fas fa-file-excel" style="color:#16A34A;"></i> Export Excel
+        </a>
+        <a href="{{ route('admin.users.create') }}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Tambah User</a>
+    </div>
 </div>
 
 {{-- Filter tabs --}}

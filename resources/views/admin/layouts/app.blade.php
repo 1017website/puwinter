@@ -43,6 +43,29 @@
             z-index: 50;
         }
 
+        .sidebar-scroll {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            overscroll-behavior: contain;
+            scrollbar-gutter: stable;
+            scrollbar-width: thin;
+            scrollbar-color: #475569 rgba(15,23,42,0.28);
+        }
+
+        .sidebar-scroll::-webkit-scrollbar { width: 7px; }
+        .sidebar-scroll::-webkit-scrollbar-track {
+            background: rgba(15,23,42,0.28);
+            border-radius: 999px;
+        }
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: #475569;
+            border: 1px solid rgba(15,23,42,0.45);
+            border-radius: 999px;
+        }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: #64748B; }
+        .sidebar-scroll::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+
         .sidebar-logo {
             padding: 18px 16px;
             border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -411,7 +434,7 @@
         <span class="sidebar-logo-badge">ADMIN</span>
     </div>
 
-    <div style="flex:1; overflow-y:auto; padding-bottom:8px;">
+    <div class="sidebar-scroll" style="padding-bottom:8px;">
 
         <div class="sidebar-section">
             <div class="sidebar-section-label">Overview</div>
