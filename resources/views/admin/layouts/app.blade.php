@@ -510,6 +510,9 @@
                     <span class="nav-badge">{{ $failedEmailCount }}</span>
                 @endif
             </a>
+            <a href="{{ route('admin.visitors.index') }}" class="nav-item {{ request()->routeIs('admin.visitors.*') ? 'active' : '' }}">
+                <i class="fas fa-chart-column"></i> Visitor
+            </a>
             <a href="{{ route('admin.settings.index') }}" class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                 <i class="fas fa-gear"></i> Pengaturan
             </a>

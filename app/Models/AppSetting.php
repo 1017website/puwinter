@@ -55,6 +55,31 @@ class AppSetting extends Model
     }
 
     /**
+     * Pengaturan yang dipakai landing page publik.
+     */
+    public static function frontendInfo(): array
+    {
+        return [
+            'video_enabled' => filter_var(static::get('frontend_video_enabled', '0'), FILTER_VALIDATE_BOOLEAN),
+            'video_url' => static::get('frontend_video_url', ''),
+            'video_title' => static::get('frontend_video_title', 'Kenali Program Puwinter'),
+            'video_description' => static::get('frontend_video_description', 'Lihat bagaimana Puwinter mendampingi proses belajar Bahasa Inggris siswa.'),
+            'video_poster' => static::get('frontend_video_poster', ''),
+            'seo_title' => static::get('seo_title', 'Puwinter — Platform Belajar Bahasa Inggris Terbaik Indonesia'),
+            'seo_description' => static::get('seo_description', 'Belajar bahasa Inggris lebih cerdas bersama Puwinter. Kelas online, latihan, dan pembahasan bersama tutor terbaik.'),
+            'seo_keywords' => static::get('seo_keywords', 'bimbel bahasa Inggris, TKA bahasa Inggris, literasi bahasa Inggris, grammar, TOEFL'),
+            'seo_canonical_url' => static::get('seo_canonical_url', ''),
+            'seo_robots' => static::get('seo_robots', 'index,follow'),
+            'seo_og_title' => static::get('seo_og_title', ''),
+            'seo_og_description' => static::get('seo_og_description', ''),
+            'seo_og_image' => static::get('seo_og_image', ''),
+            'google_tag_manager_id' => static::get('google_tag_manager_id', ''),
+            'google_analytics_id' => static::get('google_analytics_id', ''),
+            'meta_pixel_id' => static::get('meta_pixel_id', ''),
+        ];
+    }
+
+    /**
      * Ambil seluruh setting rekening transfer manual sekaligus.
      */
     public static function bankInfo(): array

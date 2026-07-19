@@ -6,8 +6,8 @@
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
     <link rel="shortcut icon" href="{{ asset('images/favicon.png') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puwinter — Platform Belajar Bahasa Inggris Terbaik Indonesia</title>
-    <meta name="description" content="Belajar bahasa Inggris lebih cerdas bersama Puwinter. Kelas online, practice test, dan pembahasan latihan bersama tutor terbaik.">
+    @include('partials.frontend-seo')
+    @include('partials.frontend-tracking-head')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -1010,7 +1010,44 @@
 /* =========================================================
    MOBILE RESPONSIVE FIXES - Added revision
    ========================================================= */
+.intro-section {
+    padding: 92px 6%;
+    background: #0b1020;
+}
+
+.intro-grid {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr);
+    gap: 34px;
+    align-items: center;
+}
+
+.video-frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 24px;
+    background: #050711;
+    border: 1px solid rgba(139,124,246,.3);
+    box-shadow: 0 24px 70px rgba(0,0,0,.38);
+}
+
+.video-frame iframe,
+.video-frame video { width: 100%; height: 100%; border: 0; display: block; object-fit: cover; }
+
+.intro-copy h2 { font-size: clamp(28px, 3vw, 43px); line-height: 1.15; margin-bottom: 14px; }
+.intro-copy > p { color: #94A3B8; line-height: 1.75; margin-bottom: 22px; }
+.program-list { list-style: none; display: grid; gap: 10px; }
+.program-list li { display: flex; align-items: center; gap: 11px; padding: 12px 14px; border-radius: 13px; background: rgba(255,255,255,.045); border: 1px solid rgba(148,163,184,.12); color: #E2E8F0; font-size: 14px; font-weight: 600; }
+.program-list span { width: 27px; height: 27px; flex: 0 0 27px; display: grid; place-items: center; border-radius: 8px; background: rgba(139,124,246,.18); color: #A99BFF; font-size: 12px; font-weight: 800; }
+
 @media (max-width: 768px) {
+    .intro-section { padding: 56px 18px; }
+    .intro-grid { grid-template-columns: 1fr; gap: 26px; }
+    .intro-copy h2 { font-size: 27px; }
+    .video-frame { border-radius: 18px; }
     body { overflow-x: hidden; }
 
     nav {
@@ -1317,6 +1354,7 @@
 </head>
 
 <body>
+    @include('partials.frontend-tracking-body')
     <nav id="navbar"><a href="{{ url('/') }}" class="nav-logo"><img src="{{ asset('images/logo.png') }}" alt="Puwinter"></a>
         <ul class="nav-links">
             <li><a href="#fitur">Fitur</a></li>
@@ -1384,15 +1422,45 @@
             <div class="stat-desc">Kelas tersedia</div>
         </div>
     </div>
+    <section class="intro-section" id="program">
+        <div class="intro-grid">
+            @if($frontend['video_enabled'] && $frontend['video_url'])
+            <div>
+                <div class="section-label" style="text-align:left;">Video Puwinter</div>
+                <div class="video-frame">
+                    @if($frontend['video_type'] === 'embed')
+                    <iframe src="{{ $frontend['video_embed_url'] }}" title="{{ $frontend['video_title'] }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    @else
+                    <video controls preload="metadata" @if($frontend['video_poster']) poster="{{ $frontend['video_poster'] }}" @endif>
+                        <source src="{{ $frontend['video_url'] }}">
+                        Browser Anda belum mendukung pemutar video.
+                    </video>
+                    @endif
+                </div>
+            </div>
+            @endif
+            <div class="intro-copy" @if(!($frontend['video_enabled'] && $frontend['video_url'])) style="grid-column:1/-1;max-width:760px;margin:0 auto;text-align:center;" @endif>
+                <div class="section-label" style="text-align:inherit;">Program Bimbel Puwinter</div>
+                <h2>{{ ($frontend['video_enabled'] && $frontend['video_url']) ? $frontend['video_title'] : 'Pendampingan Bimbel Bahasa Inggris' }}</h2>
+                <p>{{ ($frontend['video_enabled'] && $frontend['video_url']) ? $frontend['video_description'] : 'Program pendampingan terarah untuk membantu siswa menguasai grammar, memahami teks, dan mempersiapkan berbagai evaluasi Bahasa Inggris.' }}</p>
+                <ol class="program-list">
+                    <li><span>1</span>TKA Bahasa Inggris</li>
+                    <li><span>2</span>Literasi Bahasa Inggris</li>
+                    <li><span>3</span>Grammar Dasar &amp; Reading Text</li>
+                    <li><span>4</span>Grammar Dasar &amp; Reading Text TOEFL</li>
+                </ol>
+            </div>
+        </div>
+    </section>
     <div id="fitur" class="section">
         <div class="section-label">Program Unggulan</div>
         <h2 class="section-title">Semua yang Kamu Butuhkan untuk Belajar Bahasa Inggris, <br> <span class="highlight">dalam Satu Platform.</span></h2>
         <p class="section-desc">Dari kelas online (live) interaktif hingga analisis belajar detail — semua tersedia dalam satu platform.</p>
         <div class="feature-grid">@foreach([
-            ['icon'=>'fa-video','color'=>'rgba(83,55,236,0.15)','icolor'=>'#9f91ff','title'=>'Kelas Online (Live) Interaktif','desc'=>'Belajar langsung bersama mentor terbaik via Zoom. Tanya jawab langsung dan rekaman tersedia setelahnya.'],
-            ['icon'=>'fa-bullseye','color'=>'rgba(239,68,68,0.15)','icolor'=>'#F87171','title'=>'Latihan Soal Literasi Bahasa Inggris','desc'=>'Simulasi latihan bahasa Inggris dengan timer, navigasi soal, dan hasil skor langsung setelah dikirim.'],
-            ['icon'=>'fa-lightbulb','color'=>'rgba(245,158,11,0.15)','icolor'=>'#FBBF24','title'=>'Pembahasan Lengkap','desc'=>'Setiap latihan ada pembahasan teks dan video tutor. Pahami konsep bahasa Inggris, bukan hanya hafal jawaban.'],
-            ['icon'=>'fa-file-pdf','color'=>'rgba(16,185,129,0.15)','icolor'=>'#34D399','title'=>'Materi PDF Bahasa Inggris Premium','desc'=>'245+ dokumen belajar ringkas dan terstruktur. Unduh dan belajar kapan saja, di mana saja.'],
+            ['icon'=>'fa-pen-to-square','color'=>'rgba(83,55,236,0.15)','icolor'=>'#9f91ff','title'=>'TKA Bahasa Inggris','desc'=>'Pendampingan terarah untuk menguasai tipe soal dan strategi TKA Bahasa Inggris.'],
+            ['icon'=>'fa-book-open-reader','color'=>'rgba(239,68,68,0.15)','icolor'=>'#F87171','title'=>'Literasi Bahasa Inggris','desc'=>'Latihan memahami bacaan, konteks, ide pokok, dan informasi tersirat secara sistematis.'],
+            ['icon'=>'fa-spell-check','color'=>'rgba(245,158,11,0.15)','icolor'=>'#FBBF24','title'=>'Grammar Dasar & Reading Text','desc'=>'Bangun fondasi grammar sekaligus keterampilan memahami berbagai jenis teks Bahasa Inggris.'],
+            ['icon'=>'fa-language','color'=>'rgba(16,185,129,0.15)','icolor'=>'#34D399','title'=>'Grammar Dasar & Reading Text TOEFL','desc'=>'Persiapan struktur grammar dan reading comprehension untuk kebutuhan TOEFL.'],
             ['icon'=>'fa-chart-bar','color'=>'rgba(83,55,236,0.15)','icolor'=>'#9f91ff','title'=>'Papan Peringkat','desc'=>'Pantau progresmu di antara ribuan siswa bahasa Inggris lain. Saring per sekolah, kota, atau provinsi.'],
             ['icon'=>'fa-chart-line','color'=>'rgba(139,124,246,0.15)','icolor'=>'#8b7cf6','title'=>'Analisis Belajar Detail','desc'=>'Lihat grafik progres dan distribusi waktu belajar secara visual untuk memantau perkembangan dan konsistensi belajar siswa.'],
             ] as $f)<div class="feature-card reveal">

@@ -6,8 +6,8 @@
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
     <link rel="shortcut icon" href="{{ asset('images/favicon.png') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puwinter — English Learning Platform</title>
-    <meta name="description" content="Belajar bahasa Inggris lebih efektif bersama Puwinter. Kelas online, assessment, dan pembahasan materi bersama tutor terbaik.">
+    @include('partials.frontend-seo')
+    @include('partials.frontend-tracking-head')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -1148,6 +1148,7 @@
 </head>
 
 <body>
+    @include('partials.frontend-tracking-body')
     <nav id="navbar"><a href="{{ url('/') }}" class="nav-logo"><img src="{{ asset('images/logo2.png') }}" alt="Puwinter"></a>
         <ul class="nav-links">
             <li><a href="#fitur">Fitur</a></li>

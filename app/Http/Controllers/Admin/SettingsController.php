@@ -7,6 +7,7 @@ use App\Models\AppSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class SettingsController extends Controller
@@ -31,8 +32,84 @@ class SettingsController extends Controller
         $features = [
             'student_tryout_enabled' => AppSetting::studentTryoutEnabled(),
         ];
+        $frontend = AppSetting::frontendInfo();
 
-        return view('admin.settings.index', compact('sysInfo', 'bank', 'affiliate', 'features'));
+        return view('admin.settings.index', compact('sysInfo', 'bank', 'affiliate', 'features', 'frontend'));
+    }
+
+    public function updateFrontend(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'video_url' => 'nullable|url|max:2048',
+            'video_title' => 'nullable|string|max:120',
+            'video_description' => 'nullable|string|max:500',
+            'video_file' => 'nullable|file|mimes:mp4,webm,mov|max:102400',
+            'video_poster' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:4096',
+            'seo_title' => 'required|string|max:70',
+            'seo_description' => 'required|string|max:170',
+            'seo_keywords' => 'nullable|string|max:500',
+            'seo_canonical_url' => 'nullable|url|max:2048',
+            'seo_robots' => ['required', Rule::in(['index,follow', 'index,nofollow', 'noindex,follow', 'noindex,nofollow'])],
+            'seo_og_title' => 'nullable|string|max:95',
+            'seo_og_description' => 'nullable|string|max:200',
+            'seo_og_image' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:4096',
+            'google_tag_manager_id' => ['nullable', 'regex:/^GTM-[A-Z0-9]+$/i'],
+            'google_analytics_id' => ['nullable', 'regex:/^G-[A-Z0-9]+$/i'],
+            'meta_pixel_id' => ['nullable', 'regex:/^[0-9]{5,30}$/'],
+        ], [
+            'video_url.url' => 'URL video harus berupa URL lengkap (https://...).',
+            'google_tag_manager_id.regex' => 'Format Google Tag Manager harus seperti GTM-XXXXXXX.',
+            'google_analytics_id.regex' => 'Format Google Analytics harus seperti G-XXXXXXXXXX.',
+            'meta_pixel_id.regex' => 'Meta Pixel ID hanya boleh berisi 5–30 digit.',
+        ]);
+
+        $uploadDirectory = public_path('uploads/frontend');
+        if (($request->hasFile('video_file') || $request->hasFile('video_poster') || $request->hasFile('seo_og_image')) && ! is_dir($uploadDirectory)) {
+            mkdir($uploadDirectory, 0755, true);
+        }
+
+        if ($request->hasFile('video_file')) {
+            $extension = $request->file('video_file')->getClientOriginalExtension();
+            $filename = 'landing-video-'.time().'.'.$extension;
+            $request->file('video_file')->move($uploadDirectory, $filename);
+            $data['video_url'] = asset('uploads/frontend/'.$filename);
+        }
+
+        foreach (['video_poster', 'seo_og_image'] as $imageKey) {
+            if ($request->hasFile($imageKey)) {
+                $extension = $request->file($imageKey)->getClientOriginalExtension();
+                $filename = str_replace('_', '-', $imageKey).'-'.time().'.'.$extension;
+                $request->file($imageKey)->move($uploadDirectory, $filename);
+                $data[$imageKey] = asset('uploads/frontend/'.$filename);
+            }
+        }
+
+        $keys = [
+            'video_url' => 'frontend_video_url',
+            'video_title' => 'frontend_video_title',
+            'video_description' => 'frontend_video_description',
+            'video_poster' => 'frontend_video_poster',
+            'seo_title' => 'seo_title',
+            'seo_description' => 'seo_description',
+            'seo_keywords' => 'seo_keywords',
+            'seo_canonical_url' => 'seo_canonical_url',
+            'seo_robots' => 'seo_robots',
+            'seo_og_title' => 'seo_og_title',
+            'seo_og_description' => 'seo_og_description',
+            'seo_og_image' => 'seo_og_image',
+            'google_tag_manager_id' => 'google_tag_manager_id',
+            'google_analytics_id' => 'google_analytics_id',
+            'meta_pixel_id' => 'meta_pixel_id',
+        ];
+
+        AppSetting::set('frontend_video_enabled', $request->boolean('video_enabled') ? '1' : '0');
+        foreach ($keys as $input => $settingKey) {
+            if (array_key_exists($input, $data)) {
+                AppSetting::set($settingKey, is_string($data[$input]) ? trim($data[$input]) : $data[$input]);
+            }
+        }
+
+        return back()->with('success', 'Pengaturan frontend, SEO, dan tracking berhasil disimpan.');
     }
 
     // =========================================================================

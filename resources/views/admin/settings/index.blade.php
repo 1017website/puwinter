@@ -10,6 +10,100 @@
     </div>
 </div>
 
+{{-- FRONTEND, SEO & TRACKING --}}
+<div class="card" style="margin-bottom:20px;">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px;">
+        <div>
+            <div style="font-size:15px; font-weight:700; margin-bottom:4px;"><i class="fas fa-globe" style="color:var(--primary); margin-right:7px;"></i>Frontend, SEO & Tracking</div>
+            <p style="font-size:12px; color:var(--muted); line-height:1.6;">Atur video landing page, tampilan di mesin pencari, serta integrasi pemasaran dari satu tempat.</p>
+        </div>
+        <a href="{{ route('home') }}" target="_blank" class="btn btn-sm" style="border:1px solid var(--border); color:var(--primary); flex-shrink:0;"><i class="fas fa-arrow-up-right-from-square"></i> Lihat Frontend</a>
+    </div>
+
+    @if($errors->any())
+    <div style="background:#FEF2F2; border:1px solid #FECACA; color:#B91C1C; border-radius:8px; padding:11px 14px; font-size:12px; margin-bottom:16px;">
+        <strong>Pengaturan belum disimpan.</strong> Periksa kembali field yang ditandai di bawah.
+    </div>
+    @endif
+
+    <form method="POST" action="{{ route('admin.settings.frontend') }}" enctype="multipart/form-data">
+        @csrf
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px;">
+            <div style="border:1px solid var(--border); border-radius:10px; padding:16px;">
+                <div style="font-size:13px; font-weight:700; margin-bottom:12px;"><i class="fas fa-circle-play" style="color:#7C3AED; margin-right:6px;"></i>Video Landing Page</div>
+                <label style="display:flex; align-items:center; gap:9px; margin-bottom:13px; font-size:12px; font-weight:600; cursor:pointer;">
+                    <input type="checkbox" name="video_enabled" value="1" {{ old('video_enabled', $frontend['video_enabled']) ? 'checked' : '' }} style="width:16px;height:16px;"> Tampilkan video di frontend
+                </label>
+                <div style="margin-bottom:11px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">URL Video</label>
+                    <input type="url" name="video_url" value="{{ old('video_url', $frontend['video_url']) }}" placeholder="https://youtube.com/watch?v=..." class="form-control">
+                    <small style="font-size:10.5px;color:var(--muted);">Mendukung YouTube, Vimeo, MP4, dan WebM.</small>
+                    @error('video_url')<div style="font-size:11px;color:var(--danger);margin-top:3px;">{{ $message }}</div>@enderror
+                </div>
+                <div style="margin-bottom:11px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Atau Upload Video</label>
+                    <input type="file" name="video_file" accept="video/mp4,video/webm,video/quicktime" class="form-control">
+                    <small style="font-size:10.5px;color:var(--muted);">Maksimal 100 MB. File baru menggantikan URL di atas.</small>
+                    @error('video_file')<div style="font-size:11px;color:var(--danger);margin-top:3px;">{{ $message }}</div>@enderror
+                </div>
+                <div style="margin-bottom:11px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Judul Video</label>
+                    <input type="text" name="video_title" value="{{ old('video_title', $frontend['video_title']) }}" maxlength="120" class="form-control">
+                </div>
+                <div style="margin-bottom:11px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Deskripsi</label>
+                    <textarea name="video_description" rows="3" maxlength="500" class="form-control">{{ old('video_description', $frontend['video_description']) }}</textarea>
+                </div>
+                <div>
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Poster Video (opsional)</label>
+                    <input type="file" name="video_poster" accept="image/png,image/jpeg,image/webp" class="form-control">
+                    @if($frontend['video_poster'])<a href="{{ $frontend['video_poster'] }}" target="_blank" style="font-size:10.5px;color:var(--primary);">Lihat poster saat ini</a>@endif
+                </div>
+            </div>
+
+            <div style="border:1px solid var(--border); border-radius:10px; padding:16px;">
+                <div style="font-size:13px; font-weight:700; margin-bottom:12px;"><i class="fas fa-magnifying-glass" style="color:#059669; margin-right:6px;"></i>SEO & Social Sharing</div>
+                <div style="margin-bottom:11px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">SEO Title <span style="color:var(--danger);">*</span></label>
+                    <input type="text" name="seo_title" value="{{ old('seo_title', $frontend['seo_title']) }}" maxlength="70" required class="form-control">
+                    @error('seo_title')<div style="font-size:11px;color:var(--danger);margin-top:3px;">{{ $message }}</div>@enderror
+                </div>
+                <div style="margin-bottom:11px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Meta Description <span style="color:var(--danger);">*</span></label>
+                    <textarea name="seo_description" rows="3" maxlength="170" required class="form-control">{{ old('seo_description', $frontend['seo_description']) }}</textarea>
+                    @error('seo_description')<div style="font-size:11px;color:var(--danger);margin-top:3px;">{{ $message }}</div>@enderror
+                </div>
+                <div style="margin-bottom:11px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Keywords</label>
+                    <input type="text" name="seo_keywords" value="{{ old('seo_keywords', $frontend['seo_keywords']) }}" placeholder="grammar, TKA Inggris, TOEFL" class="form-control">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 145px;gap:10px;margin-bottom:11px;">
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Canonical URL</label><input type="url" name="seo_canonical_url" value="{{ old('seo_canonical_url', $frontend['seo_canonical_url']) }}" placeholder="https://puwinter.com" class="form-control"></div>
+                    <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Robots</label><select name="seo_robots" class="form-control">@foreach(['index,follow','index,nofollow','noindex,follow','noindex,nofollow'] as $robots)<option value="{{ $robots }}" {{ old('seo_robots', $frontend['seo_robots']) === $robots ? 'selected' : '' }}>{{ $robots }}</option>@endforeach</select></div>
+                </div>
+                <div style="margin-bottom:11px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Open Graph Title</label>
+                    <input type="text" name="seo_og_title" value="{{ old('seo_og_title', $frontend['seo_og_title']) }}" placeholder="Kosongkan untuk memakai SEO Title" class="form-control">
+                </div>
+                <div style="margin-bottom:11px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Open Graph Description</label>
+                    <textarea name="seo_og_description" rows="2" class="form-control" placeholder="Kosongkan untuk memakai Meta Description">{{ old('seo_og_description', $frontend['seo_og_description']) }}</textarea>
+                </div>
+                <div><label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Open Graph Image</label><input type="file" name="seo_og_image" accept="image/png,image/jpeg,image/webp" class="form-control">@if($frontend['seo_og_image'])<a href="{{ $frontend['seo_og_image'] }}" target="_blank" style="font-size:10.5px;color:var(--primary);">Lihat gambar saat ini</a>@endif</div>
+            </div>
+
+            <div style="border:1px solid var(--border); border-radius:10px; padding:16px;">
+                <div style="font-size:13px; font-weight:700; margin-bottom:12px;"><i class="fas fa-chart-line" style="color:#2563EB; margin-right:6px;"></i>Marketing & Analytics</div>
+                <div style="margin-bottom:13px;"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Google Tag Manager ID</label><input type="text" name="google_tag_manager_id" value="{{ old('google_tag_manager_id', $frontend['google_tag_manager_id']) }}" placeholder="GTM-XXXXXXX" class="form-control" style="text-transform:uppercase;">@error('google_tag_manager_id')<div style="font-size:11px;color:var(--danger);margin-top:3px;">{{ $message }}</div>@enderror</div>
+                <div style="margin-bottom:13px;"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Google Analytics 4 ID</label><input type="text" name="google_analytics_id" value="{{ old('google_analytics_id', $frontend['google_analytics_id']) }}" placeholder="G-XXXXXXXXXX" class="form-control" style="text-transform:uppercase;">@error('google_analytics_id')<div style="font-size:11px;color:var(--danger);margin-top:3px;">{{ $message }}</div>@enderror</div>
+                <div style="margin-bottom:15px;"><label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Meta Pixel ID</label><input type="text" inputmode="numeric" name="meta_pixel_id" value="{{ old('meta_pixel_id', $frontend['meta_pixel_id']) }}" placeholder="123456789012345" class="form-control">@error('meta_pixel_id')<div style="font-size:11px;color:var(--danger);margin-top:3px;">{{ $message }}</div>@enderror</div>
+                <div style="background:#EFF6FF;border-radius:8px;padding:11px;font-size:11px;color:#1E40AF;line-height:1.6;"><i class="fas fa-circle-info"></i> ID kosong tidak akan memuat script apa pun di frontend. Google Analytics dan Meta Pixel mencatat PageView otomatis.</div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top:18px;"><i class="fas fa-save"></i> Simpan Pengaturan Frontend</button>
+    </form>
+</div>
+
 {{-- Artisan output --}}
 @if(session('artisan_output'))
 @php $ao = session('artisan_output'); @endphp

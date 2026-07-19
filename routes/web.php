@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\SubscriptionController as AdminSubscription;
 use App\Http\Controllers\Admin\TryoutController as AdminTryout;
 use App\Http\Controllers\Admin\TryoutResultController as AdminTryoutResult;
 use App\Http\Controllers\Admin\UserController as AdminUser;
+use App\Http\Controllers\Admin\VisitorController as AdminVisitor;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Payment\SubscriptionController;
@@ -35,15 +36,16 @@ use App\Http\Controllers\Student\TryoutController;
 use App\Http\Controllers\Student\TryoutHistoryController;
 use App\Http\Controllers\SystemMaintenanceController;
 use App\Http\Controllers\WelcomeController;
+use App\Http\Middleware\TrackFrontendVisitor;
 use Illuminate\Support\Facades\Route;
 
 // ============================================================================
 // PUBLIC
 // ============================================================================
 
-Route::get('/', [WelcomeController::class, 'index'])->name('home');
-Route::get('/index2', [WelcomeController::class, 'index2'])->name('home2');
-Route::get('/index3', [WelcomeController::class, 'index3'])->name('home3');
+Route::get('/', [WelcomeController::class, 'index'])->middleware(TrackFrontendVisitor::class)->name('home');
+Route::get('/index2', [WelcomeController::class, 'index2'])->middleware(TrackFrontendVisitor::class)->name('home2');
+Route::get('/index3', [WelcomeController::class, 'index3'])->middleware(TrackFrontendVisitor::class)->name('home3');
 
 // ============================================================================
 // AUTH BREEZE (login, logout, password reset — jangan hapus)
@@ -287,6 +289,10 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
         Route::post('/settings/bank', [AdminSettings::class, 'updateBank'])->name('settings.bank');
         Route::post('/settings/affiliate', [AdminSettings::class, 'updateAffiliate'])->name('settings.affiliate');
         Route::post('/settings/features', [AdminSettings::class, 'updateFeatures'])->name('settings.features');
+        Route::post('/settings/frontend', [AdminSettings::class, 'updateFrontend'])->name('settings.frontend');
+
+        // Analitik kunjungan landing page
+        Route::get('/visitors', [AdminVisitor::class, 'index'])->name('visitors.index');
 
         // Kode khusus untuk mengelompokkan siswa saat registrasi
         Route::prefix('registration-codes')->name('registration-codes.')->group(function () {
