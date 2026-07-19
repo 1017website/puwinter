@@ -27,6 +27,7 @@ class FrontendConfigurationAndVisitorTest extends TestCase
             'seo_robots' => 'index,follow',
             'google_tag_manager_id' => 'GTM-ABC1234',
             'google_analytics_id' => 'G-ABC1234567',
+            'google_ads_id' => 'AW-18335033383',
             'meta_pixel_id' => '123456789012345',
         ]);
 
@@ -34,6 +35,7 @@ class FrontendConfigurationAndVisitorTest extends TestCase
         $this->assertSame('1', AppSetting::get('frontend_video_enabled'));
         $this->assertSame('Bimbel Bahasa Inggris Online | Puwinter', AppSetting::get('seo_title'));
         $this->assertSame('GTM-ABC1234', AppSetting::get('google_tag_manager_id'));
+        $this->assertSame('AW-18335033383', AppSetting::get('google_ads_id'));
     }
 
     public function test_frontend_renders_configured_seo_tracking_video_and_programs(): void
@@ -44,14 +46,18 @@ class FrontendConfigurationAndVisitorTest extends TestCase
         AppSetting::set('seo_title', 'SEO Puwinter Testing');
         AppSetting::set('seo_description', 'Deskripsi SEO Puwinter untuk pengujian frontend.');
         AppSetting::set('google_analytics_id', 'G-TEST123456');
+        AppSetting::set('google_ads_id', 'AW-18335033383');
 
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('<title>SEO Puwinter Testing</title>', false)
             ->assertSee('youtube-nocookie.com/embed/dQw4w9WgXcQ', false)
             ->assertSee('G-TEST123456', false)
+            ->assertSee("gtag('config','AW-18335033383')", false)
+            ->assertSee('Program bimbel Puwinter: Pendampingan bimbel:')
             ->assertSee('TKA Bahasa Inggris')
-            ->assertSee('Grammar Dasar &amp; Reading Text TOEFL', false);
+            ->assertSee('Grammar Dasar &amp; Reading Text TOEFL', false)
+            ->assertDontSee('Program Bimbel Puwinter', false);
     }
 
     public function test_guest_frontend_visit_is_recorded_and_visible_to_admin(): void

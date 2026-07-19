@@ -75,6 +75,7 @@ class AppSetting extends Model
             'seo_og_image' => static::get('seo_og_image', ''),
             'google_tag_manager_id' => static::get('google_tag_manager_id', ''),
             'google_analytics_id' => static::get('google_analytics_id', ''),
+            'google_ads_id' => static::get('google_ads_id', ''),
             'meta_pixel_id' => static::get('meta_pixel_id', ''),
         ];
     }

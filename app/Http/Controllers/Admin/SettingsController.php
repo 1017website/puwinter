@@ -55,11 +55,13 @@ class SettingsController extends Controller
             'seo_og_image' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:4096',
             'google_tag_manager_id' => ['nullable', 'regex:/^GTM-[A-Z0-9]+$/i'],
             'google_analytics_id' => ['nullable', 'regex:/^G-[A-Z0-9]+$/i'],
+            'google_ads_id' => ['nullable', 'regex:/^AW-[0-9]+$/i'],
             'meta_pixel_id' => ['nullable', 'regex:/^[0-9]{5,30}$/'],
         ], [
             'video_url.url' => 'URL video harus berupa URL lengkap (https://...).',
             'google_tag_manager_id.regex' => 'Format Google Tag Manager harus seperti GTM-XXXXXXX.',
             'google_analytics_id.regex' => 'Format Google Analytics harus seperti G-XXXXXXXXXX.',
+            'google_ads_id.regex' => 'Format Google Ads Tag harus seperti AW-123456789.',
             'meta_pixel_id.regex' => 'Meta Pixel ID hanya boleh berisi 5–30 digit.',
         ]);
 
@@ -99,6 +101,7 @@ class SettingsController extends Controller
             'seo_og_image' => 'seo_og_image',
             'google_tag_manager_id' => 'google_tag_manager_id',
             'google_analytics_id' => 'google_analytics_id',
+            'google_ads_id' => 'google_ads_id',
             'meta_pixel_id' => 'meta_pixel_id',
         ];
 
