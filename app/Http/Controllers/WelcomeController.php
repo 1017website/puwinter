@@ -84,14 +84,18 @@ class WelcomeController extends Controller
         $settings = AppSetting::frontendInfo();
         $url = trim((string) $settings['video_url']);
         $settings['video_type'] = 'file';
+        $settings['video_provider'] = 'file';
         $settings['video_embed_url'] = '';
 
         if (preg_match('~(?:youtube\.com/(?:watch\?v=|embed/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{6,})~', $url, $matches)) {
             $settings['video_type'] = 'embed';
-            $settings['video_embed_url'] = 'https://www.youtube-nocookie.com/embed/'.$matches[1];
+            $settings['video_provider'] = 'youtube';
+            $settings['video_embed_url'] = 'https://www.youtube-nocookie.com/embed/'.$matches[1]
+                .'?rel=0&modestbranding=1&iv_load_policy=3&fs=0&disablekb=1&color=white&controls=1&playsinline=1&enablejsapi=0';
         } elseif (preg_match('~vimeo\.com/(?:video/)?(\d+)~', $url, $matches)) {
             $settings['video_type'] = 'embed';
-            $settings['video_embed_url'] = 'https://player.vimeo.com/video/'.$matches[1];
+            $settings['video_provider'] = 'vimeo';
+            $settings['video_embed_url'] = 'https://player.vimeo.com/video/'.$matches[1].'?title=0&byline=0&portrait=0&dnt=1';
         }
 
         return $settings;

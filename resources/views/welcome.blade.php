@@ -1027,6 +1027,14 @@
 
 .video-frame iframe,
 .video-frame video { width: 100%; height: 100%; border: 0; display: block; object-fit: cover; }
+.video-mask-top { position:absolute;top:0;left:0;right:0;height:58px;z-index:5;pointer-events:auto;background:linear-gradient(180deg,rgba(0,0,0,.78),rgba(0,0,0,.20),transparent); }
+.video-mask-corner { position:absolute;right:0;bottom:0;width:190px;height:58px;z-index:5;pointer-events:auto;background:linear-gradient(270deg,rgba(0,0,0,.88),rgba(0,0,0,.35),transparent); }
+.video-mask-left-corner { position:absolute;left:0;bottom:0;width:130px;height:58px;z-index:5;pointer-events:auto;background:linear-gradient(90deg,rgba(0,0,0,.88),rgba(0,0,0,.35),transparent); }
+.video-expand-btn { position:absolute;right:12px;bottom:12px;z-index:6;width:38px;height:38px;border:0;border-radius:10px;background:rgba(15,23,42,.9);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.25); }
+.video-expand-btn:hover { background:#5337ec; }
+.video-frame:fullscreen { width:100vw;height:100vh;aspect-ratio:auto;border-radius:0;background:#000; }
+.video-frame:fullscreen iframe,
+.video-frame:fullscreen video { border-radius:0; }
 
 .intro-copy { max-width: 760px; margin: 0 auto 28px; text-align: center; }
 .intro-copy h2 { font-size: clamp(28px, 3vw, 43px); line-height: 1.15; margin-bottom: 14px; }
@@ -1040,6 +1048,9 @@
     .intro-section { padding: 56px 18px; }
     .intro-copy h2 { font-size: 27px; }
     .video-frame { border-radius: 18px; }
+    .video-mask-top { height:46px; }
+    .video-mask-corner { width:145px;height:48px; }
+    .video-mask-left-corner { width:95px;height:48px; }
     .hero .hero-program-copy p { font-size: 14px; }
     .hero-program-list { font-size: 13.5px; gap: 3px; }
     body { overflow-x: hidden; }
@@ -1431,11 +1442,17 @@
             <h2>{{ $frontend['video_title'] }}</h2>
             <p>{{ $frontend['video_description'] }}</p>
         </div>
-        <div class="video-frame">
+        <div class="video-frame {{ $frontend['video_provider'] === 'youtube' ? 'youtube-clean-player' : '' }}" oncontextmenu="return false;">
             @if($frontend['video_type'] === 'embed')
-            <iframe src="{{ $frontend['video_embed_url'] }}" title="{{ $frontend['video_title'] }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            <iframe src="{{ $frontend['video_embed_url'] }}" title="{{ $frontend['video_title'] }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                @if($frontend['video_provider'] === 'youtube')
+                <div class="video-mask-top" title="Area YouTube disembunyikan"></div>
+                <div class="video-mask-corner" title="Tombol share dan buka YouTube disembunyikan"></div>
+                <div class="video-mask-left-corner" title="Tombol salin link disembunyikan"></div>
+                <button type="button" class="video-expand-btn" onclick="puwinterToggleFrontendVideo(this)" aria-label="Perbesar video"><i class="fas fa-expand"></i></button>
+                @endif
             @else
-            <video controls preload="metadata" @if($frontend['video_poster']) poster="{{ $frontend['video_poster'] }}" @endif>
+            <video controls controlslist="nodownload noremoteplayback" disablepictureinpicture preload="metadata" oncontextmenu="return false;" @if($frontend['video_poster']) poster="{{ $frontend['video_poster'] }}" @endif>
                 <source src="{{ $frontend['video_url'] }}">
                 Browser Anda belum mendukung pemutar video.
             </video>
@@ -1562,6 +1579,12 @@
     function openFlyer(src){var b=document.getElementById('flyerLightbox');document.getElementById('flyerLightboxImg').src=src;b.style.display='flex';document.body.style.overflow='hidden';}
     function closeFlyer(){document.getElementById('flyerLightbox').style.display='none';document.body.style.overflow='';}
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeFlyer();});
+    function puwinterToggleFrontendVideo(button){
+        var wrapper=button.closest('.video-frame');
+        if(!wrapper)return;
+        if(!document.fullscreenElement){if(wrapper.requestFullscreen)wrapper.requestFullscreen();}
+        else if(document.exitFullscreen)document.exitFullscreen();
+    }
 </script>
 </body>
 
