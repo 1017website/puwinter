@@ -1039,7 +1039,21 @@
 .intro-copy { max-width: 760px; margin: 0 auto 28px; text-align: center; }
 .intro-copy h2 { font-size: clamp(28px, 3vw, 43px); line-height: 1.15; margin-bottom: 14px; }
 .intro-copy > p { color: #94A3B8; line-height: 1.75; }
-.intro-section .video-frame { max-width: 1050px; margin: 0 auto; }
+.demo-tabs { max-width:1050px;margin:0 auto 26px;display:flex;justify-content:center;gap:9px;flex-wrap:wrap; }
+.demo-tab { border:1px solid rgba(148,163,184,.2);background:rgba(255,255,255,.04);color:#94A3B8;border-radius:12px;padding:10px 17px;font:700 13px Sora,sans-serif;cursor:pointer;transition:.2s; }
+.demo-tab:hover { color:#fff;border-color:rgba(139,124,246,.55); }
+.demo-tab.active { color:#fff;background:#5337ec;border-color:#5337ec;box-shadow:0 8px 25px rgba(83,55,236,.3); }
+.demo-tab-count { margin-left:5px;padding:2px 6px;border-radius:99px;background:rgba(255,255,255,.12);font-size:9px; }
+.demo-panel { display:none;max-width:1120px;margin:0 auto; }
+.demo-panel.active { display:block; }
+.demo-video-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px; }
+.demo-video-card { padding:14px;border-radius:22px;background:rgba(255,255,255,.045);border:1px solid rgba(148,163,184,.14);box-shadow:0 18px 45px rgba(0,0,0,.18); }
+.demo-video-card .video-frame { border-radius:15px;box-shadow:none; }
+.demo-video-info { padding:15px 5px 4px; }
+.demo-video-grade { color:#A99BFF;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px; }
+.demo-video-info h3 { color:#fff;font:700 16px Sora,sans-serif;line-height:1.4;margin-bottom:7px; }
+.demo-video-info p { color:#94A3B8;font-size:12.5px;line-height:1.65; }
+.demo-empty { padding:44px;text-align:center;border:1px dashed rgba(148,163,184,.22);border-radius:18px;color:#64748B; }
 .hero-program-copy { max-width: 590px; margin-bottom: 34px; color: #CBD5E1; }
 .hero .hero-program-copy p { margin-bottom: 8px; font-size: 17px; line-height: 1.65; color: #CBD5E1; }
 .hero-program-list { margin: 0; padding-left: 24px; display: grid; gap: 4px; color: #94A3B8; font-size: 16px; line-height: 1.55; }
@@ -1051,6 +1065,10 @@
     .video-mask-top { height:46px; }
     .video-mask-corner { width:145px;height:48px; }
     .video-mask-left-corner { width:95px;height:48px; }
+    .demo-tabs { justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px;scrollbar-width:none; }
+    .demo-tab { flex:0 0 auto;padding:9px 14px; }
+    .demo-video-grid { grid-template-columns:1fr;gap:15px; }
+    .demo-video-card { border-radius:18px;padding:10px; }
     .hero .hero-program-copy p { font-size: 14px; }
     .hero-program-list { font-size: 13.5px; gap: 3px; }
     body { overflow-x: hidden; }
@@ -1362,6 +1380,7 @@
     @include('partials.frontend-tracking-body')
     <nav id="navbar"><a href="{{ url('/') }}" class="nav-logo"><img src="{{ asset('images/logo.png') }}" alt="Puwinter"></a>
         <ul class="nav-links">
+            @if($demoVideos->isNotEmpty())<li><a href="#video-demo">Video Demo</a></li>@endif
             <li><a href="#fitur">Fitur</a></li>
             <li><a href="#cara-kerja">Cara Kerja</a></li>
             <li><a href="#harga">Harga</a></li>
@@ -1435,29 +1454,48 @@
             <div class="stat-desc">Kelas tersedia</div>
         </div>
     </div>
-    @if($frontend['video_enabled'] && $frontend['video_url'])
-    <section class="intro-section" id="video">
+    @if($demoVideos->isNotEmpty())
+    @php $firstDemoGrade = (int) $demoVideos->keys()->first(); @endphp
+    <section class="intro-section" id="video-demo">
         <div class="intro-copy">
-            <div class="section-label">Video Puwinter</div>
-            <h2>{{ $frontend['video_title'] }}</h2>
-            <p>{{ $frontend['video_description'] }}</p>
+            <div class="section-label">Coba Belajar Gratis</div>
+            <h2>Video Demo <span class="highlight">Pembelajaran</span></h2>
+            <p>Pilih kelasmu dan lihat langsung cara mentor Puwinter menjelaskan materi Bahasa Inggris.</p>
         </div>
-        <div class="video-frame {{ $frontend['video_provider'] === 'youtube' ? 'youtube-clean-player' : '' }}" oncontextmenu="return false;">
-            @if($frontend['video_type'] === 'embed')
-            <iframe src="{{ $frontend['video_embed_url'] }}" title="{{ $frontend['video_title'] }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
-                @if($frontend['video_provider'] === 'youtube')
-                <div class="video-mask-top" title="Area YouTube disembunyikan"></div>
-                <div class="video-mask-corner" title="Tombol share dan buka YouTube disembunyikan"></div>
-                <div class="video-mask-left-corner" title="Tombol salin link disembunyikan"></div>
-                <button type="button" class="video-expand-btn" onclick="puwinterToggleFrontendVideo(this)" aria-label="Perbesar video"><i class="fas fa-expand"></i></button>
-                @endif
+        <div class="demo-tabs" role="tablist" aria-label="Kategori kelas video demo">
+            @foreach(\App\Models\DemoVideo::GRADE_LEVELS as $grade)
+            <button type="button" class="demo-tab {{ $grade === $firstDemoGrade ? 'active' : '' }}" onclick="showDemoGrade({{ $grade }},this)" role="tab" aria-selected="{{ $grade === $firstDemoGrade ? 'true' : 'false' }}">Kelas {{ $grade }}<span class="demo-tab-count">{{ $demoVideos->get($grade, collect())->count() }}</span></button>
+            @endforeach
+        </div>
+        @foreach(\App\Models\DemoVideo::GRADE_LEVELS as $grade)
+        <div class="demo-panel {{ $grade === $firstDemoGrade ? 'active' : '' }}" id="demo-grade-{{ $grade }}" role="tabpanel">
+            @if($demoVideos->has($grade))
+            <div class="demo-video-grid">
+                @foreach($demoVideos->get($grade) as $demoVideo)
+                @php $player = $demoVideo->playerData(); @endphp
+                <article class="demo-video-card reveal">
+                    <div class="video-frame {{ $player['provider'] === 'youtube' ? 'youtube-clean-player' : '' }}" oncontextmenu="return false;">
+                        @if($player['type'] === 'embed')
+                        <iframe src="{{ $player['url'] }}" title="{{ $demoVideo->title }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                            @if($player['provider'] === 'youtube')
+                            <div class="video-mask-top" title="Area YouTube disembunyikan"></div>
+                            <div class="video-mask-corner" title="Tombol share dan buka YouTube disembunyikan"></div>
+                            <div class="video-mask-left-corner" title="Tombol salin link disembunyikan"></div>
+                            <button type="button" class="video-expand-btn" onclick="puwinterToggleFrontendVideo(this)" aria-label="Perbesar video"><i class="fas fa-expand"></i></button>
+                            @endif
+                        @else
+                        <video controls controlslist="nodownload noremoteplayback" disablepictureinpicture preload="metadata" oncontextmenu="return false;" @if($demoVideo->poster_url) poster="{{ $demoVideo->poster_url }}" @endif><source src="{{ $player['url'] }}">Browser Anda belum mendukung pemutar video.</video>
+                        @endif
+                    </div>
+                    <div class="demo-video-info"><div class="demo-video-grade">Demo Kelas {{ $grade }}</div><h3>{{ $demoVideo->title }}</h3>@if($demoVideo->description)<p>{{ $demoVideo->description }}</p>@endif</div>
+                </article>
+                @endforeach
+            </div>
             @else
-            <video controls controlslist="nodownload noremoteplayback" disablepictureinpicture preload="metadata" oncontextmenu="return false;" @if($frontend['video_poster']) poster="{{ $frontend['video_poster'] }}" @endif>
-                <source src="{{ $frontend['video_url'] }}">
-                Browser Anda belum mendukung pemutar video.
-            </video>
+            <div class="demo-empty"><i class="fas fa-video-slash" style="font-size:28px;opacity:.35;display:block;margin-bottom:10px;"></i>Video demo Kelas {{ $grade }} segera tersedia.</div>
             @endif
         </div>
+        @endforeach
     </section>
     @endif
     <div id="fitur" class="section">
@@ -1584,6 +1622,17 @@
         if(!wrapper)return;
         if(!document.fullscreenElement){if(wrapper.requestFullscreen)wrapper.requestFullscreen();}
         else if(document.exitFullscreen)document.exitFullscreen();
+    }
+    function showDemoGrade(grade,button){
+        document.querySelectorAll('.demo-panel').forEach(function(panel){
+            if(panel.id!=='demo-grade-'+grade){
+                panel.querySelectorAll('video').forEach(function(video){video.pause();});
+                panel.querySelectorAll('iframe').forEach(function(frame){var src=frame.src;frame.src='';frame.src=src;});
+            }
+            panel.classList.toggle('active',panel.id==='demo-grade-'+grade);
+        });
+        document.querySelectorAll('.demo-tab').forEach(function(tab){tab.classList.remove('active');tab.setAttribute('aria-selected','false');});
+        button.classList.add('active');button.setAttribute('aria-selected','true');
     }
 </script>
 </body>

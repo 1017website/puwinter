@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CourseController as AdminCourse;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
+use App\Http\Controllers\Admin\DemoVideoController as AdminDemoVideo;
 use App\Http\Controllers\Admin\EmailLogController as AdminEmailLog;
 use App\Http\Controllers\Admin\GradeChangeRequestController as AdminGradeRequest;
 use App\Http\Controllers\Admin\GradeController as AdminGrade;
@@ -290,6 +291,14 @@ Route::middleware(['auth', 'verified', 'role:admin,superadmin'])
         Route::post('/settings/affiliate', [AdminSettings::class, 'updateAffiliate'])->name('settings.affiliate');
         Route::post('/settings/features', [AdminSettings::class, 'updateFeatures'])->name('settings.features');
         Route::post('/settings/frontend', [AdminSettings::class, 'updateFrontend'])->name('settings.frontend');
+
+        // Video demo pembelajaran di landing page
+        Route::prefix('demo-videos')->name('demo-videos.')->group(function () {
+            Route::get('/', [AdminDemoVideo::class, 'index'])->name('index');
+            Route::post('/', [AdminDemoVideo::class, 'store'])->name('store');
+            Route::put('/{demoVideo}', [AdminDemoVideo::class, 'update'])->name('update');
+            Route::delete('/{demoVideo}', [AdminDemoVideo::class, 'destroy'])->name('destroy');
+        });
 
         // Analitik kunjungan landing page
         Route::get('/visitors', [AdminVisitor::class, 'index'])->name('visitors.index');

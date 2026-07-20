@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AppSetting;
 use App\Models\Course;
 use App\Models\CourseMaterial;
+use App\Models\DemoVideo;
 use App\Models\SubscriptionPlan;
 use App\Models\TryoutQuestion;
 use App\Models\User;
@@ -31,8 +32,9 @@ class WelcomeController extends Controller
         ];
 
         $frontend = $this->frontendSettings();
+        $demoVideos = $this->demoVideos();
 
-        return view('welcome', compact('plans', 'stats', 'frontend'));
+        return view('welcome', compact('plans', 'stats', 'frontend', 'demoVideos'));
     }
 
     public function index2(): View|RedirectResponse
@@ -81,23 +83,17 @@ class WelcomeController extends Controller
 
     private function frontendSettings(): array
     {
-        $settings = AppSetting::frontendInfo();
-        $url = trim((string) $settings['video_url']);
-        $settings['video_type'] = 'file';
-        $settings['video_provider'] = 'file';
-        $settings['video_embed_url'] = '';
+        return AppSetting::frontendInfo();
+    }
 
-        if (preg_match('~(?:youtube\.com/(?:watch\?v=|embed/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{6,})~', $url, $matches)) {
-            $settings['video_type'] = 'embed';
-            $settings['video_provider'] = 'youtube';
-            $settings['video_embed_url'] = 'https://www.youtube-nocookie.com/embed/'.$matches[1]
-                .'?rel=0&modestbranding=1&iv_load_policy=3&fs=0&disablekb=1&color=white&controls=1&playsinline=1&enablejsapi=0';
-        } elseif (preg_match('~vimeo\.com/(?:video/)?(\d+)~', $url, $matches)) {
-            $settings['video_type'] = 'embed';
-            $settings['video_provider'] = 'vimeo';
-            $settings['video_embed_url'] = 'https://player.vimeo.com/video/'.$matches[1].'?title=0&byline=0&portrait=0&dnt=1';
-        }
-
-        return $settings;
+    private function demoVideos()
+    {
+        return DemoVideo::query()
+            ->active()
+            ->orderBy('grade_level')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->groupBy('grade_level');
     }
 }

@@ -14,8 +14,8 @@
 <div class="card" style="margin-bottom:20px;">
     <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px;">
         <div>
-            <div style="font-size:15px; font-weight:700; margin-bottom:4px;"><i class="fas fa-globe" style="color:var(--primary); margin-right:7px;"></i>Frontend, SEO & Tracking</div>
-            <p style="font-size:12px; color:var(--muted); line-height:1.6;">Atur video landing page, tampilan di mesin pencari, serta integrasi pemasaran dari satu tempat.</p>
+            <div style="font-size:15px; font-weight:700; margin-bottom:4px;"><i class="fas fa-globe" style="color:var(--primary); margin-right:7px;"></i>SEO & Tracking Frontend</div>
+            <p style="font-size:12px; color:var(--muted); line-height:1.6;">Atur tampilan di mesin pencari serta integrasi pemasaran. Video pembelajaran dikelola melalui menu Video Demo.</p>
         </div>
         <a href="{{ route('home') }}" target="_blank" class="btn btn-sm" style="border:1px solid var(--border); color:var(--primary); flex-shrink:0;"><i class="fas fa-arrow-up-right-from-square"></i> Lihat Frontend</a>
     </div>
@@ -29,38 +29,6 @@
     <form method="POST" action="{{ route('admin.settings.frontend') }}" enctype="multipart/form-data">
         @csrf
         <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px;">
-            <div style="border:1px solid var(--border); border-radius:10px; padding:16px;">
-                <div style="font-size:13px; font-weight:700; margin-bottom:12px;"><i class="fas fa-circle-play" style="color:#7C3AED; margin-right:6px;"></i>Video Landing Page</div>
-                <label style="display:flex; align-items:center; gap:9px; margin-bottom:13px; font-size:12px; font-weight:600; cursor:pointer;">
-                    <input type="checkbox" name="video_enabled" value="1" {{ old('video_enabled', $frontend['video_enabled']) ? 'checked' : '' }} style="width:16px;height:16px;"> Tampilkan video di frontend
-                </label>
-                <div style="margin-bottom:11px;">
-                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">URL Video</label>
-                    <input type="url" name="video_url" value="{{ old('video_url', $frontend['video_url']) }}" placeholder="https://youtube.com/watch?v=..." class="form-control">
-                    <small style="font-size:10.5px;color:var(--muted);">Mendukung YouTube, Vimeo, MP4, dan WebM.</small>
-                    @error('video_url')<div style="font-size:11px;color:var(--danger);margin-top:3px;">{{ $message }}</div>@enderror
-                </div>
-                <div style="margin-bottom:11px;">
-                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Atau Upload Video</label>
-                    <input type="file" name="video_file" accept="video/mp4,video/webm,video/quicktime" class="form-control">
-                    <small style="font-size:10.5px;color:var(--muted);">Maksimal 100 MB. File baru menggantikan URL di atas.</small>
-                    @error('video_file')<div style="font-size:11px;color:var(--danger);margin-top:3px;">{{ $message }}</div>@enderror
-                </div>
-                <div style="margin-bottom:11px;">
-                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Judul Video</label>
-                    <input type="text" name="video_title" value="{{ old('video_title', $frontend['video_title']) }}" maxlength="120" class="form-control">
-                </div>
-                <div style="margin-bottom:11px;">
-                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Deskripsi</label>
-                    <textarea name="video_description" rows="3" maxlength="500" class="form-control">{{ old('video_description', $frontend['video_description']) }}</textarea>
-                </div>
-                <div>
-                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:5px;">Poster Video (opsional)</label>
-                    <input type="file" name="video_poster" accept="image/png,image/jpeg,image/webp" class="form-control">
-                    @if($frontend['video_poster'])<a href="{{ $frontend['video_poster'] }}" target="_blank" style="font-size:10.5px;color:var(--primary);">Lihat poster saat ini</a>@endif
-                </div>
-            </div>
-
             <div style="border:1px solid var(--border); border-radius:10px; padding:16px;">
                 <div style="font-size:13px; font-weight:700; margin-bottom:12px;"><i class="fas fa-magnifying-glass" style="color:#059669; margin-right:6px;"></i>SEO & Social Sharing</div>
                 <div style="margin-bottom:11px;">

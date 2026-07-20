@@ -487,6 +487,9 @@
             <a href="{{ route('admin.live-classes.index') }}" class="nav-item {{ request()->routeIs('admin.live-classes.*') ? 'active' : '' }}">
                 <i class="fas fa-video"></i> Kelas Online
             </a>
+            <a href="{{ route('admin.demo-videos.index') }}" class="nav-item {{ request()->routeIs('admin.demo-videos.*') ? 'active' : '' }}">
+                <i class="fas fa-circle-play"></i> Video Demo
+            </a>
             <a href="{{ route('admin.plans.index') }}" class="nav-item {{ request()->routeIs('admin.plans.*') ? 'active' : '' }}">
                 <i class="fas fa-tags"></i> Program
             </a>
