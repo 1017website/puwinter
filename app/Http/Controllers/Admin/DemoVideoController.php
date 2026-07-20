@@ -15,11 +15,11 @@ class DemoVideoController extends Controller
     public function index(): View
     {
         $videos = DemoVideo::query()
-            ->orderBy('grade_level')
+            ->orderByRaw("CASE category WHEN '7' THEN 1 WHEN '8' THEN 2 WHEN '9' THEN 3 WHEN '10' THEN 4 WHEN '11' THEN 5 WHEN '12' THEN 6 WHEN 'toefl' THEN 7 ELSE 8 END")
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
-            ->groupBy('grade_level');
+            ->groupBy('category');
 
         return view('admin.demo-videos.index', compact('videos'));
     }
@@ -60,7 +60,7 @@ class DemoVideoController extends Controller
     private function validateVideo(Request $request, bool $creating): array
     {
         return $request->validate([
-            'grade_level' => ['required', 'integer', Rule::in(DemoVideo::GRADE_LEVELS)],
+            'category' => ['required', 'string', Rule::in(array_keys(DemoVideo::CATEGORIES))],
             'title' => 'required|string|max:150',
             'description' => 'nullable|string|max:800',
             'video_url' => [$creating ? 'required_without:video_file' : 'nullable', 'nullable', 'url', 'max:2048'],
@@ -69,7 +69,7 @@ class DemoVideoController extends Controller
             'sort_order' => 'nullable|integer|min:0|max:9999',
             'is_active' => 'nullable|boolean',
         ], [
-            'grade_level.in' => 'Kategori kelas harus antara kelas 7 sampai 12.',
+            'category.in' => 'Pilih kategori Kelas 7–12 atau TOEFL.',
             'video_url.required_without' => 'Isi URL video atau unggah file video.',
             'video_url.url' => 'URL video harus berupa URL lengkap (https://...).',
         ]);

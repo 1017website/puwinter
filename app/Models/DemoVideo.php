@@ -7,10 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class DemoVideo extends Model
 {
-    public const GRADE_LEVELS = [7, 8, 9, 10, 11, 12];
+    public const CATEGORIES = [
+        '7' => 'Kelas 7',
+        '8' => 'Kelas 8',
+        '9' => 'Kelas 9',
+        '10' => 'Kelas 10',
+        '11' => 'Kelas 11',
+        '12' => 'Kelas 12',
+        'toefl' => 'TOEFL',
+    ];
 
     protected $fillable = [
-        'grade_level',
+        'category',
         'title',
         'description',
         'video_url',
@@ -20,7 +28,6 @@ class DemoVideo extends Model
     ];
 
     protected $casts = [
-        'grade_level' => 'integer',
         'sort_order' => 'integer',
         'is_active' => 'boolean',
     ];
@@ -52,5 +59,10 @@ class DemoVideo extends Model
         }
 
         return ['type' => 'file', 'provider' => 'file', 'url' => $url];
+    }
+
+    public function categoryLabel(): string
+    {
+        return self::CATEGORIES[$this->category] ?? $this->category;
     }
 }

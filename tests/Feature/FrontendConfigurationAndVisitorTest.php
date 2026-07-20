@@ -38,30 +38,33 @@ class FrontendConfigurationAndVisitorTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
-        foreach ([7, 12] as $grade) {
+        foreach (['7', '12', 'toefl'] as $category) {
+            $label = DemoVideo::CATEGORIES[$category];
             $this->actingAs($admin)->post(route('admin.demo-videos.store'), [
-                'grade_level' => $grade,
-                'title' => "Demo Grammar Kelas {$grade}",
-                'description' => "Materi gratis untuk kelas {$grade}.",
+                'category' => $category,
+                'title' => "Demo Grammar {$label}",
+                'description' => "Materi gratis untuk {$label}.",
                 'video_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
                 'sort_order' => 1,
                 'is_active' => '1',
             ])->assertSessionHasNoErrors()->assertSessionHas('success');
         }
 
-        $this->assertDatabaseHas('demo_videos', ['grade_level' => 7, 'is_active' => true]);
-        $this->assertDatabaseHas('demo_videos', ['grade_level' => 12, 'is_active' => true]);
+        $this->assertDatabaseHas('demo_videos', ['category' => '7', 'is_active' => true]);
+        $this->assertDatabaseHas('demo_videos', ['category' => '12', 'is_active' => true]);
+        $this->assertDatabaseHas('demo_videos', ['category' => 'toefl', 'is_active' => true]);
 
         $this->actingAs($admin)->get(route('admin.demo-videos.index'))
             ->assertOk()
             ->assertSee('Demo Grammar Kelas 7')
-            ->assertSee('Demo Grammar Kelas 12');
+            ->assertSee('Demo Grammar Kelas 12')
+            ->assertSee('Demo Grammar TOEFL');
     }
 
     public function test_frontend_renders_demo_video_catalog_by_grade_with_protected_players(): void
     {
         DemoVideo::create([
-            'grade_level' => 7,
+            'category' => '7',
             'title' => 'Basic Grammar Kelas 7',
             'description' => 'Belajar simple present secara mudah.',
             'video_url' => 'https://youtu.be/dQw4w9WgXcQ',
@@ -69,17 +72,23 @@ class FrontendConfigurationAndVisitorTest extends TestCase
             'is_active' => true,
         ]);
         DemoVideo::create([
-            'grade_level' => 12,
+            'category' => '12',
             'title' => 'Reading Text Kelas 12',
             'video_url' => 'https://vimeo.com/123456789',
             'sort_order' => 1,
             'is_active' => true,
         ]);
         DemoVideo::create([
-            'grade_level' => 8,
+            'category' => '8',
             'title' => 'Video Nonaktif',
             'video_url' => 'https://youtu.be/dQw4w9WgXcQ',
             'is_active' => false,
+        ]);
+        DemoVideo::create([
+            'category' => 'toefl',
+            'title' => 'Reading TOEFL Demo',
+            'video_url' => 'https://youtu.be/dQw4w9WgXcQ',
+            'is_active' => true,
         ]);
 
         AppSetting::set('seo_title', 'SEO Puwinter Testing');
@@ -97,8 +106,10 @@ class FrontendConfigurationAndVisitorTest extends TestCase
             ->assertSee('Video Demo <span class="highlight">Pembelajaran</span>', false)
             ->assertSee('Kelas 7')
             ->assertSee('Kelas 12')
+            ->assertSee('TOEFL')
             ->assertSee('Basic Grammar Kelas 7')
             ->assertSee('Reading Text Kelas 12')
+            ->assertSee('Reading TOEFL Demo')
             ->assertDontSee('Video Nonaktif')
             ->assertSee('G-TEST123456', false)
             ->assertSee("gtag('config','AW-18335033383')", false)

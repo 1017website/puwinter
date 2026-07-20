@@ -12,14 +12,14 @@
 
 <div style="display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:20px;align-items:start;" class="demo-admin-layout">
     <div style="display:flex;flex-direction:column;gap:18px;">
-        @foreach(\App\Models\DemoVideo::GRADE_LEVELS as $grade)
-        @php $gradeVideos = $videos->get($grade, collect()); @endphp
+        @foreach(\App\Models\DemoVideo::CATEGORIES as $category => $categoryLabel)
+        @php $categoryVideos = $videos->get($category, collect()); @endphp
         <div class="card" style="padding:0;overflow:hidden;">
             <div style="padding:14px 17px;background:#F8FAFC;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-                <div style="display:flex;align-items:center;gap:9px;"><span style="width:34px;height:34px;border-radius:9px;background:#7C3AED;color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800;">{{ $grade }}</span><div><strong style="font-size:13px;">Kelas {{ $grade }}</strong><div style="font-size:10.5px;color:var(--muted);">{{ $gradeVideos->count() }} video demo</div></div></div>
+                <div style="display:flex;align-items:center;gap:9px;"><span style="min-width:38px;height:34px;padding:0 8px;border-radius:9px;background:#7C3AED;color:#fff;display:grid;place-items:center;font-size:11px;font-weight:800;">{{ strtoupper($category) }}</span><div><strong style="font-size:13px;">{{ $categoryLabel }}</strong><div style="font-size:10.5px;color:var(--muted);">{{ $categoryVideos->count() }} video demo</div></div></div>
             </div>
 
-            @forelse($gradeVideos as $video)
+            @forelse($categoryVideos as $video)
             @php $player = $video->playerData(); @endphp
             <div x-data="{ editOpen: false }" style="padding:15px 17px;border-bottom:1px solid var(--border);">
                 <div style="display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:12px;align-items:center;">
@@ -40,7 +40,7 @@
                     <form method="POST" action="{{ route('admin.demo-videos.update', $video) }}" enctype="multipart/form-data">
                         @csrf @method('PUT')
                         <div style="display:grid;grid-template-columns:110px minmax(0,1fr) 100px;gap:10px;">
-                            <div class="form-group"><label>Kategori</label><select name="grade_level" class="form-control">@foreach(\App\Models\DemoVideo::GRADE_LEVELS as $level)<option value="{{ $level }}" {{ $video->grade_level === $level ? 'selected' : '' }}>Kelas {{ $level }}</option>@endforeach</select></div>
+                            <div class="form-group"><label>Kategori</label><select name="category" class="form-control">@foreach(\App\Models\DemoVideo::CATEGORIES as $key => $label)<option value="{{ $key }}" {{ $video->category === $key ? 'selected' : '' }}>{{ $label }}</option>@endforeach</select></div>
                             <div class="form-group"><label>Judul</label><input type="text" name="title" value="{{ $video->title }}" maxlength="150" required class="form-control"></div>
                             <div class="form-group"><label>Urutan</label><input type="number" name="sort_order" value="{{ $video->sort_order }}" min="0" class="form-control"></div>
                         </div>
@@ -56,7 +56,7 @@
                 </div>
             </div>
             @empty
-            <div style="padding:22px;text-align:center;color:var(--muted);font-size:12px;"><i class="fas fa-film" style="opacity:.3;margin-right:5px;"></i> Belum ada video untuk kelas {{ $grade }}.</div>
+            <div style="padding:22px;text-align:center;color:var(--muted);font-size:12px;"><i class="fas fa-film" style="opacity:.3;margin-right:5px;"></i> Belum ada video untuk {{ $categoryLabel }}.</div>
             @endforelse
         </div>
         @endforeach
@@ -68,7 +68,7 @@
             <p style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:15px;">Gunakan URL YouTube/Vimeo atau unggah file video langsung.</p>
             <form method="POST" action="{{ route('admin.demo-videos.store') }}" enctype="multipart/form-data">
                 @csrf
-                <div class="form-group"><label>Kategori Kelas <span style="color:var(--danger);">*</span></label><select name="grade_level" class="form-control" required>@foreach(\App\Models\DemoVideo::GRADE_LEVELS as $level)<option value="{{ $level }}" {{ (int) old('grade_level', 7) === $level ? 'selected' : '' }}>Kelas {{ $level }}</option>@endforeach</select>@error('grade_level')<div style="font-size:11px;color:var(--danger);margin-top:3px;">{{ $message }}</div>@enderror</div>
+                <div class="form-group"><label>Kategori <span style="color:var(--danger);">*</span></label><select name="category" class="form-control" required>@foreach(\App\Models\DemoVideo::CATEGORIES as $key => $label)<option value="{{ $key }}" {{ old('category', '7') === $key ? 'selected' : '' }}>{{ $label }}</option>@endforeach</select>@error('category')<div style="font-size:11px;color:var(--danger);margin-top:3px;">{{ $message }}</div>@enderror</div>
                 <div class="form-group"><label>Judul <span style="color:var(--danger);">*</span></label><input type="text" name="title" value="{{ old('title') }}" maxlength="150" required class="form-control" placeholder="Contoh: Basic Grammar - Simple Present">@error('title')<div style="font-size:11px;color:var(--danger);margin-top:3px;">{{ $message }}</div>@enderror</div>
                 <div class="form-group"><label>Deskripsi</label><textarea name="description" rows="3" maxlength="800" class="form-control" placeholder="Ringkasan materi dalam video">{{ old('description') }}</textarea></div>
                 <div class="form-group"><label>URL Video</label><input type="url" name="video_url" value="{{ old('video_url') }}" class="form-control" placeholder="https://youtube.com/watch?v=...">@error('video_url')<div style="font-size:11px;color:var(--danger);margin-top:3px;">{{ $message }}</div>@enderror</div>

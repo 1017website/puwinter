@@ -1455,7 +1455,7 @@
         </div>
     </div>
     @if($demoVideos->isNotEmpty())
-    @php $firstDemoGrade = (int) $demoVideos->keys()->first(); @endphp
+    @php $firstDemoCategory = (string) $demoVideos->keys()->first(); @endphp
     <section class="intro-section" id="video-demo">
         <div class="intro-copy">
             <div class="section-label">Coba Belajar Gratis</div>
@@ -1463,15 +1463,15 @@
             <p>Pilih kelasmu dan lihat langsung cara mentor Puwinter menjelaskan materi Bahasa Inggris.</p>
         </div>
         <div class="demo-tabs" role="tablist" aria-label="Kategori kelas video demo">
-            @foreach(\App\Models\DemoVideo::GRADE_LEVELS as $grade)
-            <button type="button" class="demo-tab {{ $grade === $firstDemoGrade ? 'active' : '' }}" onclick="showDemoGrade({{ $grade }},this)" role="tab" aria-selected="{{ $grade === $firstDemoGrade ? 'true' : 'false' }}">Kelas {{ $grade }}<span class="demo-tab-count">{{ $demoVideos->get($grade, collect())->count() }}</span></button>
+            @foreach(\App\Models\DemoVideo::CATEGORIES as $category => $categoryLabel)
+            <button type="button" class="demo-tab {{ $category === $firstDemoCategory ? 'active' : '' }}" onclick="showDemoCategory(@js($category),this)" role="tab" aria-selected="{{ $category === $firstDemoCategory ? 'true' : 'false' }}">{{ $categoryLabel }}<span class="demo-tab-count">{{ $demoVideos->get($category, collect())->count() }}</span></button>
             @endforeach
         </div>
-        @foreach(\App\Models\DemoVideo::GRADE_LEVELS as $grade)
-        <div class="demo-panel {{ $grade === $firstDemoGrade ? 'active' : '' }}" id="demo-grade-{{ $grade }}" role="tabpanel">
-            @if($demoVideos->has($grade))
+        @foreach(\App\Models\DemoVideo::CATEGORIES as $category => $categoryLabel)
+        <div class="demo-panel {{ $category === $firstDemoCategory ? 'active' : '' }}" id="demo-category-{{ $category }}" role="tabpanel">
+            @if($demoVideos->has($category))
             <div class="demo-video-grid">
-                @foreach($demoVideos->get($grade) as $demoVideo)
+                @foreach($demoVideos->get($category) as $demoVideo)
                 @php $player = $demoVideo->playerData(); @endphp
                 <article class="demo-video-card reveal">
                     <div class="video-frame {{ $player['provider'] === 'youtube' ? 'youtube-clean-player' : '' }}" oncontextmenu="return false;">
@@ -1487,12 +1487,12 @@
                         <video controls controlslist="nodownload noremoteplayback" disablepictureinpicture preload="metadata" oncontextmenu="return false;" @if($demoVideo->poster_url) poster="{{ $demoVideo->poster_url }}" @endif><source src="{{ $player['url'] }}">Browser Anda belum mendukung pemutar video.</video>
                         @endif
                     </div>
-                    <div class="demo-video-info"><div class="demo-video-grade">Demo Kelas {{ $grade }}</div><h3>{{ $demoVideo->title }}</h3>@if($demoVideo->description)<p>{{ $demoVideo->description }}</p>@endif</div>
+                    <div class="demo-video-info"><div class="demo-video-grade">Demo {{ $categoryLabel }}</div><h3>{{ $demoVideo->title }}</h3>@if($demoVideo->description)<p>{{ $demoVideo->description }}</p>@endif</div>
                 </article>
                 @endforeach
             </div>
             @else
-            <div class="demo-empty"><i class="fas fa-video-slash" style="font-size:28px;opacity:.35;display:block;margin-bottom:10px;"></i>Video demo Kelas {{ $grade }} segera tersedia.</div>
+            <div class="demo-empty"><i class="fas fa-video-slash" style="font-size:28px;opacity:.35;display:block;margin-bottom:10px;"></i>Video demo {{ $categoryLabel }} segera tersedia.</div>
             @endif
         </div>
         @endforeach
@@ -1623,13 +1623,13 @@
         if(!document.fullscreenElement){if(wrapper.requestFullscreen)wrapper.requestFullscreen();}
         else if(document.exitFullscreen)document.exitFullscreen();
     }
-    function showDemoGrade(grade,button){
+    function showDemoCategory(category,button){
         document.querySelectorAll('.demo-panel').forEach(function(panel){
-            if(panel.id!=='demo-grade-'+grade){
+            if(panel.id!=='demo-category-'+category){
                 panel.querySelectorAll('video').forEach(function(video){video.pause();});
                 panel.querySelectorAll('iframe').forEach(function(frame){var src=frame.src;frame.src='';frame.src=src;});
             }
-            panel.classList.toggle('active',panel.id==='demo-grade-'+grade);
+            panel.classList.toggle('active',panel.id==='demo-category-'+category);
         });
         document.querySelectorAll('.demo-tab').forEach(function(tab){tab.classList.remove('active');tab.setAttribute('aria-selected','false');});
         button.classList.add('active');button.setAttribute('aria-selected','true');
