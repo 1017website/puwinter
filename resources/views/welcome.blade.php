@@ -1405,10 +1405,10 @@
                 <div class="hero-program-copy">
                     <p>Program bimbel Puwinter: Pendampingan bimbel:</p>
                     <ol class="hero-program-list">
-                        <li>TKA Bahasa Inggris</li>
-                        <li>Literasi Bahasa Inggris</li>
+                        <li>Bahasa Inggris TKA</li>
+                        <li>Literasi Bahasa Inggris UTBK SNBT</li>
                         <li>Grammar Dasar &amp; Reading Text</li>
-                        <li>Grammar Dasar &amp; Reading Text TOEFL</li>
+                        <li>Grammar &amp; Reading TOEFL</li>
                     </ol>
                 </div>
                 <div class="hero-actions"><a href="{{ route('register') }}" class="btn-hero">Mulai Belajar Gratis <i class="fas fa-arrow-right"></i></a><a href="#fitur" class="btn-hero-ghost"><i class="fas fa-play-circle"></i> Lihat Fitur</a></div>
