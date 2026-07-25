@@ -61,6 +61,19 @@ class DemoVideo extends Model
         return ['type' => 'file', 'provider' => 'file', 'url' => $url];
     }
 
+    public function thumbnailUrl(): ?string
+    {
+        if ($this->poster_url) {
+            return $this->poster_url;
+        }
+
+        if (preg_match('~(?:youtube\.com/(?:watch\?v=|embed/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{6,})~', trim($this->video_url), $matches)) {
+            return 'https://i.ytimg.com/vi/'.$matches[1].'/hqdefault.jpg';
+        }
+
+        return null;
+    }
+
     public function categoryLabel(): string
     {
         return self::CATEGORIES[$this->category] ?? $this->category;

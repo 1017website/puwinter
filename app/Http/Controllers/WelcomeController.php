@@ -93,7 +93,6 @@ class WelcomeController extends Controller
             ->orderByRaw("CASE category WHEN '7' THEN 1 WHEN '8' THEN 2 WHEN '9' THEN 3 WHEN '10' THEN 4 WHEN '11' THEN 5 WHEN '12' THEN 6 WHEN 'toefl' THEN 7 ELSE 8 END")
             ->orderBy('sort_order')
             ->orderBy('id')
-            ->get()
-            ->groupBy('category');
+            ->get();
     }
 }

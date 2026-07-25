@@ -61,7 +61,7 @@ class FrontendConfigurationAndVisitorTest extends TestCase
             ->assertSee('Demo Grammar TOEFL');
     }
 
-    public function test_frontend_renders_demo_video_catalog_by_grade_with_protected_players(): void
+    public function test_frontend_renders_flat_demo_video_gallery_with_thumbnails(): void
     {
         DemoVideo::create([
             'category' => '7',
@@ -100,9 +100,11 @@ class FrontendConfigurationAndVisitorTest extends TestCase
             ->assertOk()
             ->assertSee('<title>SEO Puwinter Testing</title>', false)
             ->assertSee('youtube-nocookie.com/embed/dQw4w9WgXcQ', false)
-            ->assertSee('disablekb=1', false)
-            ->assertSee('video-mask-top', false)
-            ->assertSee('Tombol share dan buka YouTube disembunyikan')
+            ->assertSee('https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg', false)
+            ->assertSee('Tonton Gratis')
+            ->assertSee('demoPlayerModal', false)
+            ->assertDontSee('class="demo-tabs"', false)
+            ->assertDontSee('class="demo-panel"', false)
             ->assertSee('Video Demo <span class="highlight">Pembelajaran</span>', false)
             ->assertSee('Kelas 7')
             ->assertSee('Kelas 12')

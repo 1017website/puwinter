@@ -1039,24 +1039,36 @@
 .intro-copy { max-width: 760px; margin: 0 auto 28px; text-align: center; }
 .intro-copy h2 { font-size: clamp(28px, 3vw, 43px); line-height: 1.15; margin-bottom: 14px; }
 .intro-copy > p { color: #94A3B8; line-height: 1.75; }
-.demo-tabs { max-width:1050px;margin:0 auto 26px;display:flex;justify-content:center;gap:9px;flex-wrap:wrap; }
-.demo-tab { border:1px solid rgba(148,163,184,.2);background:rgba(255,255,255,.04);color:#94A3B8;border-radius:12px;padding:10px 17px;font:700 13px Sora,sans-serif;cursor:pointer;transition:.2s; }
-.demo-tab:hover { color:#fff;border-color:rgba(139,124,246,.55); }
-.demo-tab.active { color:#fff;background:#5337ec;border-color:#5337ec;box-shadow:0 8px 25px rgba(83,55,236,.3); }
-.demo-tab-count { margin-left:5px;padding:2px 6px;border-radius:99px;background:rgba(255,255,255,.12);font-size:9px; }
-.demo-panel { display:none;max-width:1120px;margin:0 auto; }
-.demo-panel.active { display:block; }
-.demo-video-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px; }
-.demo-video-card { padding:14px;border-radius:22px;background:rgba(255,255,255,.045);border:1px solid rgba(148,163,184,.14);box-shadow:0 18px 45px rgba(0,0,0,.18); }
-.demo-video-card .video-frame { border-radius:15px;box-shadow:none; }
-.demo-video-info { padding:15px 5px 4px; }
-.demo-video-grade { color:#A99BFF;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px; }
-.demo-video-info h3 { color:#fff;font:700 16px Sora,sans-serif;line-height:1.4;margin-bottom:7px; }
-.demo-video-info p { color:#94A3B8;font-size:12.5px;line-height:1.65; }
-.demo-empty { padding:44px;text-align:center;border:1px dashed rgba(148,163,184,.22);border-radius:18px;color:#64748B; }
+.demo-video-grid { max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 20px; }
+.demo-video-card { min-width:0;display:flex;flex-direction:column; }
+.demo-thumbnail { position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:16px;background:linear-gradient(135deg,#171b30,#0b0f1f);border:1px solid rgba(148,163,184,.14);cursor:pointer;box-shadow:0 16px 38px rgba(0,0,0,.24); }
+.demo-thumbnail img { width:100%;height:100%;display:block;object-fit:cover;transition:transform .3s ease; }
+.demo-video-card:hover .demo-thumbnail img { transform:scale(1.035); }
+.demo-thumbnail-placeholder { width:100%;height:100%;display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,rgba(83,55,236,.38),transparent 34%),linear-gradient(135deg,#171b30,#090c17);color:rgba(255,255,255,.38);font-size:42px; }
+.demo-thumbnail:after { content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 52%,rgba(0,0,0,.62));pointer-events:none; }
+.demo-play { position:absolute;z-index:2;left:50%;top:50%;transform:translate(-50%,-50%);width:62px;height:44px;border:0;border-radius:13px;background:#ff0033;color:#fff;display:grid;place-items:center;font-size:18px;cursor:pointer;box-shadow:0 12px 30px rgba(0,0,0,.34);transition:.2s; }
+.demo-thumbnail:hover .demo-play { transform:translate(-50%,-50%) scale(1.08);background:#ff1748; }
+.demo-category-badge { position:absolute;z-index:2;left:10px;bottom:10px;padding:5px 9px;border-radius:7px;background:rgba(8,11,22,.86);border:1px solid rgba(255,255,255,.14);color:#fff;font-size:10px;font-weight:800;backdrop-filter:blur(8px); }
+.demo-video-info { padding:13px 2px 0;display:flex;flex:1;flex-direction:column; }
+.demo-video-info h3 { color:#fff;font:700 15px Sora,sans-serif;line-height:1.45;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
+.demo-video-info p { color:#94A3B8;font-size:12px;line-height:1.55;margin-bottom:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
+.demo-free-button { width:100%;min-height:48px;margin-top:auto;border:1px solid rgba(139,124,246,.55);border-radius:12px;background:linear-gradient(135deg,#6d4aff,#5337ec);color:#fff;display:flex;align-items:center;justify-content:center;gap:9px;font:800 13px Sora,sans-serif;letter-spacing:.15px;cursor:pointer;box-shadow:0 12px 28px rgba(83,55,236,.24);transition:.2s; }
+.demo-free-button:hover { transform:translateY(-2px);box-shadow:0 16px 34px rgba(83,55,236,.34);filter:brightness(1.06); }
+.demo-player-modal { position:fixed;inset:0;z-index:9999;padding:24px;display:none;align-items:center;justify-content:center;background:rgba(3,5,12,.9);backdrop-filter:blur(12px); }
+.demo-player-modal.open { display:flex; }
+.demo-player-dialog { width:min(1040px,94vw); }
+.demo-player-head { display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px;color:#fff; }
+.demo-player-head h3 { font:700 clamp(15px,2vw,20px) Sora,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.demo-player-close { flex:0 0 auto;width:40px;height:40px;border:1px solid rgba(255,255,255,.18);border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font-size:18px;cursor:pointer; }
+.demo-player-shell { aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 30px 90px rgba(0,0,0,.5); }
+.demo-player-shell iframe,.demo-player-shell video { width:100%;height:100%;display:block;border:0;object-fit:contain;background:#000; }
 .hero-program-copy { max-width: 590px; margin-bottom: 34px; color: #CBD5E1; }
 .hero .hero-program-copy p { margin-bottom: 8px; font-size: 17px; line-height: 1.65; color: #CBD5E1; }
 .hero-program-list { margin: 0; padding-left: 24px; display: grid; gap: 4px; color: #94A3B8; font-size: 16px; line-height: 1.55; }
+
+@media (max-width: 1050px) {
+    .demo-video-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
 
 @media (max-width: 768px) {
     .intro-section { padding: 56px 18px; }
@@ -1065,10 +1077,11 @@
     .video-mask-top { height:46px; }
     .video-mask-corner { width:145px;height:48px; }
     .video-mask-left-corner { width:95px;height:48px; }
-    .demo-tabs { justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px;scrollbar-width:none; }
-    .demo-tab { flex:0 0 auto;padding:9px 14px; }
     .demo-video-grid { grid-template-columns:1fr;gap:15px; }
-    .demo-video-card { border-radius:18px;padding:10px; }
+    .demo-thumbnail { border-radius:13px; }
+    .demo-player-modal { padding:14px; }
+    .demo-player-dialog { width:100%; }
+    .demo-player-shell { border-radius:12px; }
     .hero .hero-program-copy p { font-size: 14px; }
     .hero-program-list { font-size: 13.5px; gap: 3px; }
     body { overflow-x: hidden; }
@@ -1455,47 +1468,57 @@
         </div>
     </div>
     @if($demoVideos->isNotEmpty())
-    @php $firstDemoCategory = (string) $demoVideos->keys()->first(); @endphp
     <section class="intro-section" id="video-demo">
         <div class="intro-copy">
             <div class="section-label">Coba Belajar Gratis</div>
             <h2>Video Demo <span class="highlight">Pembelajaran</span></h2>
-            <p>Pilih kelasmu dan lihat langsung cara mentor Puwinter menjelaskan materi Bahasa Inggris.</p>
+            <p>Pilih video yang kamu suka dan lihat langsung cara mentor Puwinter menjelaskan materi Bahasa Inggris.</p>
         </div>
-        <div class="demo-tabs" role="tablist" aria-label="Kategori kelas video demo">
-            @foreach(\App\Models\DemoVideo::CATEGORIES as $category => $categoryLabel)
-            <button type="button" class="demo-tab {{ $category === $firstDemoCategory ? 'active' : '' }}" onclick="showDemoCategory(@js($category),this)" role="tab" aria-selected="{{ $category === $firstDemoCategory ? 'true' : 'false' }}">{{ $categoryLabel }}<span class="demo-tab-count">{{ $demoVideos->get($category, collect())->count() }}</span></button>
+        <div class="demo-video-grid">
+            @foreach($demoVideos as $demoVideo)
+            @php
+                $player = $demoVideo->playerData();
+                $thumbnail = $demoVideo->thumbnailUrl();
+            @endphp
+            <article class="demo-video-card reveal">
+                <div class="demo-thumbnail" role="button" tabindex="0"
+                     data-video-type="{{ $player['type'] }}"
+                     data-video-url="{{ $player['url'] }}"
+                     data-video-title="{{ $demoVideo->title }}"
+                     onclick="openDemoPlayer(this)"
+                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDemoPlayer(this)}"
+                     aria-label="Tonton gratis: {{ $demoVideo->title }}">
+                    @if($thumbnail)
+                    <img src="{{ $thumbnail }}" alt="Thumbnail {{ $demoVideo->title }}" loading="lazy">
+                    @else
+                    <div class="demo-thumbnail-placeholder"><i class="fas fa-film"></i></div>
+                    @endif
+                    <button type="button" class="demo-play" tabindex="-1" aria-hidden="true"><i class="fas fa-play"></i></button>
+                    <span class="demo-category-badge">{{ $demoVideo->categoryLabel() }}</span>
+                </div>
+                <div class="demo-video-info">
+                    <h3>{{ $demoVideo->title }}</h3>
+                    @if($demoVideo->description)<p>{{ $demoVideo->description }}</p>@endif
+                    <button type="button" class="demo-free-button"
+                            data-video-type="{{ $player['type'] }}"
+                            data-video-url="{{ $player['url'] }}"
+                            data-video-title="{{ $demoVideo->title }}"
+                            onclick="openDemoPlayer(this)">
+                        <i class="fas fa-circle-play"></i> Tonton Gratis
+                    </button>
+                </div>
+            </article>
             @endforeach
         </div>
-        @foreach(\App\Models\DemoVideo::CATEGORIES as $category => $categoryLabel)
-        <div class="demo-panel {{ $category === $firstDemoCategory ? 'active' : '' }}" id="demo-category-{{ $category }}" role="tabpanel">
-            @if($demoVideos->has($category))
-            <div class="demo-video-grid">
-                @foreach($demoVideos->get($category) as $demoVideo)
-                @php $player = $demoVideo->playerData(); @endphp
-                <article class="demo-video-card reveal">
-                    <div class="video-frame {{ $player['provider'] === 'youtube' ? 'youtube-clean-player' : '' }}" oncontextmenu="return false;">
-                        @if($player['type'] === 'embed')
-                        <iframe src="{{ $player['url'] }}" title="{{ $demoVideo->title }}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
-                            @if($player['provider'] === 'youtube')
-                            <div class="video-mask-top" title="Area YouTube disembunyikan"></div>
-                            <div class="video-mask-corner" title="Tombol share dan buka YouTube disembunyikan"></div>
-                            <div class="video-mask-left-corner" title="Tombol salin link disembunyikan"></div>
-                            <button type="button" class="video-expand-btn" onclick="puwinterToggleFrontendVideo(this)" aria-label="Perbesar video"><i class="fas fa-expand"></i></button>
-                            @endif
-                        @else
-                        <video controls controlslist="nodownload noremoteplayback" disablepictureinpicture preload="metadata" oncontextmenu="return false;" @if($demoVideo->poster_url) poster="{{ $demoVideo->poster_url }}" @endif><source src="{{ $player['url'] }}">Browser Anda belum mendukung pemutar video.</video>
-                        @endif
-                    </div>
-                    <div class="demo-video-info"><div class="demo-video-grade">Demo {{ $categoryLabel }}</div><h3>{{ $demoVideo->title }}</h3>@if($demoVideo->description)<p>{{ $demoVideo->description }}</p>@endif</div>
-                </article>
-                @endforeach
+        <div class="demo-player-modal" id="demoPlayerModal" role="dialog" aria-modal="true" aria-labelledby="demoPlayerTitle" onclick="if(event.target===this)closeDemoPlayer()">
+            <div class="demo-player-dialog">
+                <div class="demo-player-head">
+                    <h3 id="demoPlayerTitle">Video Demo Pembelajaran</h3>
+                    <button type="button" class="demo-player-close" onclick="closeDemoPlayer()" aria-label="Tutup video"><i class="fas fa-xmark"></i></button>
+                </div>
+                <div class="demo-player-shell" id="demoPlayerShell"></div>
             </div>
-            @else
-            <div class="demo-empty"><i class="fas fa-video-slash" style="font-size:28px;opacity:.35;display:block;margin-bottom:10px;"></i>Video demo {{ $categoryLabel }} segera tersedia.</div>
-            @endif
         </div>
-        @endforeach
     </section>
     @endif
     <div id="fitur" class="section">
@@ -1617,23 +1640,44 @@
     function openFlyer(src){var b=document.getElementById('flyerLightbox');document.getElementById('flyerLightboxImg').src=src;b.style.display='flex';document.body.style.overflow='hidden';}
     function closeFlyer(){document.getElementById('flyerLightbox').style.display='none';document.body.style.overflow='';}
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeFlyer();});
-    function puwinterToggleFrontendVideo(button){
-        var wrapper=button.closest('.video-frame');
-        if(!wrapper)return;
-        if(!document.fullscreenElement){if(wrapper.requestFullscreen)wrapper.requestFullscreen();}
-        else if(document.exitFullscreen)document.exitFullscreen();
+    function openDemoPlayer(trigger){
+        var modal=document.getElementById('demoPlayerModal');
+        var shell=document.getElementById('demoPlayerShell');
+        var title=document.getElementById('demoPlayerTitle');
+        if(!modal||!shell)return;
+        var type=trigger.dataset.videoType;
+        var url=trigger.dataset.videoUrl;
+        title.textContent=trigger.dataset.videoTitle||'Video Demo Pembelajaran';
+        shell.innerHTML='';
+        if(type==='embed'){
+            var frame=document.createElement('iframe');
+            frame.src=url+(url.indexOf('?')===-1?'?':'&')+'autoplay=1';
+            frame.title=title.textContent;
+            frame.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            frame.allowFullscreen=true;
+            shell.appendChild(frame);
+        }else{
+            var video=document.createElement('video');
+            video.src=url;
+            video.controls=true;
+            video.autoplay=true;
+            video.setAttribute('controlslist','nodownload noremoteplayback');
+            video.setAttribute('disablepictureinpicture','');
+            shell.appendChild(video);
+        }
+        modal.classList.add('open');
+        document.body.style.overflow='hidden';
+        modal.querySelector('.demo-player-close').focus();
     }
-    function showDemoCategory(category,button){
-        document.querySelectorAll('.demo-panel').forEach(function(panel){
-            if(panel.id!=='demo-category-'+category){
-                panel.querySelectorAll('video').forEach(function(video){video.pause();});
-                panel.querySelectorAll('iframe').forEach(function(frame){var src=frame.src;frame.src='';frame.src=src;});
-            }
-            panel.classList.toggle('active',panel.id==='demo-category-'+category);
-        });
-        document.querySelectorAll('.demo-tab').forEach(function(tab){tab.classList.remove('active');tab.setAttribute('aria-selected','false');});
-        button.classList.add('active');button.setAttribute('aria-selected','true');
+    function closeDemoPlayer(){
+        var modal=document.getElementById('demoPlayerModal');
+        var shell=document.getElementById('demoPlayerShell');
+        if(!modal)return;
+        modal.classList.remove('open');
+        if(shell)shell.innerHTML='';
+        document.body.style.overflow='';
     }
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDemoPlayer();});
 </script>
 </body>
 
