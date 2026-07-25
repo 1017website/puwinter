@@ -1054,6 +1054,8 @@
 .demo-video-info p { color:#94A3B8;font-size:12px;line-height:1.55;margin-bottom:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
 .demo-free-button { width:100%;min-height:48px;margin-top:auto;border:1px solid rgba(139,124,246,.55);border-radius:12px;background:linear-gradient(135deg,#6d4aff,#5337ec);color:#fff;display:flex;align-items:center;justify-content:center;gap:9px;font:800 13px Sora,sans-serif;letter-spacing:.15px;cursor:pointer;box-shadow:0 12px 28px rgba(83,55,236,.24);transition:.2s; }
 .demo-free-button:hover { transform:translateY(-2px);box-shadow:0 16px 34px rgba(83,55,236,.34);filter:brightness(1.06); }
+.demo-register-button { width:100%;min-height:52px;margin-top:10px;border:1px solid rgba(255,255,255,.8);border-radius:12px;background:#fff;color:#24175f;display:flex;align-items:center;justify-content:center;gap:9px;font:800 14px Sora,sans-serif;letter-spacing:.15px;text-decoration:none;box-shadow:0 12px 28px rgba(0,0,0,.22);transition:.2s; }
+.demo-register-button:hover { transform:translateY(-2px);background:#f5f2ff;box-shadow:0 16px 34px rgba(0,0,0,.3); }
 .demo-player-modal { position:fixed;inset:0;z-index:9999;padding:24px;display:none;align-items:center;justify-content:center;background:rgba(3,5,12,.9);backdrop-filter:blur(12px); }
 .demo-player-modal.open { display:flex; }
 .demo-player-dialog { width:min(1040px,94vw); }
@@ -1508,6 +1510,9 @@
                             onclick="openDemoPlayer(this)">
                         <i class="fas fa-circle-play"></i> Tonton Gratis
                     </button>
+                    <a href="{{ route('register') }}" class="demo-register-button">
+                        <i class="fas fa-user-plus"></i> Daftar Gratis
+                    </a>
                 </div>
             </article>
             @endforeach

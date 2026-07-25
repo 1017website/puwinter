@@ -24,7 +24,7 @@ class DemoVideoGalleryTest extends TestCase
             ]);
         }
 
-        $this->get(route('home'))
+        $response = $this->get(route('home'))
             ->assertOk()
             ->assertSee('Program Bimbel <span class="highlight">Puwinter</span>', false)
             ->assertSee('SIAP Bahasa Inggris TKA')
@@ -38,6 +38,9 @@ class DemoVideoGalleryTest extends TestCase
             ->assertSee('https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg', false)
             ->assertSeeInOrder(['Grammar Kelas 7', 'TKA Kelas 12', 'Reading TOEFL'])
             ->assertSee('Tonton Gratis')
+            ->assertSee('Daftar Gratis')
+            ->assertSee('class="demo-register-button"', false)
+            ->assertSee('href="' . route('register') . '"', false)
             ->assertSee('id="demoPlayerModal"', false)
             ->assertSee('data-video-provider="youtube"', false)
             ->assertSee('video-mask-top', false)
@@ -45,5 +48,7 @@ class DemoVideoGalleryTest extends TestCase
             ->assertDontSee('class="demo-tabs"', false)
             ->assertDontSee('class="demo-panel"', false)
             ->assertDontSee('<iframe', false);
+
+        $this->assertSame(3, substr_count($response->getContent(), 'class="demo-register-button"'));
     }
 }
