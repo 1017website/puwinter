@@ -44,6 +44,7 @@ class RegistrationCodeAndTryoutSettingsTest extends TestCase
         $response = $this->post(route('register'), [
             'name' => 'Siswa Kode',
             'email' => 'siswa.kode@example.com',
+            'phone' => '081234567890',
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'grade_id' => $grade->id,
@@ -71,6 +72,7 @@ class RegistrationCodeAndTryoutSettingsTest extends TestCase
         $response = $this->post(route('register'), [
             'name' => 'Siswa Ditolak',
             'email' => 'ditolak@example.com',
+            'phone' => '081234567891',
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'grade_id' => $grade->id,

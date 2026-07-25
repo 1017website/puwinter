@@ -33,6 +33,9 @@ class DemoVideoGalleryTest extends TestCase
             ->assertSeeInOrder(['Grammar Kelas 7', 'TKA Kelas 12', 'Reading TOEFL'])
             ->assertSee('Tonton Gratis')
             ->assertSee('id="demoPlayerModal"', false)
+            ->assertSee('data-video-provider="youtube"', false)
+            ->assertSee('video-mask-top', false)
+            ->assertSee('Tombol berbagi dan buka YouTube dilindungi')
             ->assertDontSee('class="demo-tabs"', false)
             ->assertDontSee('class="demo-panel"', false)
             ->assertDontSee('<iframe', false);

@@ -420,6 +420,20 @@
                 @enderror
             </div>
 
+            <div class="form-group">
+                <label>Nomor HP</label>
+                <div class="input-wrap">
+                    <i class="fas fa-phone input-icon"></i>
+                    <input type="tel" name="phone" value="{{ old('phone') }}"
+                           placeholder="Contoh: 081234567890"
+                           class="{{ $errors->has('phone') ? 'is-invalid' : '' }}"
+                           required autocomplete="tel" inputmode="tel" maxlength="20">
+                </div>
+                @error('phone')
+                    <div class="invalid-feedback"><i class="fas fa-circle-exclamation"></i> {{ $message }}</div>
+                @enderror
+            </div>
+
             <div class="form-row">
                 <div class="form-group">
                     <label>Password</label>

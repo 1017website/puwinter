@@ -1060,7 +1060,7 @@
 .demo-player-head { display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px;color:#fff; }
 .demo-player-head h3 { font:700 clamp(15px,2vw,20px) Sora,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 .demo-player-close { flex:0 0 auto;width:40px;height:40px;border:1px solid rgba(255,255,255,.18);border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font-size:18px;cursor:pointer; }
-.demo-player-shell { aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 30px 90px rgba(0,0,0,.5); }
+.demo-player-shell { position:relative;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 30px 90px rgba(0,0,0,.5); }
 .demo-player-shell iframe,.demo-player-shell video { width:100%;height:100%;display:block;border:0;object-fit:contain;background:#000; }
 .hero-program-copy { max-width: 590px; margin-bottom: 34px; color: #CBD5E1; }
 .hero .hero-program-copy p { margin-bottom: 8px; font-size: 17px; line-height: 1.65; color: #CBD5E1; }
@@ -1483,6 +1483,7 @@
             <article class="demo-video-card reveal">
                 <div class="demo-thumbnail" role="button" tabindex="0"
                      data-video-type="{{ $player['type'] }}"
+                     data-video-provider="{{ $player['provider'] }}"
                      data-video-url="{{ $player['url'] }}"
                      data-video-title="{{ $demoVideo->title }}"
                      onclick="openDemoPlayer(this)"
@@ -1501,6 +1502,7 @@
                     @if($demoVideo->description)<p>{{ $demoVideo->description }}</p>@endif
                     <button type="button" class="demo-free-button"
                             data-video-type="{{ $player['type'] }}"
+                            data-video-provider="{{ $player['provider'] }}"
                             data-video-url="{{ $player['url'] }}"
                             data-video-title="{{ $demoVideo->title }}"
                             onclick="openDemoPlayer(this)">
@@ -1646,6 +1648,7 @@
         var title=document.getElementById('demoPlayerTitle');
         if(!modal||!shell)return;
         var type=trigger.dataset.videoType;
+        var provider=trigger.dataset.videoProvider;
         var url=trigger.dataset.videoUrl;
         title.textContent=trigger.dataset.videoTitle||'Video Demo Pembelajaran';
         shell.innerHTML='';
@@ -1656,6 +1659,20 @@
             frame.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
             frame.allowFullscreen=true;
             shell.appendChild(frame);
+            if(provider==='youtube'){
+                [
+                    ['video-mask-top','Area judul dan menu YouTube dilindungi'],
+                    ['video-mask-corner','Tombol berbagi dan buka YouTube dilindungi'],
+                    ['video-mask-left-corner','Tombol salin tautan dilindungi']
+                ].forEach(function(item){
+                    var mask=document.createElement('div');
+                    mask.className=item[0];
+                    mask.title=item[1];
+                    mask.setAttribute('aria-hidden','true');
+                    mask.oncontextmenu=function(){return false};
+                    shell.appendChild(mask);
+                });
+            }
         }else{
             var video=document.createElement('video');
             video.src=url;
