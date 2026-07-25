@@ -43,7 +43,7 @@
 {{-- Daftar riwayat --}}
 <div class="card">
     @if($attempts->count() > 0)
-    <div style="overflow-x:auto;">
+    <div class="student-table-scroll" style="overflow-x:auto;">
         <table style="width:100%; border-collapse:collapse; font-size:13.5px;">
             <thead>
                 <tr style="text-align:left; color:var(--text-muted); border-bottom:1.5px solid var(--border);">

@@ -7,7 +7,7 @@
 {{-- ======================================================================= --}}
 {{-- HERO: Progress Banner                                                     --}}
 {{-- ======================================================================= --}}
-<div style="background:linear-gradient(135deg, #1E293B 0%, #1D4ED8 100%); border-radius:16px; padding:28px 32px; display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; overflow:hidden; position:relative;">
+<div class="student-dashboard-hero" style="background:linear-gradient(135deg, #1E293B 0%, #1D4ED8 100%); border-radius:16px; padding:28px 32px; display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; overflow:hidden; position:relative;">
     <div style="position:absolute; top:-40px; right:200px; width:200px; height:200px; background:rgba(255,255,255,0.05); border-radius:50%;"></div>
     <div style="position:absolute; bottom:-60px; right:100px; width:150px; height:150px; background:rgba(255,255,255,0.04); border-radius:50%;"></div>
 
@@ -23,7 +23,7 @@
             @else 🚀 Yuk mulai belajar lebih giat!
             @endif
         </div>
-        <div style="width:300px; height:8px; background:rgba(255,255,255,0.2); border-radius:99px; overflow:hidden;">
+        <div class="student-dashboard-progress" style="width:300px; height:8px; background:rgba(255,255,255,0.2); border-radius:99px; overflow:hidden;">
             <div style="height:100%; width:{{ round($totalProgress) }}%; background:#fff; border-radius:99px;"></div>
         </div>
     </div>
@@ -33,7 +33,7 @@
     </div>
 </div>
 
-<div style="display:grid; grid-template-columns:1fr 320px; gap:24px;">
+<div class="student-split" style="display:grid; grid-template-columns:1fr 320px; gap:24px;">
 
     {{-- ================================================================== --}}
     {{-- LEFT COLUMN                                                          --}}
@@ -44,7 +44,7 @@
         @if($lastProgress)
         <div class="card" style="margin-bottom:20px;">
             <div style="font-size:15px; font-weight:700; margin-bottom:14px;">Lanjutkan Belajar</div>
-            <div style="display:flex; gap:16px; align-items:center;">
+            <div class="student-inline-card" style="display:flex; gap:16px; align-items:center;">
                 <div style="width:120px; height:72px; background:#1E293B; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                     <i class="fas fa-play-circle" style="font-size:28px; color:var(--primary);"></i>
                 </div>
@@ -70,14 +70,14 @@
         @endif
 
         {{-- Kelas Saya --}}
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div class="student-section-heading" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
             <div style="font-size:15px; font-weight:700;">Kelas Saya</div>
             <a href="{{ route('student.course.index') }}" style="font-size:12px; color:var(--primary); font-weight:600; text-decoration:none;">
                 Lihat Semua <i class="fas fa-arrow-right" style="font-size:10px;"></i>
             </a>
         </div>
 
-        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; margin-bottom:24px;">
+        <div class="student-card-grid student-grid-2" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; margin-bottom:24px;">
             @forelse($enrollments->take(4) as $enrollment)
                 <x-course-card :enrollment="$enrollment" />
             @empty
@@ -89,7 +89,7 @@
         </div>
 
         {{-- Rekomendasi --}}
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div class="student-section-heading" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
             <div style="font-size:15px; font-weight:700;">Rekomendasi Untuk Kamu</div>
             <a href="{{ route('student.course.index') }}" style="font-size:12px; color:var(--primary); font-weight:600; text-decoration:none;">
                 Lihat Semua <i class="fas fa-arrow-right" style="font-size:10px;"></i>
@@ -102,7 +102,7 @@
                 <p style="font-size:13px; font-weight:600;">Kamu sudah mengikuti semua kelas yang tersedia!</p>
             </div>
         @else
-            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
+            <div class="student-card-grid student-grid-2" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
                 @foreach($recommendedCourses as $course)
                 @php
                     $colors = ['#2563EB','#7C3AED','#059669','#D97706'];

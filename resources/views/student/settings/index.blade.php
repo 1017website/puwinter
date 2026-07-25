@@ -82,7 +82,7 @@
 .settings-btn-primary { background: var(--primary); color: #fff; }
 .settings-btn-outline { background: #fff; color: #475569; border: 1.5px solid #E2E8F0; }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .settings-layout { grid-template-columns: 1fr !important; }
     .settings-row { grid-template-columns: 1fr !important; }
     .settings-field.full { grid-column: span 1 !important; }

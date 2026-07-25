@@ -475,6 +475,140 @@
         }
 
         .modal-overlay.show .modal-box { transform: scale(1); }
+
+        .matrix-answer-scroll {
+            max-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 32px;
+        }
+
+        .matrix-answer-scroll .matrix-answer-table {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 900px) {
+            body {
+                overflow-x: hidden;
+            }
+
+            .exam-topbar {
+                height: auto;
+                min-height: 60px;
+                padding: 10px 14px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .exam-topbar > * {
+                min-width: 0;
+            }
+
+            .exam-title {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 60vw;
+            }
+
+            .timer-box {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .exam-body {
+                grid-template-columns: minmax(0, 1fr);
+                min-height: 0;
+            }
+
+            .question-area {
+                min-width: 0;
+                padding: 20px 16px;
+            }
+
+            .question-header {
+                align-items: flex-start;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+
+            .question-header > div:last-child {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .passage-card {
+                padding: 16px;
+            }
+
+            .matrix-answer-table {
+                min-width: 560px;
+            }
+
+            .question-nav-btns {
+                flex-wrap: wrap;
+            }
+
+            .question-nav-btns > div {
+                display: flex;
+                flex: 1;
+            }
+
+            .question-nav-btns .btn-nav {
+                flex: 1;
+                justify-content: center;
+                padding-inline: 12px;
+            }
+
+            .exam-sidebar {
+                position: static;
+                height: auto;
+                border-left: 0;
+                border-top: 1px solid #E2E8F0;
+                padding: 20px 16px;
+            }
+
+            .number-grid {
+                grid-template-columns: repeat(8, minmax(0, 1fr));
+            }
+
+            .modal-box {
+                padding: 24px 18px;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .exam-topbar > div:first-child {
+                max-width: calc(100% - 112px);
+            }
+
+            .exam-title {
+                max-width: 100%;
+            }
+
+            .exam-meta,
+            .exam-topbar > div:nth-child(3) > div {
+                font-size: 10px !important;
+            }
+
+            .timer-display {
+                font-size: 19px;
+            }
+
+            .question-text {
+                font-size: 15px;
+            }
+
+            .option-item {
+                gap: 10px;
+                padding: 12px;
+            }
+
+            .number-grid {
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+            }
+        }
     </style>
 </head>
 <body>
@@ -588,33 +722,35 @@
             {{-- Options --}}
             @if($question->isMatrix())
                 @php $columns = $question->matrixColumns(); @endphp
-                <table class="matrix-answer-table">
-                    <thead>
-                        <tr>
-                            <th style="width:56%;">Pernyataan / Teknik</th>
-                            @foreach($columns as $columnLabel)
-                                <th>{{ $columnLabel }}</th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($question->options() as $rowKey => $rowText)
+                <div class="matrix-answer-scroll">
+                    <table class="matrix-answer-table">
+                        <thead>
                             <tr>
-                                <td>{{ $rowText }}</td>
-                                @foreach($columns as $columnKey => $columnLabel)
-                                    <td style="text-align:center;">
-                                        <label class="matrix-choice"
-                                               id="opt-{{ $question->id }}-{{ $rowKey }}-{{ $columnKey }}"
-                                               data-matrix-option="{{ $question->id }}-{{ $rowKey }}"
-                                               onclick="event.preventDefault(); selectMatrixAnswer({{ $question->id }}, '{{ $rowKey }}', '{{ $columnKey }}', this)">
-                                            <input type="radio" name="answer_{{ $question->id }}[{{ $rowKey }}]" value="{{ $columnKey }}" style="display:none;">
-                                        </label>
-                                    </td>
+                                <th style="width:56%;">Pernyataan / Teknik</th>
+                                @foreach($columns as $columnLabel)
+                                    <th>{{ $columnLabel }}</th>
                                 @endforeach
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach($question->options() as $rowKey => $rowText)
+                                <tr>
+                                    <td>{{ $rowText }}</td>
+                                    @foreach($columns as $columnKey => $columnLabel)
+                                        <td style="text-align:center;">
+                                            <label class="matrix-choice"
+                                                   id="opt-{{ $question->id }}-{{ $rowKey }}-{{ $columnKey }}"
+                                                   data-matrix-option="{{ $question->id }}-{{ $rowKey }}"
+                                                   onclick="event.preventDefault(); selectMatrixAnswer({{ $question->id }}, '{{ $rowKey }}', '{{ $columnKey }}', this)">
+                                                <input type="radio" name="answer_{{ $question->id }}[{{ $rowKey }}]" value="{{ $columnKey }}" style="display:none;">
+                                            </label>
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @else
                 <div class="options-list">
                     @foreach($question->options() as $key => $text)

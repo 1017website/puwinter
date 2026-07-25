@@ -12,7 +12,7 @@
     </div>
 
     {{-- Period filter --}}
-    <div style="display:flex; gap:4px; background:#fff; border:1px solid var(--border); border-radius:10px; padding:4px;">
+    <div class="student-filter-scroll" style="display:flex; gap:4px; background:#fff; border:1px solid var(--border); border-radius:10px; padding:4px;">
         @foreach(['7'=>'7 Hari','30'=>'30 Hari','90'=>'90 Hari'] as $val => $label)
             <a href="{{ route('student.history.index', ['period' => $val]) }}"
                style="padding:7px 14px; border-radius:7px; font-size:13px; font-weight:600; text-decoration:none;
@@ -80,7 +80,7 @@
     </div>
 @endif
 
-<div style="display:grid; grid-template-columns:1fr 260px; gap:20px; align-items:flex-start;">
+<div class="student-split" style="--student-aside:260px; display:grid; grid-template-columns:1fr 260px; gap:20px; align-items:flex-start;">
 
     {{-- Daftar Aktivitas --}}
     <div>

@@ -19,7 +19,7 @@
 </div>
 
 {{-- Filter cari --}}
-<form method="GET" style="display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap; align-items:center;">
+<form method="GET" class="student-filter-form" style="display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap; align-items:center;">
     <input type="text" name="search" value="{{ $search }}" placeholder="Cari extra class..."
            style="padding:8px 14px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; outline:none; width:240px;"
            onkeydown="if(event.key==='Enter')this.form.submit()">
@@ -34,7 +34,7 @@
         <p style="font-size:14px; font-weight:600;">Belum ada extra class.</p>
     </div>
 @else
-    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+    <div class="student-card-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap:16px;">
         @foreach($courses as $course)
             <div class="card" style="padding:0; overflow:hidden; display:flex; flex-direction:column;">
                 <div style="height:120px; background:linear-gradient(135deg,#059669,#10B981); position:relative; display:flex; align-items:center; justify-content:center;">

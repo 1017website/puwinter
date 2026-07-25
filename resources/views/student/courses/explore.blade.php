@@ -17,7 +17,7 @@
 </div>
 
 {{-- Filter --}}
-<form method="GET" style="display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap; align-items:center;">
+<form method="GET" class="student-filter-form" style="display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap; align-items:center;">
     <input type="text" name="search" value="{{ $search }}" placeholder="Cari kelas..."
            style="padding:8px 14px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; outline:none; width:220px;"
            onkeydown="if(event.key==='Enter')this.form.submit()">
@@ -30,7 +30,7 @@
         @endforeach
     </select>
 
-    <div style="display:flex; gap:4px; background:#fff; border:1px solid var(--border); border-radius:10px; padding:4px;">
+    <div class="student-filter-scroll" style="display:flex; gap:4px; background:#fff; border:1px solid var(--border); border-radius:10px; padding:4px;">
         @foreach([''=> 'Semua', 'gratis'=>'Gratis', 'premium'=>'Premium'] as $val=>$label)
         <button type="submit" name="type" value="{{ $val }}"
             style="padding:7px 14px; border-radius:7px; font-size:13px; font-weight:600; border:none; cursor:pointer; font-family:inherit;
@@ -58,7 +58,7 @@
         @endif
     </div>
 @else
-    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+    <div class="student-card-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap:16px;">
         @foreach($courses as $course)
         @php
             $enrolled = $enrolledIds->contains($course->id);

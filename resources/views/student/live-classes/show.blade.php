@@ -12,7 +12,7 @@
     <span style="color:var(--text-main); font-weight:600;">{{ $liveClass->title }}</span>
 </div>
 
-<div style="display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:flex-start;">
+<div class="student-split" style="--student-aside:300px; display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:flex-start;">
 
     {{-- ===== KONTEN UTAMA ===== --}}
     <div>

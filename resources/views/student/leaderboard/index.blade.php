@@ -13,9 +13,9 @@
 </div>
 
 {{-- Filter --}}
-<form method="GET" style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+<form method="GET" class="student-filter-form" style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
     {{-- Scope --}}
-    <div style="display:flex; gap:4px; background:#fff; border:1px solid var(--border); border-radius:10px; padding:4px;">
+    <div class="student-filter-scroll" style="display:flex; gap:4px; background:#fff; border:1px solid var(--border); border-radius:10px; padding:4px;">
         @foreach(['global'=>'Global','sekolah'=>'Sekolah','kota'=>'Kota','provinsi'=>'Provinsi'] as $val => $label)
             <button type="submit" name="filter" value="{{ $val }}"
                     style="padding:7px 14px; border-radius:7px; font-size:13px; font-weight:600; border:none; cursor:pointer; font-family:inherit;
@@ -79,7 +79,7 @@
 @endif
 
 {{-- Leaderboard Table --}}
-<div class="card" style="padding:0; overflow:hidden;">
+<div class="card student-table-card" style="padding:0; overflow:hidden;">
     @if($leaderboard->isEmpty())
         <div style="text-align:center; padding:60px; color:var(--text-muted);">
             <i class="fas fa-chart-bar" style="font-size:40px; opacity:0.2; display:block; margin-bottom:12px;"></i>

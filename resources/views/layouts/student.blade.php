@@ -697,7 +697,7 @@
         /* ------------------------------------------------------------------ */
         /* MOBILE — Full support                                               */
         /* ------------------------------------------------------------------ */
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             .sidebar {
                 transform: translateX(-100%);
                 transition: transform 0.25s ease;
@@ -761,6 +761,283 @@
     </style>
 
     @stack('styles')
+
+    <style>
+        /* Responsive foundation shared by every student page. */
+        html,
+        body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .main-wrapper {
+            width: calc(100% - var(--sidebar-w));
+            min-width: 0;
+            max-width: calc(100% - var(--sidebar-w));
+        }
+
+        .page-content {
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        .page-content > *,
+        .page-content img,
+        .page-content video,
+        .page-content iframe,
+        .page-content input,
+        .page-content select,
+        .page-content textarea {
+            max-width: 100%;
+        }
+
+        .student-split {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) minmax(240px, var(--student-aside, 320px)) !important;
+            align-items: start !important;
+        }
+
+        .student-split > * {
+            min-width: 0;
+        }
+
+        .student-card-grid {
+            display: grid !important;
+            min-width: 0;
+        }
+
+        .student-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+        .student-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+        .student-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+
+        .student-section-heading,
+        .student-page-heading,
+        .student-inline-card,
+        .student-action-row {
+            min-width: 0;
+        }
+
+        .student-filter-scroll {
+            max-width: 100%;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            scrollbar-width: thin;
+        }
+
+        .student-filter-scroll > * {
+            flex-shrink: 0;
+        }
+
+        .student-table-scroll,
+        .student-table-card {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .student-table-scroll table,
+        .student-table-card table {
+            min-width: 620px;
+        }
+
+        .course-overview {
+            min-width: 0;
+        }
+
+        .student-program-row > *,
+        .student-program-actions,
+        .student-result-summary > * {
+            min-width: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .main-wrapper {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .student-split {
+                grid-template-columns: minmax(0, 1fr) !important;
+            }
+
+            .student-grid-4,
+            .student-grid-3 {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+
+            .flash-area {
+                padding-inline: 20px !important;
+            }
+
+            .course-overview {
+                flex-wrap: wrap;
+            }
+
+            .student-result-summary {
+                grid-template-columns: minmax(0, 1fr) !important;
+                gap: 20px !important;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .page-content {
+                padding: 14px !important;
+            }
+
+            .flash-area {
+                padding-inline: 14px !important;
+            }
+
+            .topbar {
+                min-height: 58px;
+                height: auto;
+                padding: 9px 12px;
+            }
+
+            .topbar-greeting {
+                min-width: 0;
+            }
+
+            .topbar-greeting h1 {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .topbar-actions {
+                gap: 5px;
+            }
+
+            .topbar-actions > .topbar-icon-btn:nth-child(2) {
+                display: none;
+            }
+
+            .topbar-icon-btn,
+            .hamburger-btn {
+                width: 36px;
+                height: 36px;
+            }
+
+            .topbar-user {
+                padding-right: 4px;
+            }
+
+            .topbar-user > .fa-chevron-down {
+                display: none;
+            }
+
+            .card {
+                padding: 16px;
+                border-radius: 11px;
+            }
+
+            .student-grid-4,
+            .student-grid-3,
+            .student-grid-2 {
+                grid-template-columns: minmax(0, 1fr) !important;
+            }
+
+            .student-page-heading,
+            .student-section-heading {
+                align-items: flex-start !important;
+                flex-wrap: wrap !important;
+                gap: 10px !important;
+            }
+
+            .student-page-heading > *,
+            .student-section-heading > * {
+                min-width: 0;
+            }
+
+            .student-inline-card {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+
+            .student-inline-card > [style*="width:120px"] {
+                width: 100% !important;
+                height: 120px !important;
+            }
+
+            .student-inline-card > .btn,
+            .student-action-row > .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .student-program-row {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+
+            .student-program-actions {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+
+            .student-program-actions .btn {
+                margin-left: auto;
+            }
+
+            .student-dashboard-hero {
+                padding: 22px 20px !important;
+                min-height: 210px;
+            }
+
+            .student-dashboard-hero img {
+                display: none;
+            }
+
+            .student-dashboard-progress {
+                width: 100% !important;
+            }
+
+            .student-filter-scroll {
+                width: 100% !important;
+            }
+
+            .student-filter-form {
+                align-items: stretch !important;
+            }
+
+            .student-filter-form > select,
+            .student-filter-form > input,
+            .student-filter-form > .student-filter-scroll {
+                width: 100% !important;
+            }
+
+            .course-overview {
+                flex-direction: column;
+                align-items: stretch !important;
+            }
+
+            .course-overview > [style*="width:120px"] {
+                width: 100% !important;
+                height: 160px !important;
+            }
+
+            .course-overview > [style*="min-width:100px"] {
+                width: 100%;
+                text-align: left !important;
+            }
+
+            .course-overview .progress-bar {
+                width: 100% !important;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .alert {
+                align-items: flex-start;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -945,7 +1222,7 @@
         </header>
 
         {{-- FLASH MESSAGES --}}
-        <div style="padding: 0 28px; margin-top: 16px;">
+        <div class="flash-area" style="padding: 0 28px; margin-top: 16px;">
             @if(session('success'))
                 <div class="alert alert-success">
                     <i class="fas fa-check-circle"></i> {{ session('success') }}
@@ -976,9 +1253,6 @@
     </div>
 
     @stack('scripts')
-</body>
-
-</html>
 <script>
 function openSidebar() {
     document.getElementById('sidebar').classList.add('open');
@@ -992,7 +1266,10 @@ function closeSidebar() {
 }
 document.querySelectorAll('.sidebar .nav-item').forEach(el => {
     el.addEventListener('click', () => {
-        if (window.innerWidth <= 768) closeSidebar();
+        if (window.innerWidth <= 1024) closeSidebar();
     });
 });
 </script>
+</body>
+
+</html>

@@ -5,7 +5,7 @@
 
 @section('content')
 
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+<div class="student-page-heading" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
     <div>
         <h2 style="font-size:22px; font-weight:800;">Tryout</h2>
         <p style="font-size:13px; color:var(--text-muted); margin-top:2px;">Simulasi ujian UTBK untuk mengukur kemampuanmu.</p>
@@ -22,7 +22,7 @@
 
 {{-- Filter --}}
 <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
-    <div style="display:flex; gap:4px; background:#fff; border:1px solid var(--border); border-radius:10px; padding:4px;">
+    <div class="student-filter-scroll" style="display:flex; gap:4px; background:#fff; border:1px solid var(--border); border-radius:10px; padding:4px;">
         @foreach(['Semua' => '', 'Gratis' => 'gratis', 'Premium' => 'premium'] as $label => $val)
         <a href="{{ route('student.tryout.index', ['filter' => $val]) }}"
            style="padding:7px 16px; border-radius:7px; font-size:13px; font-weight:600; text-decoration:none;
@@ -40,7 +40,7 @@
         <p style="font-size:15px; font-weight:600;">Belum ada tryout tersedia.</p>
     </div>
 @else
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
+    <div class="student-card-grid student-grid-3" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
         @foreach($tryouts as $tryout)
         <div class="card" style="padding:0; overflow:hidden; transition:transform 0.2s, box-shadow 0.2s;"
              onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.08)'"

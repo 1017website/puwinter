@@ -36,7 +36,7 @@
 <div class="card" style="border-left:4px solid #EF4444; margin-bottom:16px; color:#991B1B;">{{ session('error') }}</div>
 @endif
 
-<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:18px;">
+<div class="student-card-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(min(300px, 100%),1fr)); gap:18px;">
     @forelse($programs as $plan)
     @php
         $enr    = $enrollments[$plan->id] ?? null;

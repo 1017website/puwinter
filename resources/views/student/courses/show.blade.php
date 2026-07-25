@@ -15,7 +15,7 @@
 
 {{-- Header Kelas --}}
 <div class="card" style="margin-bottom:20px;">
-    <div style="display:flex; gap:20px; align-items:flex-start;">
+    <div class="course-overview" style="display:flex; gap:20px; align-items:flex-start;">
         {{-- Thumbnail / placeholder --}}
         <div style="width:120px; height:80px; border-radius:10px; background:linear-gradient(135deg,#2563EB,#7C3AED); flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden;">
             @if($course->thumbnail)

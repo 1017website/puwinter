@@ -12,8 +12,8 @@
 </div>
 
 {{-- Filter --}}
-<form method="GET" style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
-    <div style="display:flex; gap:4px; background:#fff; border:1px solid var(--border); border-radius:10px; padding:4px;">
+<form method="GET" class="student-filter-form" style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+    <div class="student-filter-scroll" style="display:flex; gap:4px; background:#fff; border:1px solid var(--border); border-radius:10px; padding:4px;">
         @foreach(['semua'=>'Semua','disimpan'=>'Disimpan'] as $val=>$label)
         <button type="submit" name="filter" value="{{ $val }}"
             style="padding:7px 14px; border-radius:7px; font-size:13px; font-weight:600; border:none; cursor:pointer; font-family:inherit;
@@ -42,7 +42,7 @@
         @endif
     </div>
 @else
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
+    <div class="student-card-grid student-grid-3" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
         @foreach($materials as $material)
         @php
             $saved   = $savedIds->contains($material->id);

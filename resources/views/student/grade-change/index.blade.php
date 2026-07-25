@@ -66,7 +66,7 @@
     <div style="background:#fff; border:1px solid #E2E8F0; border-radius:14px; padding:24px;">
         <div style="font-size:14px; font-weight:700; color:#1E293B; margin-bottom:16px;">Riwayat Permintaan</div>
         @forelse($history as $req)
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #F1F5F9;">
+            <div class="student-program-row" style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #F1F5F9; gap:10px;">
                 <div>
                     <div style="font-size:13.5px; font-weight:600; color:#1E293B;">
                         {{ $req->fromGrade->name ?? '—' }} <i class="fas fa-arrow-right" style="font-size:10px; color:#94A3B8; margin:0 4px;"></i> {{ $req->toGrade->name ?? '—' }}

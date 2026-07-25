@@ -57,7 +57,7 @@
     <p style="font-size:13px; color:var(--text-muted); margin-top:2px;">{{ $tryout->title }}</p>
 </div>
 
-<div style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;">
+<div class="student-split" style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;">
 
     {{-- LEFT --}}
     <div>
@@ -67,7 +67,7 @@
             <div style="position:absolute; top:-40px; right:-40px; width:200px; height:200px; background:rgba(255,255,255,0.05); border-radius:50%;"></div>
             <div style="position:absolute; bottom:-60px; right:60px; width:140px; height:140px; background:rgba(255,255,255,0.03); border-radius:50%;"></div>
 
-            <div style="display:grid; grid-template-columns:auto 1fr; gap:32px; align-items:center; position:relative;">
+            <div class="student-result-summary" style="display:grid; grid-template-columns:auto 1fr; gap:32px; align-items:center; position:relative;">
                 {{-- Big score --}}
                 <div style="text-align:center;">
                     <div style="font-size:64px; font-weight:800; color:#fff; line-height:1;">
@@ -277,7 +277,8 @@
                                 $matrixKeys = $question->matrixCorrectAnswers();
                                 $pickedMap = is_array($userAnswer) ? $userAnswer : [];
                             @endphp
-                            <table style="width:100%; border-collapse:collapse; margin-bottom:10px; font-size:13px;">
+                            <div class="student-table-scroll" style="margin-bottom:10px;">
+                            <table style="width:100%; border-collapse:collapse; font-size:13px;">
                                 <thead>
                                     <tr>
                                         <th style="background:#DBEAFE; color:#1E3A8A; padding:10px; border:1px solid #93C5FD; text-align:left;">Pernyataan / Teknik</th>
@@ -312,6 +313,7 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                            </div>
                         @else
                             @foreach($question->options() as $key => $text)
                             @php

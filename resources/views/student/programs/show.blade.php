@@ -83,12 +83,12 @@
 <div class="card" style="margin-bottom:18px;">
     <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;"><i class="fas fa-book-open"></i> Kelas & Materi</h3>
     @forelse($courses as $course)
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); gap:10px;">
+    <div class="student-program-row" style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); gap:10px;">
         <div>
             <div style="font-weight:600;">{{ $course->title }}</div>
             <div style="font-size:12px; color:var(--text-muted);">{{ $course->modules->count() }} modul • {{ $course->materials()->count() }} materi</div>
         </div>
-        <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+        <div class="student-program-actions" style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
             {!! $tierBadge($course->access_tier) !!}
             <a href="{{ route('student.course.show', $course->slug) }}" class="btn btn-outline btn-sm">Buka</a>
         </div>
@@ -103,12 +103,12 @@
 <div class="card" style="margin-bottom:18px;">
     <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;"><i class="fas fa-bullseye"></i> Tryout</h3>
     @forelse($tryouts as $t)
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); gap:10px;">
+    <div class="student-program-row" style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); gap:10px;">
         <div>
             <div style="font-weight:600;">{{ $t->title }}</div>
             <div style="font-size:12px; color:var(--text-muted);">{{ $t->total_questions }} soal • {{ $t->duration_minutes }} menit</div>
         </div>
-        <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+        <div class="student-program-actions" style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
             {!! $tierBadge($t->access_tier) !!}
             <a href="{{ route('student.tryout.start', $t->id) }}" class="btn btn-outline btn-sm">Mulai</a>
         </div>
@@ -123,12 +123,12 @@
 <div class="card">
     <h3 style="font-size:15px; font-weight:700; margin-bottom:14px;"><i class="fas fa-video"></i> Kelas Online</h3>
     @forelse($liveClasses as $lc)
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); gap:10px;">
+    <div class="student-program-row" style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); gap:10px;">
         <div>
             <div style="font-weight:600;">{{ $lc->title }}</div>
             <div style="font-size:12px; color:var(--text-muted);">{{ $lc->scheduled_at?->translatedFormat('d M Y • H:i') }} WIB</div>
         </div>
-        <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+        <div class="student-program-actions" style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
             {!! $tierBadge($lc->access_tier) !!}
             <a href="{{ route('student.live.show', $lc->id) }}" class="btn btn-outline btn-sm">Detail</a>
         </div>

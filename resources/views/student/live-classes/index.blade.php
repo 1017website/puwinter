@@ -5,7 +5,7 @@
 
 @section('content')
 
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+<div class="student-page-heading" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
     <div>
         <h2 style="font-size:22px; font-weight:800;">Kelas Online</h2>
         <p style="font-size:13px; color:var(--text-muted); margin-top:2px;">Ikuti kelas langsung bersama mentor terbaik.</p>
@@ -13,7 +13,7 @@
 </div>
 
 {{-- Tab Reguler / Private --}}
-<div style="display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:0;">
+<div class="student-filter-scroll" style="display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:0;">
     <a href="{{ route('student.live.index', ['tab' => 'regular']) }}"
        style="padding:10px 16px; font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:2px solid {{ $tab === 'regular' ? 'var(--primary)' : 'transparent' }}; color:{{ $tab === 'regular' ? 'var(--primary)' : 'var(--text-muted)' }};">
         <i class="fas fa-chalkboard-user"></i> Reguler
@@ -42,7 +42,7 @@
             <h3 style="font-size:15px; font-weight:700; color:#EF4444;">Sedang Live Sekarang</h3>
         </div>
 
-        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:16px;">
+        <div class="student-card-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap:16px;">
             @foreach($live as $class)
                 <div style="background:linear-gradient(135deg,#7F1D1D,#EF4444); border-radius:14px; padding:20px; color:#fff; position:relative; overflow:hidden;">
                     <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:rgba(255,255,255,0.07); border-radius:50%;"></div>
@@ -95,7 +95,7 @@
     @else
         <div style="display:flex; flex-direction:column; gap:10px;">
             @foreach($upcoming as $class)
-                <div class="card" style="display:flex; align-items:center; gap:16px; padding:16px 20px;">
+                <div class="card student-inline-card" style="display:flex; align-items:center; gap:16px; padding:16px 20px;">
 
                     {{-- Tanggal block --}}
                     <div style="text-align:center; min-width:52px; background:var(--primary-light); border-radius:10px; padding:8px;">
@@ -156,7 +156,7 @@
             <p style="font-size:14px; font-weight:600;">Belum ada rekaman tersedia.</p>
         </div>
     @else
-        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
+        <div class="student-card-grid student-grid-3" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
             @foreach($recordings as $class)
                 @php
                     $isLocked   = $class->is_premium && !auth()->user()->isPremium();
