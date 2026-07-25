@@ -52,8 +52,11 @@
                 </div>
 
                 <div class="form-group">
-                    <label>No. HP</label>
-                    <input type="text" name="phone" value="{{ old('phone') }}" class="form-control" placeholder="08xx...">
+                    <label>No. HP <span style="color:red;">*</span></label>
+                    <input type="tel" name="phone" value="{{ old('phone') }}"
+                           class="form-control {{ $errors->has('phone') ? 'is-invalid' : '' }}"
+                           placeholder="08xx..." autocomplete="tel" inputmode="tel" maxlength="20" required>
+                    @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="form-group">

@@ -115,10 +115,12 @@ class FrontendConfigurationAndVisitorTest extends TestCase
             ->assertDontSee('Video Nonaktif')
             ->assertSee('G-TEST123456', false)
             ->assertSee("gtag('config','AW-18335033383')", false)
-            ->assertSee('Program bimbel Puwinter: Pendampingan bimbel:')
-            ->assertSee('TKA Bahasa Inggris')
-            ->assertSee('Grammar Dasar &amp; Reading Text TOEFL', false)
-            ->assertDontSee('Program Bimbel Puwinter', false);
+            ->assertSee('Program Bimbel <span class="highlight">Puwinter</span>', false)
+            ->assertSee('SIAP Bahasa Inggris TKA')
+            ->assertSee('SIAP Literasi Bahasa Inggris UTBK SNBT')
+            ->assertSee('SIAP Grammar Dasar &amp; Reading Text', false)
+            ->assertSee('SIAP Grammar &amp; Reading TOEFL', false)
+            ->assertDontSee('Kuasai Grammar, Pahami Teks', false);
     }
 
     public function test_guest_frontend_visit_is_recorded_and_visible_to_admin(): void

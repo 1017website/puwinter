@@ -26,6 +26,12 @@ class DemoVideoGalleryTest extends TestCase
 
         $this->get(route('home'))
             ->assertOk()
+            ->assertSee('Program Bimbel <span class="highlight">Puwinter</span>', false)
+            ->assertSee('SIAP Bahasa Inggris TKA')
+            ->assertSee('SIAP Literasi Bahasa Inggris UTBK SNBT')
+            ->assertSee('SIAP Grammar Dasar &amp; Reading Text', false)
+            ->assertSee('SIAP Grammar &amp; Reading TOEFL', false)
+            ->assertDontSee('Kuasai Grammar, Pahami Teks', false)
             ->assertSee('Grammar Kelas 7')
             ->assertSee('TKA Kelas 12')
             ->assertSee('Reading TOEFL')

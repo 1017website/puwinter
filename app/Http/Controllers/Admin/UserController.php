@@ -114,12 +114,14 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'role' => 'required|in:superadmin,admin,mentor,student',
             'password' => 'required|string|min:8',
-            'phone' => 'nullable|string|max:20',
+            'phone' => 'required|string|max:20',
             'school' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
             'province' => 'nullable|string|max:255',
             'grade' => 'nullable|in:10,11,12',
             'is_active' => 'boolean',
+        ], [
+            'phone.required' => 'Nomor HP wajib diisi.',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);

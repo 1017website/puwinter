@@ -1414,14 +1414,13 @@
         <section class="hero">
             <div class="hero-left">
                 <div class="hero-badge"><span class="dot"></span>Platform Bimbingan Bahasa Inggris Online Terpercaya di Indonesia</div>
-                <h1>Kuasai Grammar, Pahami Teks, <br> <span class="highlight">Raih Prestasi</span></h1>
+                <h1>Program Bimbel <span class="highlight">Puwinter</span></h1>
                 <div class="hero-program-copy">
-                    <p>Program bimbel Puwinter: Pendampingan bimbel:</p>
                     <ol class="hero-program-list">
-                        <li>Bahasa Inggris TKA</li>
-                        <li>Literasi Bahasa Inggris UTBK SNBT</li>
-                        <li>Grammar Dasar &amp; Reading Text</li>
-                        <li>Grammar &amp; Reading TOEFL</li>
+                        <li>SIAP Bahasa Inggris TKA</li>
+                        <li>SIAP Literasi Bahasa Inggris UTBK SNBT</li>
+                        <li>SIAP Grammar Dasar &amp; Reading Text</li>
+                        <li>SIAP Grammar &amp; Reading TOEFL</li>
                     </ol>
                 </div>
                 <div class="hero-actions"><a href="{{ route('register') }}" class="btn-hero">Mulai Belajar Gratis <i class="fas fa-arrow-right"></i></a><a href="#fitur" class="btn-hero-ghost"><i class="fas fa-play-circle"></i> Lihat Fitur</a></div>
