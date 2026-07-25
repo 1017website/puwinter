@@ -65,7 +65,9 @@ class CourseController extends Controller
 
         $data = $request->except('thumbnail');
         $data['slug']       = Str::slug($request->title) . '-' . time();
-        $data['is_premium']  = $request->boolean('is_premium');
+        // access_tier adalah sumber kebenaran. Sinkronkan flag lama agar
+        // tampilan/fitur legacy tidak bertentangan dengan pilihan admin.
+        $data['is_premium']  = $request->input('access_tier') === 'paid';
         $data['grade_id']    = $request->filled('grade_id') ? (int) $request->grade_id : null;
         $data['course_type'] = $request->input('course_type', 'regular');
         // Kelas EXTRA lintas kelas & non-premium.
@@ -115,7 +117,9 @@ class CourseController extends Controller
         ]);
 
         $data = $request->except('thumbnail');
-        $data['is_premium']   = $request->boolean('is_premium');
+        // access_tier adalah sumber kebenaran. Sinkronkan flag lama agar
+        // tampilan/fitur legacy tidak bertentangan dengan pilihan admin.
+        $data['is_premium']   = $request->input('access_tier') === 'paid';
         $data['is_published'] = $request->boolean('is_published');
         $data['grade_id']     = $request->filled('grade_id') ? (int) $request->grade_id : null;
         $data['course_type']  = $request->input('course_type', 'regular');
@@ -191,7 +195,7 @@ class CourseController extends Controller
             'type'             => $request->type,
             'content_url'      => $request->content_url,
             'duration_minutes' => $request->duration_minutes,
-            'is_premium'       => $request->boolean('is_premium'),
+            'is_premium'       => $request->input('access_tier') === 'paid',
             'access_tier'      => $request->input('access_tier', 'both'),
             'order'            => $module->materials()->max('order') + 1,
         ]);

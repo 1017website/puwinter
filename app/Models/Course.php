@@ -91,11 +91,11 @@ class Course extends Model
     /**
      * Apakah kelas ini menuntut langganan premium?
      * - extra:   tidak pernah wajib premium.
-     * - regular: ikut flag is_premium.
+     * - regular: mengikuti access_tier; hanya tier paid yang berbayar.
      */
     public function requiresPremium(): bool
     {
-        return $this->isExtra() ? false : (bool) $this->is_premium;
+        return $this->isExtra() ? false : $this->access_tier === 'paid';
     }
 
     /**

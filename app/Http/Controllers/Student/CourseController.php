@@ -29,8 +29,13 @@ class CourseController extends Controller
             ->with(['subject', 'mentor'])
             ->withCount('enrollments')
             ->when($subjectId, fn($q) => $q->where('subject_id', $subjectId))
-            ->when($type === 'gratis',  fn($q) => $q->where('is_premium', false))
-            ->when($type === 'premium', fn($q) => $q->where('is_premium', true))
+            ->when($type === 'gratis', function ($q) {
+                $q->where(function ($access) {
+                    $access->whereNull('access_tier')
+                        ->orWhereIn('access_tier', ['free', 'both']);
+                });
+            })
+            ->when($type === 'premium', fn($q) => $q->where('access_tier', 'paid'))
             ->when($search, fn($q) => $q->where('title', 'like', "%{$search}%"))
             ->orderByDesc('enrollments_count');
 
@@ -153,11 +158,10 @@ class CourseController extends Controller
         $material = CourseMaterial::whereHas('module', fn($q) => $q->where('course_id', $course->id))
             ->findOrFail($materialId);
 
-        // Lock check: materi 'paid' untuk peserta yang belum berbayar di program ini.
-        $materialTier = $material->access_tier ?: ($course->access_tier ?? 'both');
-        $isLocked = ($materialTier === 'paid')
-            && !$user->hasPaidProgram($course->plan_id)
-            && !in_array($user->role, ['superadmin', 'admin', 'mentor']);
+        // access_tier adalah sumber kebenaran akses. is_locked tetap dihormati
+        // sebagai pengunci manual untuk siswa non-premium.
+        $isLocked = !$material->isAccessibleBy($user)
+            || ($material->is_locked && !$user->isPremium());
 
         // Enrollment
         $enrollment = UserCourseEnrollment::firstOrCreate(

@@ -114,7 +114,7 @@
                     <div style="position:absolute; top:-15px; right:-15px; width:70px; height:70px; background:rgba(255,255,255,0.1); border-radius:50%;"></div>
                     <div style="font-size:10px; font-weight:700; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:20px; display:inline-block; margin-bottom:8px;">
                         {{ $course->subject->name ?? 'Kelas' }}
-                        @if($course->is_premium) · <i class="fas fa-crown" style="font-size:9px;"></i> Premium @endif
+                        @if($course->access_tier === 'paid') · <i class="fas fa-crown" style="font-size:9px;"></i> Premium @endif
                     </div>
                     <div style="font-size:13px; font-weight:700; line-height:1.3; margin-bottom:8px;">{{ Str::limit($course->title, 40) }}</div>
                     <div style="font-size:11px; opacity:0.8;">

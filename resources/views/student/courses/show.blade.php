@@ -30,7 +30,7 @@
                 @if($course->subject)
                     <span class="badge badge-primary">{{ $course->subject->name }}</span>
                 @endif
-                @if($course->is_premium)
+                @if($course->access_tier === 'paid')
                     <span class="badge badge-premium"><i class="fas fa-crown" style="font-size:10px;"></i> Premium</span>
                 @else
                     <span class="badge badge-success">Gratis</span>
@@ -97,7 +97,9 @@
                 @forelse($moduleMaterials as $material)
                     @php
                         $isDone   = in_array($material->id, $completedMaterialIds);
-                        $isLocked = ($material->is_locked || $material->is_premium) && !auth()->user()->isPremium();
+                        $materialTier = $material->access_tier ?: ($course->access_tier ?? 'both');
+                        $isLocked = !$material->isAccessibleBy(auth()->user())
+                            || ($material->is_locked && !auth()->user()->isPremium());
 
                         $typeIcon  = match($material->type) {
                             'video'      => 'fa-play-circle',
@@ -149,7 +151,7 @@
                                 @if($material->duration_minutes)
                                     <span>· {{ $material->duration_minutes }} menit</span>
                                 @endif
-                                @if($material->is_premium)
+                                @if($materialTier === 'paid')
                                     <span class="badge badge-premium" style="font-size:10px; padding:1px 6px;"><i class="fas fa-crown" style="font-size:9px;"></i> Premium</span>
                                 @endif
                             </div>

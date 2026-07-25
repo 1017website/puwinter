@@ -107,20 +107,6 @@
                     <div style="font-size:11.5px; color:var(--muted); margin-top:4px;">Maks. 2MB. Format: JPG, PNG.</div>
                 </div>
 
-                <div class="form-group">
-                    <label>Tipe Konten</label>
-                    <div style="display:flex; flex-direction:column; gap:10px; padding-top:8px;">
-                        <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; cursor:pointer; font-weight:400;">
-                            <input type="checkbox" name="is_premium" value="1" {{ old('is_premium') ? 'checked' : '' }}
-                                   :disabled="ctype === 'extra'"
-                                   x-bind:checked="ctype === 'extra' ? false : $el.checked"
-                                   style="width:16px; height:16px; accent-color:var(--primary);">
-                            Konten Premium
-                            <span x-show="ctype === 'extra'" style="font-size:11px; color:#94a3b8;" x-text="'(extra: non-premium)'"></span>
-                        </label>
-                    </div>
-                </div>
-
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:8px;">

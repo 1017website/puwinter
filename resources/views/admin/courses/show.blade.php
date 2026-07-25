@@ -35,7 +35,7 @@
         ['label'=>'Total Modul',  'value'=>$course->modules->count()],
         ['label'=>'Total Materi', 'value'=>$course->modules->sum(fn($m)=>$m->materials->count())],
         ['label'=>'Total Peserta','value'=>number_format($course->enrollments->count())],
-        ['label'=>'Tipe',         'value'=>$course->is_premium ? 'Premium' : 'Gratis'],
+        ['label'=>'Akses',        'value'=>$course->access_tier === 'paid' ? 'Berbayar' : 'Gratis & Berbayar'],
     ] as $s)
     <div class="card" style="padding:14px; text-align:center;">
         <div style="font-size:20px; font-weight:800;">{{ $s['value'] }}</div>
@@ -80,7 +80,7 @@
                         <div style="font-size:11px; color:var(--muted);">
                             {{ strtoupper($material->type) }}
                             @if($material->duration_minutes) · {{ $material->duration_minutes }} mnt @endif
-                            @if($material->is_premium) · <span style="color:#D97706;">Premium</span> @endif
+                            @if($material->access_tier === 'paid') · <span style="color:#D97706;">Berbayar</span> @endif
                         </div>
                     </div>
                 </div>

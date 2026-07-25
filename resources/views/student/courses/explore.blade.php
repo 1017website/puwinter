@@ -62,6 +62,10 @@
         @foreach($courses as $course)
         @php
             $enrolled = $enrolledIds->contains($course->id);
+            $canAccess = $course->isAccessibleBy(auth()->user());
+            $needsProgramEnrollment = $course->plan_id
+                && !auth()->user()->isEnrolledInProgram($course->plan_id);
+            $isPaidOnly = $course->access_tier === 'paid';
             $colors   = ['#2563EB','#7C3AED','#059669','#D97706','#DC2626','#0891B2'];
             $color    = $colors[$loop->index % count($colors)];
         @endphp
@@ -80,7 +84,7 @@
                     </div>
                 @endif
                 <div style="position:absolute; top:10px; left:10px; display:flex; gap:6px;">
-                    @if($course->is_premium)
+                    @if($isPaidOnly)
                         <span style="background:rgba(245,158,11,0.9); color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px;">
                             <i class="fas fa-crown" style="font-size:9px;"></i> Premium
                         </span>
@@ -113,7 +117,12 @@
                     <span><i class="fas fa-users" style="margin-right:3px;"></i>{{ $course->enrollments_count }} peserta</span>
                 </div>
 
-                @if($course->is_premium && !auth()->user()->isPremium())
+                @if($needsProgramEnrollment)
+                    <a href="{{ route('student.program.show', $course->plan_id) }}"
+                       style="display:flex; align-items:center; justify-content:center; gap:6px; padding:9px; background:#F1F5F9; color:var(--text-main); border-radius:8px; font-size:12px; font-weight:700; text-decoration:none;">
+                        <i class="fas fa-user-plus"></i> Daftar Program
+                    </a>
+                @elseif(!$canAccess && $isPaidOnly)
                     <a href="{{ route('upgrade.index') }}"
                        style="display:flex; align-items:center; justify-content:center; gap:6px; padding:9px; background:linear-gradient(135deg,#F59E0B,#EF4444); color:#fff; border-radius:8px; font-size:12px; font-weight:700; text-decoration:none;">
                         <i class="fas fa-crown"></i> Upgrade untuk Akses

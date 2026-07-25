@@ -336,7 +336,8 @@
                         @php
                             $matDone   = in_array($mat->id, $completedMaterialIds);
                             $matActive = $mat->id === $material->id;
-                            $matLocked = ($mat->is_locked || $mat->is_premium) && !auth()->user()->isPremium();
+                            $matLocked = !$mat->isAccessibleBy(auth()->user())
+                                || ($mat->is_locked && !auth()->user()->isPremium());
                             $matIcon   = match($mat->type) {
                                 'video'      => 'fa-play-circle',
                                 'pdf'        => 'fa-file-pdf',
