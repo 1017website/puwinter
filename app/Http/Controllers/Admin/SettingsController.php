@@ -14,19 +14,6 @@ class SettingsController extends Controller
 {
     public function index(): View
     {
-        // Info sistem
-        $sysInfo = [
-            'php_version' => PHP_VERSION,
-            'laravel_version' => app()->version(),
-            'env' => app()->environment(),
-            'debug' => config('app.debug') ? 'ON' : 'OFF',
-            'app_url' => config('app.url'),
-            'storage_linked' => file_exists(public_path('storage')),
-            'cache_driver' => config('cache.default'),
-            'queue_driver' => config('queue.default'),
-            'db_connection' => config('database.default'),
-        ];
-
         $bank = AppSetting::bankInfo();
         $affiliate = AppSetting::affiliateInfo();
         $features = [
@@ -34,7 +21,7 @@ class SettingsController extends Controller
         ];
         $frontend = AppSetting::frontendInfo();
 
-        return view('admin.settings.index', compact('sysInfo', 'bank', 'affiliate', 'features', 'frontend'));
+        return view('admin.settings.index', compact('bank', 'affiliate', 'features', 'frontend'));
     }
 
     public function updateFrontend(Request $request): RedirectResponse

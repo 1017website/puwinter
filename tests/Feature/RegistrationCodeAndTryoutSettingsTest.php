@@ -130,19 +130,16 @@ class RegistrationCodeAndTryoutSettingsTest extends TestCase
         @unlink($file);
     }
 
-    public function test_artisan_panel_only_exposes_three_allowed_commands(): void
+    public function test_artisan_panel_and_system_information_are_hidden(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)->get(route('admin.settings.index'))
             ->assertOk()
-            ->assertSee('php artisan migrate')
-            ->assertSee('php artisan optimize:clear')
-            ->assertSee('php artisan storage:link')
-            ->assertDontSee('php artisan db:seed')
-            ->assertDontSee('php artisan migrate:rollback')
-            ->assertDontSee('php artisan cache:clear')
-            ->assertDontSee('php artisan route:cache');
+            ->assertDontSee('Artisan Panel')
+            ->assertDontSee('php artisan')
+            ->assertDontSee('Informasi Sistem')
+            ->assertDontSee('PHP Version');
 
         $this->actingAs($admin)->post(route('admin.settings.artisan'), [
             'command' => 'cache:clear',

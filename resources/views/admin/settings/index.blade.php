@@ -6,7 +6,7 @@
 <div class="page-header">
     <div>
         <h2>Pengaturan</h2>
-        <p>Kelola identitas visual, tools server, dan informasi sistem.</p>
+        <p>Kelola identitas visual dan pengaturan aplikasi.</p>
     </div>
 </div>
 
@@ -73,8 +73,8 @@
     </form>
 </div>
 
-{{-- Artisan output --}}
-@if(session('artisan_output'))
+{{-- Artisan output disembunyikan bersama Artisan Panel. --}}
+@if(false && session('artisan_output'))
 @php $ao = session('artisan_output'); @endphp
 <div style="margin-bottom:20px; background:#0F172A; border-radius:10px; padding:16px 20px; font-family:monospace;">
     <div style="font-size:11px; color:#475569; margin-bottom:8px;">
@@ -228,6 +228,7 @@
             </form>
         </div>
 
+        @if(false)
         {{-- ARTISAN PANEL --}}
         <div class="card">
             <div style="font-size:14px; font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
@@ -317,6 +318,7 @@
                 @endforeach
             </table>
         </div>
+        @endif
 
     </div>
 </div>
