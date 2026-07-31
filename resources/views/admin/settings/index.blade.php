@@ -166,6 +166,17 @@
                         </small>
                     </span>
                 </label>
+                <label style="display:flex; align-items:flex-start; gap:10px; padding:12px; border:1px solid var(--border); border-radius:8px; cursor:pointer; margin-bottom:14px;">
+                    <input type="checkbox" name="email_verification_enabled" value="1"
+                           {{ ($features['email_verification_enabled'] ?? true) ? 'checked' : '' }}
+                           style="margin-top:2px; width:16px; height:16px;">
+                    <span>
+                        <strong style="display:block; font-size:13px;">Wajibkan verifikasi email saat registrasi</strong>
+                        <small style="display:block; color:var(--muted); margin-top:3px; line-height:1.5;">
+                            Jika dimatikan, akun siswa baru langsung aktif. Semua akun siswa lama yang masih menunggu verifikasi juga otomatis diverifikasi agar dapat langsung login.
+                        </small>
+                    </span>
+                </label>
                 <button type="submit" class="btn btn-primary btn-sm" style="width:100%; justify-content:center;">
                     <i class="fas fa-save"></i> Simpan Pengaturan Fitur
                 </button>

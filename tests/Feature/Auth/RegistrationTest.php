@@ -2,7 +2,10 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\AppSetting;
+use App\Models\EmailVerification;
 use App\Models\Grade;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -36,6 +39,10 @@ class RegistrationTest extends TestCase
             'email' => 'test@example.com',
             'phone' => '081234567892',
         ]);
+
+        $user = User::where('email', 'test@example.com')->firstOrFail();
+        $this->assertFalse($user->hasVerifiedEmail());
+        $this->assertSame(1, EmailVerification::where('user_id', $user->id)->count());
     }
 
     public function test_phone_number_is_required_to_register(): void
@@ -51,5 +58,32 @@ class RegistrationTest extends TestCase
         ])->assertSessionHasErrors('phone');
 
         $this->assertGuest();
+    }
+
+    public function test_new_user_can_register_without_email_verification_when_admin_disables_it(): void
+    {
+        AppSetting::set('email_verification_enabled', '0');
+        $grade = Grade::query()->firstOrFail();
+
+        $response = $this->post('/register', [
+            'name' => 'User Tanpa Verifikasi',
+            'email' => 'tanpa.verifikasi@example.com',
+            'phone' => '081234567893',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'grade_id' => $grade->id,
+        ]);
+
+        $user = User::where('email', 'tanpa.verifikasi@example.com')->firstOrFail();
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertTrue($user->hasVerifiedEmail());
+        $this->assertSame(0, EmailVerification::where('user_id', $user->id)->count());
+        $response->assertRedirect(route('dashboard', absolute: false));
+    }
+
+    public function test_email_verification_remains_enabled_by_default(): void
+    {
+        $this->assertTrue(AppSetting::emailVerificationEnabled());
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AppSetting;
+use App\Models\EmailVerification;
 use App\Models\Grade;
 use App\Models\RegistrationCode;
 use App\Models\User;
@@ -92,6 +93,44 @@ class RegistrationCodeAndTryoutSettingsTest extends TestCase
 
         $response->assertRedirect(route('dashboard'));
         $response->assertSessionHas('error');
+    }
+
+    public function test_admin_can_disable_email_verification_for_new_registrations(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $waitingStudents = User::factory()->unverified()->count(2)->create(['role' => 'student']);
+        $waitingMentor = User::factory()->unverified()->create(['role' => 'mentor']);
+
+        foreach ($waitingStudents->push($waitingMentor) as $user) {
+            EmailVerification::create([
+                'user_id' => $user->id,
+                'token' => str_repeat((string) $user->id, 64),
+                'expires_at' => now()->addDay(),
+            ]);
+        }
+
+        $response = $this->actingAs($admin)->post(route('admin.settings.features'), [
+            'student_tryout_enabled' => '1',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertSessionHas('success');
+        $this->assertFalse(AppSetting::emailVerificationEnabled());
+        $this->assertTrue(AppSetting::studentTryoutEnabled());
+        $this->assertTrue($waitingStudents[0]->fresh()->hasVerifiedEmail());
+        $this->assertTrue($waitingStudents[1]->fresh()->hasVerifiedEmail());
+        $this->assertFalse($waitingMentor->fresh()->hasVerifiedEmail());
+        $this->assertDatabaseMissing('email_verifications', ['user_id' => $waitingStudents[0]->id]);
+        $this->assertDatabaseMissing('email_verifications', ['user_id' => $waitingStudents[1]->id]);
+        $this->assertDatabaseHas('email_verifications', ['user_id' => $waitingMentor->id]);
+        $response->assertSessionHas('success', 'Pengaturan fitur berhasil disimpan. 2 akun siswa yang tertunda kini sudah terverifikasi dan dapat langsung login.');
+
+        $this->actingAs($admin)->post(route('admin.settings.features'), [
+            'student_tryout_enabled' => '1',
+            'email_verification_enabled' => '1',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertTrue(AppSetting::emailVerificationEnabled());
     }
 
     public function test_student_login_does_not_expose_staff_login_link(): void

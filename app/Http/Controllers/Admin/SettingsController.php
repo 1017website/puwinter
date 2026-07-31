@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
+use App\Models\EmailVerification;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -18,6 +21,7 @@ class SettingsController extends Controller
         $affiliate = AppSetting::affiliateInfo();
         $features = [
             'student_tryout_enabled' => AppSetting::studentTryoutEnabled(),
+            'email_verification_enabled' => AppSetting::emailVerificationEnabled(),
         ];
         $frontend = AppSetting::frontendInfo();
 
@@ -118,11 +122,36 @@ class SettingsController extends Controller
 
     public function updateFeatures(Request $request): RedirectResponse
     {
-        AppSetting::set('student_tryout_enabled', $request->boolean('student_tryout_enabled') ? '1' : '0');
+        $emailVerificationEnabled = $request->boolean('email_verification_enabled');
+        $verifiedStudentCount = 0;
 
-        $status = $request->boolean('student_tryout_enabled') ? 'diaktifkan' : 'dinonaktifkan';
+        DB::transaction(function () use ($request, $emailVerificationEnabled, &$verifiedStudentCount): void {
+            AppSetting::set('student_tryout_enabled', $request->boolean('student_tryout_enabled') ? '1' : '0');
+            AppSetting::set('email_verification_enabled', $emailVerificationEnabled ? '1' : '0');
 
-        return back()->with('success', "Halaman tryout siswa berhasil {$status}.");
+            if (! $emailVerificationEnabled) {
+                $unverifiedStudentIds = User::query()
+                    ->select('id')
+                    ->where('role', 'student')
+                    ->whereNull('email_verified_at');
+
+                // Token lama tidak diperlukan lagi dan tidak boleh dipakai untuk login lewat link.
+                EmailVerification::query()
+                    ->whereIn('user_id', $unverifiedStudentIds)
+                    ->delete();
+
+                $verifiedStudentCount = User::query()
+                    ->where('role', 'student')
+                    ->whereNull('email_verified_at')
+                    ->update(['email_verified_at' => now()]);
+            }
+        });
+
+        if (! $emailVerificationEnabled && $verifiedStudentCount > 0) {
+            return back()->with('success', "Pengaturan fitur berhasil disimpan. {$verifiedStudentCount} akun siswa yang tertunda kini sudah terverifikasi dan dapat langsung login.");
+        }
+
+        return back()->with('success', 'Pengaturan fitur berhasil disimpan.');
     }
 
     public function uploadLogo(Request $request): RedirectResponse

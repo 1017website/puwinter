@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Models\AppSetting;
 use App\Models\EmailVerification;
 use App\Models\Grade;
 use App\Models\RegistrationCode;
@@ -53,6 +54,15 @@ class RegisterController extends Controller
             'registration_code_id' => $registrationCode?->id,
         ]);
 
+        Auth::login($user);
+
+        if (! AppSetting::emailVerificationEnabled()) {
+            $user->forceFill(['email_verified_at' => now()])->save();
+
+            return redirect()->route('dashboard')
+                ->with('success', 'Registrasi berhasil! Selamat belajar di Puwinter.');
+        }
+
         // Buat token verifikasi email custom
         $token = Str::random(64);
 
@@ -64,8 +74,6 @@ class RegisterController extends Controller
 
         // Kirim email verifikasi + catat hasilnya ke tabel email_logs.
         $emailLog = app(EmailVerificationMailService::class)->send($user, $verification, 'register');
-
-        Auth::login($user);
 
         $redirect = redirect()->route('verification.notice');
 

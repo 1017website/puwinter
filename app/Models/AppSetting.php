@@ -55,6 +55,15 @@ class AppSetting extends Model
     }
 
     /**
+     * Tentukan apakah siswa baru wajib memverifikasi alamat emailnya.
+     * Default aktif untuk mempertahankan perilaku registrasi yang sudah ada.
+     */
+    public static function emailVerificationEnabled(): bool
+    {
+        return filter_var(static::get('email_verification_enabled', '1'), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
      * Pengaturan yang dipakai landing page publik.
      */
     public static function frontendInfo(): array
