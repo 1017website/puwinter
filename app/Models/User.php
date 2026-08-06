@@ -155,6 +155,9 @@ class User extends Authenticatable implements MustVerifyEmail
         if ($planId === null) {
             return true; // konten tanpa program = umum
         }
+        if ($this->relationLoaded('programEnrollments')) {
+            return $this->programEnrollments->contains('plan_id', $planId);
+        }
 
         return $this->programEnrollments()->where('plan_id', $planId)->exists();
     }
@@ -170,7 +173,9 @@ class User extends Authenticatable implements MustVerifyEmail
         if ($planId === null) {
             return true;
         }
-        $enr = $this->programEnrollments()->where('plan_id', $planId)->first();
+        $enr = $this->relationLoaded('programEnrollments')
+            ? $this->programEnrollments->firstWhere('plan_id', $planId)
+            : $this->programEnrollments()->where('plan_id', $planId)->first();
 
         return $enr ? $enr->isPaidActive() : false;
     }

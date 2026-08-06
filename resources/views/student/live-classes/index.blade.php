@@ -5,6 +5,53 @@
 
 @section('content')
 
+@php
+    /**
+     * Tombol per kelas online mengikuti alasan akses yang sebenarnya
+     * (LiveClass::accessStatusFor), bukan cuma flag is_premium — supaya tidak
+     * ada lagi tombol "Bergabung Sekarang" yang ujungnya ditolak.
+     */
+    $me = auth()->user();
+    $ctaFor = function ($class) use ($me) {
+        $status  = $class->accessStatusFor($me);
+        $planUrl = $class->programPageOpenableBy($me)
+            ? route('student.program.show', $class->plan_id)
+            : route('student.program.index');
+
+        return match ($status) {
+            \App\Models\LiveClass::ACCESS_OK => ['can_join' => true],
+
+            \App\Models\LiveClass::ACCESS_NOT_ENROLLED => [
+                'can_join' => false,
+                'label'    => 'Daftar Program',
+                'icon'     => 'fa-user-plus',
+                'url'      => $planUrl,
+            ],
+
+            \App\Models\LiveClass::ACCESS_NEEDS_PAID => [
+                'can_join' => false,
+                'label'    => 'Khusus Peserta Berbayar',
+                'icon'     => 'fa-lock',
+                'url'      => $planUrl,
+            ],
+
+            \App\Models\LiveClass::ACCESS_NEEDS_EXCLUSIVE => [
+                'can_join' => false,
+                'label'    => 'Upgrade untuk Bergabung',
+                'icon'     => 'fa-crown',
+                'url'      => route('upgrade.index'),
+            ],
+
+            default => [
+                'can_join' => false,
+                'label'    => 'Tidak Tersedia',
+                'icon'     => 'fa-ban',
+                'url'      => route('student.live.index'),
+            ],
+        };
+    };
+@endphp
+
 <div class="student-page-heading" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
     <div>
         <h2 style="font-size:22px; font-weight:800;">Kelas Online</h2>
@@ -63,15 +110,16 @@
                     <div style="font-size:12px; color:rgba(255,255,255,0.75); margin-bottom:16px;">
                         <i class="fas fa-users" style="margin-right:4px;"></i>{{ $class->total_participants }} peserta
                     </div>
-                    @if($class->is_premium && !auth()->user()->isPremium())
-                        <a href="{{ route('upgrade.index') }}"
-                           style="display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.3); border-radius:8px; font-size:13px; font-weight:700; text-decoration:none;">
-                            <i class="fas fa-crown"></i> Upgrade untuk Bergabung
-                        </a>
-                    @else
+                    @php $cta = $ctaFor($class); @endphp
+                    @if($cta['can_join'])
                         <a href="{{ route('student.live.show', $class->id) }}"
                            style="display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; background:#fff; color:#EF4444; border-radius:8px; font-size:13px; font-weight:700; text-decoration:none;">
                             <i class="fas fa-play"></i> Bergabung Sekarang
+                        </a>
+                    @else
+                        <a href="{{ $cta['url'] }}"
+                           style="display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.3); border-radius:8px; font-size:13px; font-weight:700; text-decoration:none;">
+                            <i class="fas {{ $cta['icon'] }}"></i> {{ $cta['label'] }}
                         </a>
                     @endif
                 </div>
@@ -127,14 +175,15 @@
                     </div>
 
                     {{-- Action --}}
-                    @if($class->is_premium && !auth()->user()->isPremium())
-                        <a href="{{ route('upgrade.index') }}" class="btn btn-premium" style="flex-shrink:0; font-size:12px; padding:8px 14px;">
-                            <i class="fas fa-crown"></i> Upgrade
-                        </a>
-                    @else
+                    @php $cta = $ctaFor($class); @endphp
+                    @if($cta['can_join'])
                         <a href="{{ route('student.live.show', $class->id) }}"
                            class="btn btn-outline" style="flex-shrink:0; font-size:12px; padding:8px 14px;">
                             <i class="fas fa-info-circle"></i> Detail
+                        </a>
+                    @else
+                        <a href="{{ $cta['url'] }}" class="btn btn-premium" style="flex-shrink:0; font-size:12px; padding:8px 14px;">
+                            <i class="fas {{ $cta['icon'] }}"></i> {{ $cta['label'] }}
                         </a>
                     @endif
                 </div>
@@ -159,7 +208,8 @@
         <div class="student-card-grid student-grid-3" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px;">
             @foreach($recordings as $class)
                 @php
-                    $isLocked   = $class->is_premium && !auth()->user()->isPremium();
+                    $cta        = $ctaFor($class);
+                    $isLocked   = !$cta['can_join'];
                     $isYoutube  = preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $class->recording_url ?? '', $ytMatch);
                     $thumbUrl   = $isYoutube
                         ? 'https://img.youtube.com/vi/' . $ytMatch[1] . '/mqdefault.jpg'
@@ -189,8 +239,8 @@
                         @if($isLocked)
                             <div style="position:absolute; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(3px); display:flex; align-items:center; justify-content:center;">
                                 <div style="text-align:center; color:#fff;">
-                                    <i class="fas fa-lock" style="font-size:24px; margin-bottom:6px; display:block;"></i>
-                                    <span style="font-size:12px; font-weight:700;">Premium</span>
+                                    <i class="fas {{ $cta['icon'] }}" style="font-size:24px; margin-bottom:6px; display:block;"></i>
+                                    <span style="font-size:12px; font-weight:700;">{{ $cta['label'] }}</span>
                                 </div>
                             </div>
                         @else
@@ -229,9 +279,9 @@
                         </div>
 
                         @if($isLocked)
-                            <a href="{{ route('upgrade.index') }}"
+                            <a href="{{ $cta['url'] }}"
                                style="display:flex; align-items:center; justify-content:center; gap:6px; padding:9px; background:linear-gradient(135deg,#F59E0B,#EF4444); color:#fff; border-radius:8px; font-size:12px; font-weight:700; text-decoration:none;">
-                                <i class="fas fa-crown"></i> Upgrade untuk Menonton
+                                <i class="fas {{ $cta['icon'] }}"></i> {{ $cta['label'] }}
                             </a>
                         @else
                             <a href="{{ route('student.live.show', $class->id) }}"

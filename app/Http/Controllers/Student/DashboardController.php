@@ -28,14 +28,16 @@ class DashboardController extends Controller
             ->latest('updated_at')
             ->first();
 
-        // Jadwal kelas online mendatang
+        // Jadwal kelas online mendatang (hanya yang relevan dengan kelas siswa)
         $upcomingLiveClasses = LiveClass::upcoming()
+            ->forUser($user)
             ->with(['mentor', 'subject'])
             ->take(3)
             ->get();
 
         // Kelas online sedang berlangsung
         $liveLiveClass = LiveClass::live()
+            ->forUser($user)
             ->with(['mentor', 'subject'])
             ->first();
 
@@ -72,6 +74,7 @@ class DashboardController extends Controller
 
         // Jumlah notifikasi (pending kelas online yang belum dilihat — sederhana)
         $notifCount = LiveClass::upcoming()
+            ->forUser($user)
             ->where('scheduled_at', '<=', now()->addDays(3))
             ->count();
 

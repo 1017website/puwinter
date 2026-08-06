@@ -28,6 +28,15 @@ class LiveClass extends Model
     public const TYPE_REGULAR = 'regular'; // live class umum (ikut grade + flag premium)
     public const TYPE_PRIVATE = 'private'; // privat/eksklusif — wajib premium
 
+    // Alasan akses. Dipakai controller (pesan error) dan blade (label tombol)
+    // dari satu sumber yang sama, supaya keduanya tidak pernah bertolak belakang.
+    public const ACCESS_OK              = 'ok';
+    public const ACCESS_WRONG_GRADE     = 'wrong_grade';
+    public const ACCESS_NOT_ENROLLED    = 'not_enrolled';
+    public const ACCESS_NEEDS_PAID      = 'needs_paid';
+    public const ACCESS_NEEDS_EXCLUSIVE = 'needs_exclusive';
+    public const ACCESS_DENIED          = 'denied';
+
     // -------------------------------------------------------------------------
     // Scopes
     // -------------------------------------------------------------------------
@@ -92,28 +101,108 @@ class LiveClass extends Model
     }
 
     /**
-     * Cek apakah $user boleh mengakses live class ini (grade + premium).
+     * Tier akses konten ini: 'free' | 'paid' | 'both'. Default 'paid'
+     * (live class umumnya manfaat utama membayar program).
+     */
+    public function accessTier(): string
+    {
+        return $this->access_tier ?: 'paid';
+    }
+
+    /**
+     * Cek apakah $user boleh mengakses live class ini (grade + program + premium).
      */
     public function isAccessibleBy($user): bool
     {
-        if (!$user) return false;
-        if (in_array($user->role, ['superadmin', 'admin', 'mentor'])) return true;
+        return $this->accessStatusFor($user) === self::ACCESS_OK;
+    }
 
-        // Grade
-        if ($this->grade_id !== null && (int) $user->grade_id !== (int) $this->grade_id) {
-            return false;
+    /**
+     * Alasan spesifik kenapa $user boleh / tidak boleh masuk.
+     * Selalu pakai ini (bukan pesan generik) supaya siswa tahu apa yang harus
+     * dilakukan: daftar program, bayar program, ganti kelas, atau upgrade.
+     */
+    public function accessStatusFor($user): string
+    {
+        if (! $user) {
+            return self::ACCESS_DENIED;
+        }
+        if (in_array($user->role, ['superadmin', 'admin', 'mentor'])) {
+            return self::ACCESS_OK;
+        }
+
+        // Grade. Siswa yang grade_id-nya belum terisi jangan diblokir —
+        // konsisten dengan scopeForUser() dan User::canAccessGradeId().
+        if ($this->grade_id !== null
+            && ! empty($user->grade_id)
+            && (int) $user->grade_id !== (int) $this->grade_id) {
+            return self::ACCESS_WRONG_GRADE;
+        }
+
+        // Live class private/exclusive: wajib premium tier EXCLUSIVE.
+        if ($this->isPrivate() && ! $user->isExclusive()) {
+            return self::ACCESS_NEEDS_EXCLUSIVE;
         }
 
         // Akses per-program (plan_id + access_tier).
-        // Live class biasanya tier 'paid' (manfaat utama membayar program).
-        if (!$user->canAccessContent($this->plan_id, $this->access_tier ?? 'paid')) {
+        if ($this->plan_id !== null) {
+            if (! $user->isEnrolledInProgram($this->plan_id)) {
+                // Tier gratis: enrollment cuma formalitas dan dibuat otomatis
+                // saat siswa membuka kelas — lihat autoEnroll().
+                return $this->canAutoEnroll($user) ? self::ACCESS_OK : self::ACCESS_NOT_ENROLLED;
+            }
+            if ($this->accessTier() === 'paid' && ! $user->hasPaidProgram($this->plan_id)) {
+                return self::ACCESS_NEEDS_PAID;
+            }
+        }
+
+        return self::ACCESS_OK;
+    }
+
+    /**
+     * Apakah $user bisa didaftarkan otomatis ke program kelas online ini.
+     * Hanya untuk tier gratis dan hanya jika program memang berlaku untuk
+     * kelasnya — setara siswa menekan "Daftar" di halaman Program, jadi tidak
+     * melonggarkan konten berbayar.
+     */
+    public function canAutoEnroll($user): bool
+    {
+        if (! $user || $this->isPrivate() || $this->plan_id === null) {
+            return false;
+        }
+        if (! in_array($this->accessTier(), ['free', 'both'], true)) {
+            return false;
+        }
+        $plan = $this->plan;
+
+        return $plan !== null && $plan->is_active && $plan->appliesToGrade($user->grade_id);
+    }
+
+    /**
+     * Apakah halaman detail program kelas online ini boleh dibuka $user.
+     * ProgramController::show() menolak (403) program yang bukan untuk kelas
+     * siswa, jadi CTA "Daftar Program" harus jatuh ke daftar program.
+     */
+    public function programPageOpenableBy($user): bool
+    {
+        $plan = $this->plan;
+
+        return $plan !== null && $plan->appliesToGrade($user->grade_id ?? null);
+    }
+
+    /**
+     * Daftarkan $user (gratis) ke program kelas online ini. Idempoten.
+     */
+    public function autoEnroll($user): bool
+    {
+        if (! $this->canAutoEnroll($user)) {
             return false;
         }
 
-        // Live class private/exclusive: tetap wajib premium tier EXCLUSIVE.
-        if ($this->isPrivate()) {
-            return $user->isExclusive();
-        }
+        ProgramEnrollment::firstOrCreate(
+            ['user_id' => $user->id, 'plan_id' => $this->plan_id],
+            ['status' => ProgramEnrollment::STATUS_FREE, 'enrolled_at' => now()]
+        );
 
         return true;
     }
@@ -130,6 +219,22 @@ class LiveClass extends Model
     public function isLive(): bool
     {
         return $this->status === 'live';
+    }
+
+    /**
+     * Nama kelas/tingkat sasaran, atau null kalau berlaku untuk semua kelas.
+     *
+     * Catatan: JANGAN pakai $liveClass->grade->name — tabel live_classes masih
+     * punya kolom legacy `grade` (string) yang menutupi relasi grade(), jadi
+     * properti itu mengembalikan isi kolom, bukan model Grade.
+     */
+    public function gradeName(): ?string
+    {
+        if ($this->grade_id === null) {
+            return null;
+        }
+
+        return $this->grade()->value('name');
     }
 
     public function hasRecording(): bool
